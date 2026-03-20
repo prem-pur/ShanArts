@@ -1,3 +1,7 @@
+/**
+ * Schedule Model
+ * Defines the schema for job scheduling, including machine and operator assignments.
+ */
 const mongoose = require('mongoose');
 
 const scheduleSchema = new mongoose.Schema({
