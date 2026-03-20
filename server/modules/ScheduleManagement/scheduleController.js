@@ -38,6 +38,7 @@ exports.getSchedule = async (req, res, next) => {
 // Create schedule entry
 exports.createSchedule = async (req, res, next) => {
     try {
+        // TODO: Implement machine assignment conflict check before creation
         const scheduleEntry = await scheduleService.createScheduleEntry(req.body);
         res.status(201).json({
             success: true,
