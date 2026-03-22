@@ -14,8 +14,6 @@ const MachineManagement = () => {
         nextMaintenanceDate: '',
         maintenanceNotes: ''
     });
-    const [showAddModal, setShowAddModal] = useState(false);
-    const [newMachineData, setNewMachineData] = useState({ name: '', type: '' });
 
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     const isScheduleManager = user.role === 'admin' || user.role === 'staff_schedule';
@@ -105,36 +103,6 @@ const MachineManagement = () => {
         }
     };
 
-    const handleAddMachine = async (e) => {
-        e.preventDefault();
-        try {
-            const token = localStorage.getItem('token');
-            await axios.post(`${API_BASE_URL}/api/machines`, newMachineData, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            setShowAddModal(false);
-            setNewMachineData({ name: '', type: '' });
-            fetchMachines();
-            fetchProductionSummary();
-        } catch (err) {
-            alert(err.response?.data?.message || 'Failed to add machine');
-        }
-    };
-
-    const handleDeleteMachine = async (machineId) => {
-        if (!window.confirm("Are you sure you want to permanently remove this machine from the system?")) return;
-        try {
-            const token = localStorage.getItem('token');
-            await axios.delete(`${API_BASE_URL}/api/machines/${machineId}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            fetchMachines();
-            fetchProductionSummary();
-        } catch (err) {
-            alert(err.response?.data?.message || 'Failed to delete machine');
-        }
-    };
-
     const getStatusColor = (status) => {
         switch (status) {
             case 'Available': return '#10b981';
@@ -177,25 +145,6 @@ const MachineManagement = () => {
                         Monitor and manage production equipment status and maintenance
                     </p>
                 </div>
-                {isScheduleManager && (
-                    <button
-                        onClick={() => setShowAddModal(true)}
-                        style={{
-                            padding: '12px 24px',
-                            backgroundColor: '#111827',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '12px',
-                            fontWeight: '800',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px'
-                        }}
-                    >
-                        + Add Machine
-                    </button>
-                )}
             </div>
 
             {/* Production Summary */}
@@ -281,6 +230,9 @@ const MachineManagement = () => {
                                     </h4>
                                     <p style={{ margin: '0 0 4px 0', color: '#6b7280', fontSize: '14px' }}>
                                         {machine.type}
+                                    </p>
+                                    <p style={{ margin: 0, color: '#6b7280', fontSize: '12px' }}>
+                                        📍 {machine.location}
                                     </p>
                                     {machine.currentOrderId && (
                                         <p style={{ margin: '4px 0 0 0', color: '#3b82f6', fontSize: '12px' }}>
@@ -374,69 +326,12 @@ const MachineManagement = () => {
                                     >
                                         🔧 Maintenance
                                     </button>
-                                    {isScheduleManager && (
-                                        <button
-                                            onClick={() => handleDeleteMachine(machine._id)}
-                                            style={{
-                                                padding: '8px',
-                                                border: '1px solid #fca5a5',
-                                                borderRadius: '6px',
-                                                fontSize: '12px',
-                                                backgroundColor: '#fef2f2',
-                                                color: '#ef4444',
-                                                fontWeight: '700',
-                                                cursor: 'pointer'
-                                            }}
-                                        >
-                                            🗑️ Remove
-                                        </button>
-                                    )}
                                 </div>
                             </div>
                         ))}
                     </div>
                 )}
             </div>
-
-            {/* Add Machine Modal */}
-            {showAddModal && (
-                <div style={{
-                    position: 'fixed',
-                    inset: 0,
-                    background: 'rgba(0,0,0,0.5)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    zIndex: 1000
-                }}>
-                    <div style={{ background: '#fff', width: '100%', maxWidth: '500px', borderRadius: '16px', padding: '32px' }}>
-                        <h3 style={{ margin: '0 0 24px 0', fontSize: '24px', fontWeight: '700' }}>Add New Machine</h3>
-                        <form onSubmit={handleAddMachine} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                            <div>
-                                <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', marginBottom: '8px' }}>Machine Name</label>
-                                <input type="text" value={newMachineData.name} onChange={(e) => setNewMachineData({ ...newMachineData, name: e.target.value })} style={{ width: '100%', padding: '12px', border: '1px solid #d1d5db', borderRadius: '8px' }} required />
-                            </div>
-                            <div>
-                                <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', marginBottom: '8px' }}>Machine Type</label>
-                                <select value={newMachineData.type} onChange={(e) => setNewMachineData({ ...newMachineData, type: e.target.value })} style={{ width: '100%', padding: '12px', border: '1px solid #d1d5db', borderRadius: '8px' }} required>
-                                    <option value="">Select Category...</option>
-                                    <option value="Offset Printer">Offset Printer</option>
-                                    <option value="Digital Printer">Digital Printer</option>
-                                    <option value="Wide Format Printer">Wide Format Printer</option>
-                                    <option value="Cutting Machine">Cutting Machine</option>
-                                    <option value="Binding Machine">Binding Machine</option>
-                                    <option value="Packaging Equipment">Packaging Equipment</option>
-                                    <option value="Other">Other</option>
-                                </select>
-                            </div>
-                            <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
-                                <button type="button" onClick={() => setShowAddModal(false)} style={{ flex: 1, padding: '12px', border: '1px solid #d1d5db', borderRadius: '8px', backgroundColor: '#f3f4f6', cursor: 'pointer', fontWeight: '600' }}>Cancel</button>
-                                <button type="submit" style={{ flex: 2, padding: '12px', border: 'none', borderRadius: '8px', backgroundColor: '#111827', color: 'white', fontWeight: '800', cursor: 'pointer' }}>Add Machine</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
 
             {/* Maintenance Modal */}
             {showMaintenanceModal && selectedMachine && (
@@ -468,7 +363,7 @@ const MachineManagement = () => {
                                 <input
                                     type="date"
                                     value={maintenanceData.lastMaintenanceDate}
-                                    onChange={(e) => setMaintenanceData({ ...maintenanceData, lastMaintenanceDate: e.target.value })}
+                                    onChange={(e) => setMaintenanceData({...maintenanceData, lastMaintenanceDate: e.target.value})}
                                     style={{ width: '100%', padding: '12px', border: '1px solid #d1d5db', borderRadius: '8px' }}
                                 />
                             </div>
@@ -480,7 +375,7 @@ const MachineManagement = () => {
                                 <input
                                     type="date"
                                     value={maintenanceData.nextMaintenanceDate}
-                                    onChange={(e) => setMaintenanceData({ ...maintenanceData, nextMaintenanceDate: e.target.value })}
+                                    onChange={(e) => setMaintenanceData({...maintenanceData, nextMaintenanceDate: e.target.value})}
                                     style={{ width: '100%', padding: '12px', border: '1px solid #d1d5db', borderRadius: '8px' }}
                                 />
                             </div>
@@ -491,7 +386,7 @@ const MachineManagement = () => {
                                 </label>
                                 <textarea
                                     value={maintenanceData.maintenanceNotes}
-                                    onChange={(e) => setMaintenanceData({ ...maintenanceData, maintenanceNotes: e.target.value })}
+                                    onChange={(e) => setMaintenanceData({...maintenanceData, maintenanceNotes: e.target.value})}
                                     style={{ width: '100%', padding: '12px', border: '1px solid #d1d5db', borderRadius: '8px', minHeight: '100px', resize: 'vertical' }}
                                     placeholder="Enter maintenance details..."
                                 />

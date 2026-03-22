@@ -350,17 +350,11 @@ const orderController = {
     // Delete order (admin only)
     async deleteOrder(req, res, next) {
         try {
-            const order = await ShopOrder.findById(req.params.id);
+            const order = await ShopOrder.findByIdAndDelete(req.params.id);
 
             if (!order) {
                 throw new ApiError('Order not found', 404);
             }
-
-            // Cleanup linked models
-            await ProductionOrder.deleteMany({ shopOrderId: order._id });
-            await Schedule.deleteMany({ orderId: order._id });
-
-            await ShopOrder.findByIdAndDelete(req.params.id);
 
             res.json({
                 message: 'Order deleted successfully',

@@ -1,12 +1,40 @@
+# Node modules
 node_modules/
+npm-debug.log
+yarn-error.log
+*.tgz
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
 .env
+.venv
+*.egg-info/
 dist/
 build/
-.DS_Store
-.idea/
+
+# IDE
 .vscode/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-client/node_modules/
-server/node_modules/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Build outputs (but keep build and dist for production builds to be visible)
+client/build/
+server/public/uploads/*
+!server/public/uploads/.gitkeep
+
+# Environment files
+.env.local
+.env.*.local
