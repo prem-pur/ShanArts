@@ -286,6 +286,7 @@ const OrderWorkspace = () => {
                             style={{
                                 padding: '12px 24px',
                                 borderRadius: '12px',
+                                border: 'none',
                                 background: filterTab === tab ? '#ef4444' : '#fff',
                                 color: filterTab === tab ? '#fff' : '#6b7280',
                                 fontWeight: '700',
@@ -328,9 +329,9 @@ const OrderWorkspace = () => {
                             <h3 style={{ fontSize: '20px', fontWeight: '800', color: 'var(--text-primary)', marginBottom: '4px' }}>{order.customerName || "Untitled"}</h3>
                             <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '20px' }}>
                                 {order.printSpecs?.designType} • {order.printSpecs?.size ?
-                                `${order.printSpecs.size.width || 0}x${order.printSpecs.size.height || 0}${order.printSpecs.size.unit || 'mm'}` :
-                                'Custom size'
-                            }
+                                    `${order.printSpecs.size.width || 0}x${order.printSpecs.size.height || 0}${order.printSpecs.size.unit || 'mm'}` :
+                                    'Custom size'
+                                }
                             </p>
                             {(order.status === 'revision_requested' || order.status === 'Rejected') && order.revisionNotes && (
                                 <div style={{ background: '#fef2f2', border: '1px solid #fca5a5', padding: '12px', borderRadius: '8px', marginBottom: '16px' }}>

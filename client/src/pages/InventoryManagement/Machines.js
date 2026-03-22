@@ -123,10 +123,10 @@ const Machines = () => {
                                             <div style={{ fontSize: '13px', color: '#4b5563', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                 <span style={{ fontSize: '16px' }}>👷</span>
                                                 <span style={{ fontWeight: '700' }}>Active Operator:</span> {
-                                                machineOrders[0].assignedOperatorId?.name ||
-                                                machineOrders[0].assignedOperatorName ||
-                                                'Assigned Staff'
-                                            }
+                                                    machineOrders[0].assignedOperatorId?.name ||
+                                                    machineOrders[0].assignedOperatorName ||
+                                                    'Assigned Staff'
+                                                }
                                             </div>
                                         )}
 

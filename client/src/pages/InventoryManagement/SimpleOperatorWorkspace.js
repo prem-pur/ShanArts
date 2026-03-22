@@ -17,19 +17,19 @@ function SimpleOperatorWorkspace() {
         try {
             setLoading(true);
             const token = localStorage.getItem('token');
-
+            
             if (!token) {
                 setError('No token found. Please login again.');
                 setLoading(false);
                 return;
             }
-
+            
             console.log('Fetching with token:', token);
-
+            
             // Get user info
             const user = JSON.parse(localStorage.getItem('user') || '{}');
             console.log('Current user:', user);
-
+            
             // Fetch orders and machines in parallel
             const [ordersResponse, machinesResponse] = await Promise.all([
                 axios.get(`${API_BASE_URL}/api/orders`, {
@@ -39,28 +39,28 @@ function SimpleOperatorWorkspace() {
                     headers: { 'Authorization': `Bearer ${token}` }
                 })
             ]);
-
+            
             console.log('Orders response:', ordersResponse.data);
             console.log('Machines response:', machinesResponse.data);
-
+            
             // Find machines assigned to this operator by name
             const operatorMachines = machinesResponse.data.data.filter(machine => {
                 const isAssigned = machine.operatorId && machine.operatorId.name === user.name;
                 console.log(`Machine ${machine.name} assigned to operator:`, isAssigned);
                 return isAssigned;
             });
-
+            
             console.log('Operator machines:', operatorMachines);
             console.log('Operator machine IDs:', operatorMachines.map(m => m._id));
-
+            
             // Filter orders that are assigned to this operator's machines
             const assignedOrders = ordersResponse.data.filter(order => {
                 const hasMachine = !!order.assignedMachineId;
                 const isInProgress = order.status === 'In Progress' || order.status === 'Printing';
-                const isOperatorMachine = operatorMachines.some(machine =>
+                const isOperatorMachine = operatorMachines.some(machine => 
                     machine._id === order.assignedMachineId
                 );
-
+                
                 console.log(`Order ${order.orderId}:`, {
                     hasAssignedMachine: hasMachine,
                     isInProgress: isInProgress,
@@ -68,12 +68,12 @@ function SimpleOperatorWorkspace() {
                     orderMachineId: order.assignedMachineId,
                     operatorMachineIds: operatorMachines.map(m => m._id)
                 });
-
+                
                 return hasMachine && isInProgress && isOperatorMachine;
             });
-
+            
             console.log('Final assigned orders:', assignedOrders);
-
+            
             setDebug({
                 token: token ? 'Present' : 'Missing',
                 user: user,
@@ -84,7 +84,7 @@ function SimpleOperatorWorkspace() {
                 operatorMachineNames: operatorMachines.map(m => m.name),
                 sampleOrder: assignedOrders[0] || null
             });
-
+            
             setTasks(assignedOrders);
             setLoading(false);
         } catch (err) {
@@ -114,16 +114,16 @@ function SimpleOperatorWorkspace() {
         <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
             <h1>Operator Dashboard</h1>
             <p>Showing assigned jobs for printing</p>
-
+            
             <div style={{ background: '#f0f0f0', padding: '10px', marginBottom: '20px', borderRadius: '5px' }}>
                 <h3>Debug Info:</h3>
                 <pre style={{ fontSize: '12px' }}>
                     {JSON.stringify(debug, null, 2)}
                 </pre>
             </div>
-
+            
             <h2>Assigned Tasks ({tasks.length})</h2>
-
+            
             {tasks.length === 0 ? (
                 <div style={{ padding: '20px', textAlign: 'center', background: '#fff3cd', border: '1px solid #ffeaa7', borderRadius: '5px' }}>
                     <h3>No assigned tasks found</h3>
@@ -158,7 +158,7 @@ function SimpleOperatorWorkspace() {
                     </div>
                 ))
             )}
-
+            
             <div style={{ marginTop: '20px' }}>
                 <button onClick={fetchTasks} style={{ padding: '10px 20px', background: '#007bff', color: 'white', border: 'none', borderRadius: '5px' }}>
                     Refresh Tasks

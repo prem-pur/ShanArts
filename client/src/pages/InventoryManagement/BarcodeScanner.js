@@ -21,7 +21,7 @@ const BarcodeScanner = ({ onScanComplete, onMaterialFound }) => {
             if (!isScanning) return;
 
             clearTimeout(typingTimer);
-
+            
             if (e.key === 'Enter') {
                 // Complete scan
                 if (inputString.length > 0) {
@@ -105,9 +105,9 @@ const BarcodeScanner = ({ onScanComplete, onMaterialFound }) => {
             setTimeout(() => setScanResult(null), 3000);
 
         } catch (error) {
-            setScanResult({
+            setScanResult({ 
                 error: error.response?.data?.error || 'Failed to update stock',
-                material: scanResult
+                material: scanResult 
             });
         }
     };
@@ -140,8 +140,8 @@ const BarcodeScanner = ({ onScanComplete, onMaterialFound }) => {
             maxWidth: '600px',
             margin: '0 auto'
         }}>
-            <h3 style={{
-                margin: '0 0 20px 0',
+            <h3 style={{ 
+                margin: '0 0 20px 0', 
                 color: '#374151',
                 fontSize: '18px',
                 fontWeight: '600'

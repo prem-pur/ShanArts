@@ -2,10 +2,9 @@ import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from
 import Sidebar from "./components/Sidebar";
 import Home from "./components/Home";
 import OrderWorkspace from "./pages/OrderManagement/OrderWorkspace";
-import Machines from "./pages/InventoryManagement/Machines";
 import Inventory from "./pages/InventoryManagement/Inventory";
 import Invoices from "./pages/BillingManagement/Invoices";
-import Schedule from "./pages/ScheduleManagement/Schedule";
+
 import ShopOrders from "./pages/OrderManagement/ShopOrders";
 import CustomerDashboard from "./pages/UserManagement/CustomerDashboard";
 import StaffLogin from "./pages/UserManagement/StaffLogin";
@@ -26,7 +25,7 @@ function AppContent() {
   const isCustomerDashboard = location.pathname === '/customer-dashboard';
   const isStaffLogin = location.pathname === '/staff-login';
   const isCustomerHome = location.pathname === '/customer-home';
-  const isAdminDashboard = location.pathname === '/admin-dashboard';
+
   const isOrdersPage = location.pathname === '/orders';
 
   // These pages get a clean full-screen layout
@@ -47,44 +46,16 @@ function AppContent() {
   // Staff/Internal Management Pages
   return (
     <div className="App" style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
-      {!isOrdersPage && <Sidebar />}
+      <Sidebar />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        {!isOrdersPage && (
-          <header style={{
-            padding: "0 40px",
-            background: "#fff",
-            borderBottom: "1px solid #e5e7eb",
-            height: "80px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            color: "#111827"
-          }}>
-            <h1
-              onClick={() => navigate('/')}
-              style={{
-                margin: 0,
-                fontSize: "22px",
-                fontWeight: "900",
-                letterSpacing: "-0.5px",
-                color: "var(--accent-color)",
-                textTransform: "uppercase",
-                cursor: "pointer"
-              }}>
-              SYSTEM MANAGEMENT
-            </h1>
-            <div style={{ fontSize: '13px', fontWeight: '700', color: '#6b7280' }}>
-              SHAN ART ADVERTISING • 2026
-            </div>
-          </header>
-        )}
+
 
         <main style={{ flex: 1, overflow: 'auto', backgroundColor: 'var(--bg-color)' }}>
           <Routes>
             <Route path="/admin-dashboard" element={<AdminDashboard />} />
             <Route path="/orders" element={<OrderWorkspace />} />
             <Route path="/shop-orders" element={<ShopOrders />} />
-            <Route path="/machines" element={<Machines />} />
+            <Route path="/machines" element={<MachineManagement />} />
             <Route path="/inventory" element={<Inventory />} />
             <Route path="/invoices" element={<Invoices />} />
             <Route path="/schedule" element={<ScheduleDashboard />} />

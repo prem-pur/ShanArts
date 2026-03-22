@@ -82,17 +82,17 @@ const Home = () => {
                     <div className="footer-col">
                         <h4>Services</h4>
                         <ul>
-                            <li><a href="#">Print Media</a></li>
-                            <li><a href="#">Digital Signage</a></li>
-                            <li><a href="#">Brand Design</a></li>
+                            <li><button className="footer-link-btn">Print Media</button></li>
+                            <li><button className="footer-link-btn">Digital Signage</button></li>
+                            <li><button className="footer-link-btn">Brand Design</button></li>
                         </ul>
                     </div>
                     <div className="footer-col">
                         <h4>Company</h4>
                         <ul>
-                            <li><a href="#">About Us</a></li>
-                            <li><a href="#">Portfolio</a></li>
-                            <li><a href="#">Contact</a></li>
+                            <li><button className="footer-link-btn">About Us</button></li>
+                            <li><button className="footer-link-btn">Portfolio</button></li>
+                            <li><button className="footer-link-btn">Contact</button></li>
                         </ul>
                     </div>
                     <div className="footer-col" style={{ maxWidth: '200px' }}>

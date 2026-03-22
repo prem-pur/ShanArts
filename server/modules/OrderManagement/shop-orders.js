@@ -19,6 +19,6 @@ router.post('/:id/submit-design', auth, roleCheck(['admin', 'staff_designer']), 
 router.post('/:id/feedback', auth, roleCheck(['customer']), orderController.processCustomerFeedback);
 router.post('/:id/cancel', auth, orderController.cancelOrder);
 router.patch('/:id/assign', auth, roleCheck(['admin', 'staff_schedule']), orderController.assignOrder);
-router.delete('/:id', auth, roleCheck(['admin']), orderController.deleteOrder);
+router.delete('/:id', auth, roleCheck(['admin', 'staff_schedule']), orderController.deleteOrder);
 
 module.exports = router;

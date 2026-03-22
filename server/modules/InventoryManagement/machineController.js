@@ -106,6 +106,24 @@ exports.updateMachine = async (req, res, next) => {
     }
 };
 
+// Delete a machine
+exports.deleteMachine = async (req, res, next) => {
+    try {
+        const machine = await Machine.findByIdAndDelete(req.params.id);
+
+        if (!machine) {
+            return next(new ApiError('Machine not found', 404));
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Machine deleted successfully'
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 // Update machine status
 exports.updateMachineStatus = async (req, res, next) => {
     try {
