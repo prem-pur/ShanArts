@@ -5,7 +5,11 @@ const User = require('../UserManagement/User');
 const scheduleService = require('../../services/scheduleService');
 const ApiError = require('../../utils/apiError');
 
-// Get full schedule
+/**
+ * Retrieves all schedule entries with optional filtering.
+ * @param {Object} req - Request object with query filters (status, machineId, operatorId).
+ * @param {Object} res - Response object.
+ */
 exports.getSchedule = async (req, res, next) => {
     try {
         const { status, machineId, operatorId } = req.query;
@@ -34,6 +38,7 @@ exports.getSchedule = async (req, res, next) => {
 // Create schedule entry
 exports.createSchedule = async (req, res, next) => {
     try {
+        // TODO: Implement machine assignment conflict check before creation
         const scheduleEntry = await scheduleService.createScheduleEntry(req.body);
         res.status(201).json({
             success: true,

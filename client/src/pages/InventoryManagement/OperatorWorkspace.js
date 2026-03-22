@@ -9,17 +9,16 @@ const OperatorWorkspace = () => {
     const [showMaterialModal, setShowMaterialModal] = useState(false);
     const [inventory, setInventory] = useState([]);
     const [materialsUsed, setMaterialsUsed] = useState([{ materialId: '', quantity: 1 }]);
-    const [myAttendance, setMyAttendance] = useState('absent');
+
+
 
     useEffect(() => {
         fetchTasks();
         fetchInventory();
-        fetchMyAttendance();
 
         // Set up auto-refresh every 30 seconds
         const interval = setInterval(() => {
             fetchTasks();
-            fetchMyAttendance();
         }, 30000);
 
         return () => clearInterval(interval);
@@ -77,18 +76,6 @@ const OperatorWorkspace = () => {
             setInventory(response.data.data);
         } catch (err) {
             console.error('Failed to fetch inventory:', err);
-        }
-    };
-
-    const fetchMyAttendance = async () => {
-        try {
-            const token = localStorage.getItem('token');
-            const res = await axios.get(`${API_BASE_URL}/api/attendance/my`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            setMyAttendance(res.data.status || 'absent');
-        } catch (err) {
-            console.error('Failed to fetch attendance:', err);
         }
     };
 
@@ -175,20 +162,30 @@ const OperatorWorkspace = () => {
                     <h2 style={{ fontSize: '32px', fontWeight: '900', color: '#111827', marginBottom: '8px' }}>Operator Workspace</h2>
                     <p style={{ color: '#6b7280', fontSize: '16px' }}>View and manage your assigned printing tasks.</p>
                 </div>
-                <div style={{
-                    display: 'flex', alignItems: 'center', gap: '10px',
-                    padding: '12px 20px', borderRadius: '14px',
-                    background: myAttendance === 'present' ? '#dcfce7' : '#fef2f2',
-                    border: `1.5px solid ${myAttendance === 'present' ? '#86efac' : '#fca5a5'}`,
-                }}>
-                    <span style={{
-                        display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%',
-                        background: myAttendance === 'present' ? '#16a34a' : '#dc2626',
-                        boxShadow: myAttendance === 'present' ? '0 0 0 3px rgba(22, 163, 74, 0.2)' : 'none',
-                    }} />
-                    <span style={{ fontWeight: '800', fontSize: '14px', color: myAttendance === 'present' ? '#15803d' : '#b91c1c' }}>
-                        {myAttendance === 'present' ? 'Active — Present Today' : 'Inactive — Not Scanned Yet'}
-                    </span>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                    <button
+                        onClick={fetchTasks}
+                        style={{
+                            background: '#10b981',
+                            color: '#fff',
+                            border: 'none',
+                            padding: '12px 20px',
+                            borderRadius: '10px',
+                            fontWeight: '700',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px'
+                        }}
+                    >
+                        🔄 Refresh Tasks
+                    </button>
+                    <button
+                        onClick={() => { localStorage.clear(); window.location.href = '/'; }}
+                        style={{ background: '#1a1a1b', color: '#fff', border: 'none', padding: '12px 20px', borderRadius: '10px', fontWeight: '700', cursor: 'pointer' }}
+                    >
+                        🚪 Logout
+                    </button>
                 </div>
             </div>
 

@@ -22,34 +22,45 @@ const Sidebar = () => {
             </div>
 
             <nav style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-                <SidebarLink to={user.role === 'admin' ? '/admin-dashboard' : user.role === 'staff_operator' ? '/operator' : user.role === 'staff_schedule' ? '/schedule' : user.role === 'staff_designer' ? '/orders' : user.role === 'staff_inventory' ? '/inventory' : user.role === 'staff_system' ? '/system-manager' : user.role === 'staff_finance' ? '/invoices' : '/admin-dashboard'} icon="🏠" label="Home" />
+                <SidebarLink to={user.role === 'admin' ? '/admin-dashboard' : '/'} icon="🏠" label="Home" />
 
-                {user.role !== 'staff_operator' && (
-                    <div style={{ padding: '10px 32px', fontSize: '11px', fontWeight: '800', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '1.5px', marginTop: '16px' }}>Management</div>
+                <div style={{ padding: '10px 32px', fontSize: '11px', fontWeight: '800', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '1.5px', marginTop: '16px' }}>Management</div>
+
+                {user.role === 'admin' && (
+                    <>
+                        <SidebarLink to="/admin-dashboard" icon="📊" label="Overview" />
+                        <SidebarLink to="/inventory" icon="🏭" label="Inventory" />
+                        <SidebarLink to="/invoices" icon="🧾" label="Invoices" />
+                        <SidebarLink to="/machines" icon="⚙️" label="Fleet" />
+                    </>
+                )}
+
+                {(user.role === 'admin' || user.role === 'staff_system') && (
+                    <SidebarLink to="/system-manager" icon="🖥️" label="System Monitor" />
                 )}
 
                 {(user.role === 'admin' || user.role === 'staff_designer') && (
-                    <SidebarLink to="/orders" icon="🎨" label="Orders" />
+                    <SidebarLink to="/orders" icon="🎨" label="Design Workspace" />
                 )}
 
                 {(user.role === 'admin' || user.role === 'staff_schedule') && (
                     <SidebarLink to="/schedule" icon="📅" label="Scheduling" />
                 )}
 
-                {(user.role === 'admin' || user.role === 'staff_schedule') && (
-                    <SidebarLink to="/machines" icon="⚙️" label="Machines" />
+                {(user.role === 'admin' || user.role === 'staff_operator') && (
+                    <SidebarLink to="/operator" icon="🛠️" label="Operator Hub" />
                 )}
 
                 {(user.role === 'admin' || user.role === 'staff_inventory') && (
-                    <SidebarLink to="/inventory" icon="📦" label="Inventory" />
+                    <SidebarLink to="/inventory" icon="📦" label="Stock" />
                 )}
 
                 {(user.role === 'admin' || user.role === 'staff_finance') && (
-                    <SidebarLink to="/invoices" icon="🧾" label="Invoice" />
+                    <SidebarLink to="/invoices" icon="💰" label="Finance" />
                 )}
 
-                {(user.role === 'admin' || user.role === 'staff_system') && (
-                    <SidebarLink to="/system-manager" icon="🖥️" label="System Monitor" />
+                {(user.role === 'staff_operator' || user.role === 'staff_schedule') && (
+                    <SidebarLink to="/machines" icon="⚙️" label="Machines" />
                 )}
             </nav>
 

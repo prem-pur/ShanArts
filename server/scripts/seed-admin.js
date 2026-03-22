@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const User = require('../modules/UserManagement/User');
+const User = require('../models/User');
 require('dotenv').config({ path: '../.env' });
 
 const seedAdmin = async () => {

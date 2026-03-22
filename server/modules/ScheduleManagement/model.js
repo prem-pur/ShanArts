@@ -1,3 +1,7 @@
+/**
+ * Schedule Model
+ * Defines the schema for job scheduling, including machine and operator assignments.
+ */
 const mongoose = require('mongoose');
 
 const scheduleSchema = new mongoose.Schema({
@@ -27,7 +31,11 @@ const scheduleSchema = new mongoose.Schema({
         enum: ['pending', 'in_progress', 'completed', 'cancelled', 'delayed'],
         default: 'pending'
     },
-    notes: String
+    notes: String,
+    isRecurring: {
+        type: Boolean,
+        default: false
+    }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Schedule', scheduleSchema);

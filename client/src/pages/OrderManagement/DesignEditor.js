@@ -208,10 +208,10 @@ const DesignEditor = ({ template, order, onClose }) => {
                     <h2 style={{ margin: 0, fontSize: '18px' }}>Design Editor — {order?.customerName}</h2>
                     <p style={{ margin: 0, fontSize: '12px', color: '#94a3b8' }}>
                         {order?.printSpecs?.designType} ({
-                            order?.printSpecs?.size ?
-                                `${order.printSpecs.size.width || 0}x${order.printSpecs.size.height || 0}${order.printSpecs.size.unit || 'mm'}` :
-                                'Custom size'
-                        })
+                        order?.printSpecs?.size ?
+                            `${order.printSpecs.size.width || 0}x${order.printSpecs.size.height || 0}${order.printSpecs.size.unit || 'mm'}` :
+                            'Custom size'
+                    })
                     </p>
                 </div>
                 <div style={{ display: 'flex', gap: '12px' }}>
