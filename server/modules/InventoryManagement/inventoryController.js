@@ -393,6 +393,10 @@ const inventoryController = {
         const material = await Material.findById(materialId);
         if (!material) throw new Error(`Material ${materialId} not found`);
 
+        if (material.currentStock < quantity) {
+            throw new Error(`Insufficient stock for ${material.name}.`);
+        }
+
         material.currentStock -= quantity;
         await material.save();
 
