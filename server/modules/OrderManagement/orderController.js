@@ -404,6 +404,15 @@ const orderController = {
                 throw new ApiError('Order not found', 404);
             }
 
+            // Machine status check
+            if (assignedMachineId) {
+                const Machine = require('../InventoryManagement/Machine');
+                const machine = await Machine.findById(assignedMachineId);
+                if (machine && (machine.status === 'Under Maintenance' || machine.status === 'Out of Order')) {
+                    throw new ApiError(`Cannot assign order to machine "${machine.name}" because it is currently ${machine.status.toLowerCase()}.`, 400);
+                }
+            }
+
             // Time conflict check
             if (scheduledStart && scheduledEnd) {
                 const start = new Date(scheduledStart);
@@ -449,6 +458,17 @@ const orderController = {
                 });
             }
 
+            // Sync with ProductionOrder
+            await ProductionOrder.findOneAndUpdate(
+                { shopOrderId: order._id },
+                {
+                    status: 'Approved',
+                    assignedMachineId: assignedMachineId,
+                    scheduledStart: scheduledStart,
+                    scheduledEnd: scheduledEnd
+                }
+            );
+
             // Notify operator
             await notificationService.notifyUser(
                 assignedOperatorId,
@@ -473,6 +493,15 @@ const orderController = {
 
             if (!order) {
                 throw new ApiError('Order not found', 404);
+            }
+
+            // Machine status check
+            if (assignedMachineId) {
+                const Machine = require('../InventoryManagement/Machine');
+                const machine = await Machine.findById(assignedMachineId);
+                if (machine && (machine.status === 'Under Maintenance' || machine.status === 'Out of Order')) {
+                    throw new ApiError(`Cannot reschedule order to machine "${machine.name}" because it is currently ${machine.status.toLowerCase()}.`, 400);
+                }
             }
 
             // Time conflict check (reusing the same logic)
@@ -531,6 +560,16 @@ const orderController = {
                     estimatedEndTime: scheduledEnd
                 });
             }
+
+            // Sync with ProductionOrder
+            await ProductionOrder.findOneAndUpdate(
+                { shopOrderId: order._id },
+                {
+                    assignedMachineId: assignedMachineId,
+                    scheduledStart: scheduledStart,
+                    scheduledEnd: scheduledEnd
+                }
+            );
 
             // Notify operator about reschedule
             await notificationService.notifyUser(

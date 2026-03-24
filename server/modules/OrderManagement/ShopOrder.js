@@ -50,7 +50,7 @@ const shopOrderSchema = new mongoose.Schema(
         },
         status: {
             type: String,
-            enum: ['pending', 'confirmed', 'pending_design', 'waiting_approval', 'revision_requested', 'scheduled', 'in_progress', 'printing', 'completed', 'cancelled'],
+            enum: ['pending', 'confirmed', 'pending_design', 'waiting_approval', 'revision_requested', 'scheduled', 'in_progress', 'printing', 'completed', 'cancelled', 'machine_maintenance'],
             default: 'pending',
         },
         revisionNotes: String, // Feedback from customer when rejecting a design
