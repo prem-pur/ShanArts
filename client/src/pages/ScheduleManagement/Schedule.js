@@ -64,10 +64,6 @@ const Schedule = () => {
 
     const handleMachineSelection = (order) => {
         setSelectedOrder(order);
-        const relatedMachineTypes = getRelatedMachines(order.printSpecs?.designType);
-        const availableMachines = machines.filter(machine => 
-            relatedMachineTypes.includes(machine.type) && machine.status === 'available'
-        );
         setSelectedMachine(null);
         setShowMachineModal(true);
     };
@@ -343,32 +339,6 @@ const Schedule = () => {
                                 </div>
                             </div>
                         ))}
-                    </div>
-                )} : (
-                    /* Calendar View (Placeholder) */
-                    <div style={{ 
-                        textAlign: 'center', 
-                        padding: '80px 40px', 
-                        background: '#fff', 
-                        borderRadius: '20px', 
-                        boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)'
-                    }}>
-                        <div style={{ fontSize: '48px', marginBottom: '16px' }}>📆</div>
-                        <h3 style={{ 
-                            fontSize: '24px', 
-                            fontWeight: '800', 
-                            color: '#111827', 
-                            marginBottom: '16px' 
-                        }}>
-                            Calendar View
-                        </h3>
-                        <p style={{ 
-                            color: '#6b7280', 
-                            lineHeight: 1.6,
-                            maxWidth: '400px'
-                        }}>
-                            Calendar view coming soon! Switch to timeline view to see scheduled orders.
-                        </p>
                     </div>
                 )}
             </div>
