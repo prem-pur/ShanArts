@@ -69,7 +69,8 @@ const ProductionOrderSchema = new mongoose.Schema({
             "Waiting Approval",
             "Revision Requested",
             "In Progress",
-            "Printing"
+            "Printing",
+            "machine_maintenance"
         ],
         default: "Draft"
     },
