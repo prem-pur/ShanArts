@@ -238,15 +238,45 @@ const orderController = {
                 throw new ApiError('Order not found', 404);
             }
 
+            // Sync Machine Status
+            if (order.assignedMachineId) {
+                const Machine = require('../InventoryManagement/Machine');
+                if (status === 'printing' || status === 'in_progress') {
+                    await Machine.findByIdAndUpdate(order.assignedMachineId, {
+                        status: 'In Use',
+                        startTime: order.scheduledStart || new Date(),
+                        estimatedEndTime: order.scheduledEnd
+                    });
+                } else if (status === 'completed' || status === 'cancelled') {
+                    await Machine.findByIdAndUpdate(order.assignedMachineId, {
+                        status: 'Available',
+                        currentOrderId: null,
+                        operatorId: null,
+                        startTime: null,
+                        estimatedEndTime: null
+                    });
+                }
+            }
+
             // Handle job completion (Inventory & Invoice)
             if (status === 'completed' && materialsUsed && Array.isArray(materialsUsed)) {
-                order.materialsUsed = materialsUsed;
-                await order.save();
-
-                // 1. Subtract Stock (and get materials for pricing)
+                // 1. Pre-Validate Stock to prevent partial updates
                 const inventoryController = require('../InventoryManagement/inventoryController');
                 const Material = require('../InventoryManagement/Material');
 
+                for (const item of materialsUsed) {
+                    const material = await Material.findById(item.materialId);
+                    if (!material) throw new ApiError(`Material with ID ${item.materialId} not found.`, 404);
+                    if (material.currentStock < item.quantity) {
+                        throw new ApiError(`Insufficient stock for ${material.name}. Only ${material.currentStock} ${material.unit} left, but ${item.quantity} requested.`, 400);
+                    }
+                }
+
+                // If validation passes, save materialsUsed onto the order
+                order.materialsUsed = materialsUsed;
+                await order.save();
+
+                // 2. Subtract Stock (and get materials for pricing)
                 const lineItems = [];
                 for (const item of materialsUsed) {
                     // Fetch real material data for pricing
@@ -407,6 +437,18 @@ const orderController = {
 
             await order.save();
 
+            // Update Machine Status to Scheduled
+            if (assignedMachineId) {
+                const Machine = require('../InventoryManagement/Machine');
+                await Machine.findByIdAndUpdate(assignedMachineId, {
+                    status: 'Scheduled',
+                    currentOrderId: order._id,
+                    operatorId: assignedOperatorId,
+                    startTime: scheduledStart,
+                    estimatedEndTime: scheduledEnd
+                });
+            }
+
             // Notify operator
             await notificationService.notifyUser(
                 assignedOperatorId,
@@ -418,6 +460,89 @@ const orderController = {
             );
 
             res.json({ success: true, message: 'Order assigned successfully', order });
+        } catch (error) {
+            next(error);
+        }
+    },
+
+    // Reschedule existing order
+    async rescheduleOrder(req, res, next) {
+        try {
+            const { assignedOperatorId, assignedMachineId, scheduledStart, scheduledEnd, rescheduleReason } = req.body;
+            const order = await ShopOrder.findById(req.params.id);
+
+            if (!order) {
+                throw new ApiError('Order not found', 404);
+            }
+
+            // Time conflict check (reusing the same logic)
+            if (scheduledStart && scheduledEnd) {
+                const start = new Date(scheduledStart);
+                const end = new Date(scheduledEnd);
+
+                const conflictingOrder = await ShopOrder.findOne({
+                    status: { $in: ['confirmed', 'in_progress', 'printing'] },
+                    _id: { $ne: req.params.id },
+                    $or: [
+                        { assignedMachineId },
+                        { assignedOperatorId }
+                    ],
+                    $and: [
+                        { scheduledStart: { $lt: end } },
+                        { scheduledEnd: { $gt: start } }
+                    ]
+                });
+
+                if (conflictingOrder) {
+                    const conflictType = conflictingOrder.assignedMachineId?.toString() === assignedMachineId ? 'Machine' : 'Operator';
+                    throw new ApiError(`Schedule Conflict: The ${conflictType} is already booked for order #${conflictingOrder.orderNumber} during this time slot.`, 400);
+                }
+            }
+
+            const oldMachineId = order.assignedMachineId;
+            order.assignedOperatorId = assignedOperatorId;
+            order.assignedMachineId = assignedMachineId;
+            if (scheduledStart) order.scheduledStart = scheduledStart;
+            if (scheduledEnd) order.scheduledEnd = scheduledEnd;
+            order.rescheduleReason = rescheduleReason || 'Admin Reschedule';
+
+            // If it was previously scheduled, we keep it as confirmed
+            order.status = 'confirmed';
+
+            await order.save();
+
+            // Update Machine Status
+            const Machine = require('../InventoryManagement/Machine');
+            // If machine changed, make the old one available
+            if (oldMachineId && oldMachineId.toString() !== assignedMachineId) {
+                await Machine.findByIdAndUpdate(oldMachineId, {
+                    status: 'Available',
+                    currentOrderId: null,
+                    operatorId: null
+                });
+            }
+            // Set new machine to Scheduled
+            if (assignedMachineId) {
+                await Machine.findByIdAndUpdate(assignedMachineId, {
+                    status: 'Scheduled',
+                    currentOrderId: order._id,
+                    operatorId: assignedOperatorId,
+                    startTime: scheduledStart,
+                    estimatedEndTime: scheduledEnd
+                });
+            }
+
+            // Notify operator about reschedule
+            await notificationService.notifyUser(
+                assignedOperatorId,
+                'order_update',
+                `Job Rescheduled: ${order.orderNumber}`,
+                `A job assigned to you has been rescheduled for ${new Date(scheduledStart).toLocaleString()}. Reason: ${order.rescheduleReason}`,
+                order._id,
+                'ShopOrder'
+            );
+
+            res.json({ success: true, message: 'Order rescheduled successfully', order });
         } catch (error) {
             next(error);
         }
