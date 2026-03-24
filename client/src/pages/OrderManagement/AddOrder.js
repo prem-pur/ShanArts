@@ -188,6 +188,7 @@ const AddOrder = ({ onOrderCreated, onCancel }) => {
         data.append('preferences', formData.preferences);
         data.append('deadline', formData.deadline);
         data.append('customerPhone', formData.customerPhone);
+        data.append('priority', formData.priority || 'normal');
 
         if (samplePhoto) data.append('samplePhoto', samplePhoto);
         designFiles.forEach(file => data.append('designFiles', file));

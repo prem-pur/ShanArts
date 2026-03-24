@@ -89,6 +89,7 @@ const shopOrderSchema = new mongoose.Schema(
             default: 0,
         },
         customerPhone: String,
+        rescheduleReason: String,
     },
     {
         timestamps: true,
