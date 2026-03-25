@@ -10,7 +10,7 @@ mongoose.connect('mongodb://localhost:27017/orderDB');
 async function createSampleData() {
     try {
         console.log('=== CREATING SAMPLE DATA ===\n');
-        
+
         // First, create a user
         let user = await User.findOne({ email: 'admin@shanart.com' });
         if (!user) {
@@ -26,7 +26,7 @@ async function createSampleData() {
         } else {
             console.log('✅ Found existing user:', user.name);
         }
-        
+
         // Create machines
         const machines = [
             {
@@ -76,7 +76,7 @@ async function createSampleData() {
                 nextMaintenanceDate: new Date(Date.now() + 29 * 24 * 60 * 60 * 1000) // 29 days from now
             }
         ];
-        
+
         const createdMachines = [];
         for (const machineData of machines) {
             let machine = await Machine.findOne({ name: machineData.name });
@@ -94,7 +94,7 @@ async function createSampleData() {
             }
             createdMachines.push(machine);
         }
-        
+
         // Create orders
         const orders = [
             {
@@ -126,7 +126,7 @@ async function createSampleData() {
                 }
             }
         ];
-        
+
         const createdOrders = [];
         for (const orderData of orders) {
             let order = await ProductionOrder.findOne({ orderId: orderData.orderId });
@@ -139,20 +139,20 @@ async function createSampleData() {
             }
             createdOrders.push(order);
         }
-        
+
         // Assign machines to orders
         await ProductionOrder.findByIdAndUpdate(createdOrders[0]._id, {
             assignedMachineId: createdMachines[0]._id,
             assignedMachineName: createdMachines[0].name
         });
         console.log('✅ Assigned', createdMachines[0].name, 'to', createdOrders[0].orderId);
-        
+
         await ProductionOrder.findByIdAndUpdate(createdOrders[1]._id, {
             assignedMachineId: createdMachines[1]._id,
             assignedMachineName: createdMachines[1].name
         });
         console.log('✅ Assigned', createdMachines[1].name, 'to', createdOrders[1].orderId);
-        
+
         // Update machine current jobs and status
         await Machine.findByIdAndUpdate(createdMachines[0]._id, {
             currentJobId: createdOrders[0]._id,
@@ -164,7 +164,7 @@ async function createSampleData() {
             currentOrderId: createdOrders[1]._id,
             status: 'In Use'
         });
-        
+
         // Create schedule entries
         const schedules = [
             {
@@ -182,23 +182,23 @@ async function createSampleData() {
                 status: 'in_progress'
             }
         ];
-        
+
         for (const scheduleData of schedules) {
             const schedule = new Schedule(scheduleData);
             await schedule.save();
             console.log('✅ Created schedule for order:', scheduleData.orderId);
         }
-        
+
         console.log('\n=== SAMPLE DATA CREATION COMPLETE ===');
         console.log('📊 Summary:');
         console.log(`- Users: 1 (${user.name})`);
         console.log(`- Machines: ${createdMachines.length} (all assigned to ${user.name})`);
         console.log(`- Orders: ${createdOrders.length} (both assigned to machines)`);
         console.log(`- Schedules: ${schedules.length} (all in progress)`);
-        
+
         console.log('\n🎯 Expected Result:');
         console.log(`Operator "${user.name}" should see ${createdOrders.length} assigned jobs in dashboard`);
-        
+
     } catch (error) {
         console.error('Error:', error);
     } finally {
