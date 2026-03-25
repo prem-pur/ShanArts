@@ -1,5 +1,6 @@
 const Machine = require("./Machine");
 const ShopOrder = require('../OrderManagement/ShopOrder');
+const ProductionOrder = require('../OrderManagement/ProductionOrder');
 const ApiError = require('../../utils/apiError');
 const notificationService = require('../../services/notificationService');
 
@@ -14,10 +15,31 @@ exports.getAllMachines = async (req, res, next) => {
             filter.status = status;
         }
 
-        const machines = await Machine.find(filter)
+        const rawMachines = await Machine.find(filter)
             .populate('operatorId', 'name email phone')
-            .populate('currentOrderId', 'orderId status')
+            .populate('currentOrderId', 'orderNumber status')
             .limit(parseInt(limit, 10));
+
+        // Fetch all unassigned orders that could be a potential backlog
+        const potentialBacklog = await ShopOrder.find({
+            assignedMachineId: { $exists: false },
+            status: { $in: ['pending', 'pending_design', 'waiting_approval', 'revision_requested', 'scheduled', 'machine_maintenance'] }
+        }).populate('customerId', 'name').select('orderNumber status customerId jobType quantity createdAt').sort({ createdAt: 1 }).lean();
+
+        // For each machine, fetch all other assigned orders with more details
+        const machines = await Promise.all(rawMachines.map(async (machine) => {
+            const assignedOrders = await ShopOrder.find({
+                assignedMachineId: machine._id,
+                status: { $nin: ['completed', 'cancelled', 'machine_maintenance'] },
+                _id: { $ne: machine.currentOrderId?._id || machine.currentOrderId }
+            }).populate('customerId', 'name').populate('assignedOperatorId', 'name').select('orderNumber status customerId jobType quantity assignedOperatorId').lean();
+
+            return {
+                ...machine.toObject(),
+                assignedOrders,
+                potentialBacklog // All machines share the same unassigned backlog for now
+            };
+        }));
 
         res.status(200).json({
             success: true,
@@ -57,6 +79,9 @@ exports.addMachine = async (req, res, next) => {
             data: machine,
         });
     } catch (error) {
+        if (error.code === 11000) {
+            return next(new ApiError('A machine with this name already exists', 400));
+        }
         next(error);
     }
 };
@@ -66,16 +91,32 @@ exports.getMachineById = async (req, res, next) => {
     try {
         const machine = await Machine.findById(req.params.id)
             .populate('operatorId', 'name email phone')
-            .populate('currentOrderId', 'orderId status printSpecs')
-            .populate('currentJobId', 'orderId status printSpecs');
+            .populate('currentOrderId', 'orderNumber status printSpecs jobType')
+            .populate('currentJobId', 'orderNumber status printSpecs jobType');
 
         if (!machine) {
             return next(new ApiError('Machine not found', 404));
         }
 
+        const assignedOrders = await ShopOrder.find({
+            assignedMachineId: machine._id,
+            status: { $nin: ['completed', 'cancelled', 'machine_maintenance'] },
+            _id: { $ne: machine.currentOrderId?._id || machine.currentOrderId }
+        }).populate('customerId', 'name').populate('assignedOperatorId', 'name').select('orderNumber status customerId jobType quantity assignedOperatorId').lean();
+
+        // Fetch unassigned backlog
+        const potentialBacklog = await ShopOrder.find({
+            assignedMachineId: { $exists: false },
+            status: { $in: ['pending', 'pending_design', 'waiting_approval', 'revision_requested', 'scheduled', 'machine_maintenance'] }
+        }).populate('customerId', 'name').select('orderNumber status customerId jobType quantity createdAt').sort({ createdAt: 1 }).lean();
+
         res.status(200).json({
             success: true,
-            data: machine,
+            data: {
+                ...machine.toObject(),
+                assignedOrders,
+                potentialBacklog
+            },
         });
     } catch (error) {
         next(error);
@@ -100,6 +141,27 @@ exports.updateMachine = async (req, res, next) => {
             success: true,
             message: 'Machine updated successfully',
             data: machine,
+        });
+    } catch (error) {
+        if (error.code === 11000) {
+            return next(new ApiError('A machine with this name already exists', 400));
+        }
+        next(error);
+    }
+};
+
+// Delete a machine
+exports.deleteMachine = async (req, res, next) => {
+    try {
+        const machine = await Machine.findByIdAndDelete(req.params.id);
+
+        if (!machine) {
+            return next(new ApiError('Machine not found', 404));
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Machine deleted successfully'
         });
     } catch (error) {
         next(error);
@@ -145,7 +207,7 @@ exports.updateMachineStatus = async (req, res, next) => {
             req.params.id,
             updateData,
             { new: true, runValidators: true }
-        ).populate('currentOrderId', 'orderId status');
+        ).populate('currentOrderId', 'orderNumber status');
 
         if (!machine) {
             return next(new ApiError('Machine not found', 404));
@@ -253,15 +315,62 @@ exports.getMachineLoad = async (req, res, next) => {
 // Update maintenance information
 exports.updateMaintenance = async (req, res, next) => {
     try {
-        const { lastMaintenanceDate, nextMaintenanceDate, maintenanceNotes } = req.body;
+        const { status, maintenanceNotes, breakdownDate } = req.body;
+        const updateData = { notes: maintenanceNotes };
+
+        if (breakdownDate !== undefined) updateData.breakdownDate = breakdownDate;
+
+        if (status) {
+            updateData.status = status;
+            // If setting to Under Maintenance, clear current assignments
+            if (status === 'Under Maintenance') {
+                // 1. Find ALL non-completed/cancelled ShopOrders assigned to this machine
+                const affectedShopOrders = await ShopOrder.find({
+                    assignedMachineId: req.params.id,
+                    status: { $nin: ['completed', 'cancelled', 'machine_maintenance'] }
+                });
+
+                const affectedOrderIds = affectedShopOrders.map(o => o._id);
+
+                // 2. Bulk-update ShopOrders to machine_maintenance
+                if (affectedOrderIds.length > 0) {
+                    await ShopOrder.updateMany(
+                        { _id: { $in: affectedOrderIds } },
+                        {
+                            status: 'machine_maintenance',
+                            // Clear machine assignment since it needs to be rescheduled
+                            assignedMachineId: null,
+                            assignedOperatorId: null,
+                            scheduledStart: null,
+                            scheduledEnd: null
+                        }
+                    );
+
+                    // 3. Sync corresponding ProductionOrders
+                    await ProductionOrder.updateMany(
+                        { shopOrderId: { $in: affectedOrderIds } },
+                        { status: 'machine_maintenance' }
+                    );
+                }
+
+                // 4. Update any Schedules for this machine
+                const Schedule = require('../ScheduleManagement/model');
+                await Schedule.updateMany(
+                    { machineId: req.params.id, status: { $in: ['pending', 'in_progress'] } },
+                    { status: 'machine_maintenance' }
+                );
+
+                // 5. Important: Clear the machine's current session
+                updateData.currentOrderId = null;
+                updateData.operatorId = null;
+                updateData.startTime = null;
+                updateData.estimatedEndTime = null;
+            }
+        }
 
         const machine = await Machine.findByIdAndUpdate(
             req.params.id,
-            {
-                lastMaintenanceDate,
-                nextMaintenanceDate,
-                notes: maintenanceNotes
-            },
+            updateData,
             { new: true, runValidators: true }
         );
 
@@ -282,7 +391,7 @@ exports.updateMaintenance = async (req, res, next) => {
 // Get machines by status for schedule manager
 exports.getMachinesByStatus = async (req, res, next) => {
     try {
-        const { status } = req.query;
+        const { status } = req.params;
         let filter = {};
 
         if (status) {
@@ -291,7 +400,7 @@ exports.getMachinesByStatus = async (req, res, next) => {
 
         const machines = await Machine.find(filter)
             .populate('operatorId', 'name email')
-            .populate('currentOrderId', 'orderId status printSpecs')
+            .populate('currentOrderId', 'orderNumber status jobType')
             .sort({ status: 1, name: 1 });
 
         res.status(200).json({
@@ -309,7 +418,7 @@ exports.getProductionSummary = async (req, res, next) => {
     try {
         const machines = await Machine.find({})
             .populate('operatorId', 'name')
-            .populate('currentOrderId', 'orderId status printSpecs');
+            .populate('currentOrderId', 'orderNumber status');
 
         const summary = {
             totalMachines: machines.length,
@@ -329,7 +438,7 @@ exports.getProductionSummary = async (req, res, next) => {
                     machineId: machine._id,
                     machineName: machine.name,
                     operatorName: machine.operatorId?.name || 'Unassigned',
-                    orderId: machine.currentOrderId.orderId,
+                    orderNumber: machine.currentOrderId.orderNumber,
                     startTime: machine.startTime,
                     estimatedEndTime: machine.estimatedEndTime
                 });
