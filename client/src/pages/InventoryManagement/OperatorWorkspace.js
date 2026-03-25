@@ -220,16 +220,6 @@ const OperatorWorkspace = () => {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
-            // Update machine status back to available
-            if (selectedTask.assignedMachineId) {
-                const machineId = selectedTask.assignedMachineId?._id || selectedTask.assignedMachineId;
-                await axios.patch(`${API_BASE_URL}/api/machines/${machineId}/status`, {
-                    status: 'Available'
-                }, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-            }
-
             alert("Job marked as completed!");
             setShowMaterialModal(false);
             setMaterialsUsed([{ materialId: '', quantity: 1 }]);
