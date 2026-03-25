@@ -9,6 +9,28 @@ const STATUS_CONFIG = {
 
 
 
+const Icons = {
+    Back: () => (
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+    ),
+    Operator: () => (
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+    ),
+    NoOperators: () => (
+        <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+    )
+};
+
 const OperatorsDashboard = ({ operators, orders, machineStats, onBack }) => {
     const operatorWorkloads = operators.map(op => ({
         ...op,
@@ -46,13 +68,12 @@ const OperatorsDashboard = ({ operators, orders, machineStats, onBack }) => {
                             alignItems: 'center',
                             justifyContent: 'center',
                             cursor: 'pointer',
-                            fontSize: '20px',
                             color: '#0f172a',
                             boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
                             transition: 'all 0.2s'
                         }}
                     >
-                        ←
+                        <Icons.Back />
                     </button>
                     <h3 style={{ fontSize: '20px', fontWeight: '800', margin: 0, color: '#111827' }}>Production Operators</h3>
                 </div>
@@ -76,10 +97,10 @@ const OperatorsDashboard = ({ operators, orders, machineStats, onBack }) => {
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        fontSize: '24px',
+                                        color: '#64748b',
                                         border: '1px solid #f1f5f9'
                                     }}>
-                                        👷
+                                        <Icons.Operator />
                                     </div>
                                     <div>
                                         <div style={{ fontWeight: '900', fontSize: '18px', color: '#111827' }}>{op.name}</div>
@@ -173,7 +194,9 @@ const OperatorsDashboard = ({ operators, orders, machineStats, onBack }) => {
                     ))}
                     {operators.length === 0 && (
                         <div style={{ textAlign: 'center', padding: '80px', color: '#9ca3af', gridColumn: '1/-1' }}>
-                            <div style={{ fontSize: '56px', marginBottom: '16px' }}>👥</div>
+                            <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'center' }}>
+                                <Icons.NoOperators />
+                            </div>
                             <div style={{ fontWeight: '700', fontSize: '18px' }}>No operators available</div>
                         </div>
                     )}

@@ -3,8 +3,12 @@ import React from 'react';
 const UpcomingJobs = ({ orders }) => {
     // Filter out completed orders and sort by scheduled start or deadline
     const upcoming = [...orders]
-        .filter(o => o.status === 'scheduled')
+        .filter(o => ['scheduled', 'machine_maintenance'].includes(o.status))
         .sort((a, b) => {
+            // Prioritize machine_maintenance orders
+            if (a.status === 'machine_maintenance' && b.status !== 'machine_maintenance') return -1;
+            if (a.status !== 'machine_maintenance' && b.status === 'machine_maintenance') return 1;
+
             const dateA = new Date(a.scheduledStart || a.deadline || 0);
             const dateB = new Date(b.scheduledStart || b.deadline || 0);
             return dateA - dateB;
@@ -12,6 +16,15 @@ const UpcomingJobs = ({ orders }) => {
         .slice(0, 5); // Show top 5 jobs
 
     const getStatusStyles = (job) => {
+        if (job.status === 'machine_maintenance') {
+            return {
+                label: 'MACHINE MAINTENANCE',
+                color: '#ef4444',
+                bg: '#fef2f2',
+                barColor: '#ef4444',
+                border: '#fee2e2'
+            };
+        }
         const isNotScheduled = job.status === 'scheduled';
         const isRescheduled = job.rescheduleReason && job.rescheduleReason.trim().length > 0;
 

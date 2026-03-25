@@ -7,6 +7,39 @@ import OperatorsDashboard from './OperatorsDashboard';
 import WeeklyTimeline from './WeeklyTimeline';
 import UpcomingJobs from './UpcomingJobs';
 
+const Icons = {
+    Awaiting: () => (
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+            <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+        </svg>
+    ),
+    Assigned: () => (
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+        </svg>
+    ),
+    Printing: () => (
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="6 9 6 2 18 2 18 9"></polyline>
+            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+            <rect x="6" y="14" width="12" height="8"></rect>
+        </svg>
+    ),
+    Completed: () => (
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="9 11 12 14 22 4"></polyline>
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+        </svg>
+    ),
+    Busy: () => (
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+    )
+};
+
 const ScheduleDashboard = () => {
     const navigate = useNavigate();
     const [activeView, setActiveView] = useState('overview'); // overview, orders, operators
@@ -101,7 +134,7 @@ const ScheduleDashboard = () => {
             ]);
 
             const productionOrders = (ordersRes.data.orders || ordersRes.data).filter(o =>
-                ['scheduled', 'confirmed', 'in_progress', 'printing', 'completed'].includes(o.status)
+                ['scheduled', 'confirmed', 'in_progress', 'printing', 'completed', 'machine_maintenance'].includes(o.status)
             );
 
             const attendanceData = attendanceRes.data.attendance || [];
@@ -246,7 +279,25 @@ const ScheduleDashboard = () => {
             fontWeight: '700'
         }}>
             <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '40px', marginBottom: '20px', animation: 'pulse 2s infinite' }}>⏳</div>
+                <div style={{
+                    fontSize: '40px',
+                    marginBottom: '20px',
+                    animation: 'pulse 2s infinite',
+                    color: '#6366f1',
+                    display: 'flex',
+                    justifyContent: 'center'
+                }}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 2v4"></path>
+                        <path d="m16.2 7.8 2.9-2.9"></path>
+                        <path d="M18 12h4"></path>
+                        <path d="m16.2 16.2 2.9 2.9"></path>
+                        <path d="M12 18v4"></path>
+                        <path d="m4.9 19.1 2.9-2.9"></path>
+                        <path d="M2 12h4"></path>
+                        <path d="m4.9 4.9 2.9 2.9"></path>
+                    </svg>
+                </div>
                 Initializing Scheduler...
             </div>
         </div>
@@ -348,17 +399,17 @@ const ScheduleDashboard = () => {
                                     label="Awaiting"
                                     value={orders.filter(o => o.status === 'scheduled').length}
                                     color="#f59e0b"
-                                    icon="📋"
+                                    icon={<Icons.Awaiting />}
                                     subtitle={`${orders.filter(o => o.status === 'scheduled' && (o.priority?.toLowerCase() === 'urgent' || o.priority?.toLowerCase() === 'ugent' || o.priority?.toLowerCase() === 'high')).length} Urgent`}
                                 />
-                                <StatCard label="Assigned" value={orders.filter(o => o.status === 'confirmed').length} color="#3b82f6" icon="🔧" />
-                                <StatCard label="Printing" value={orders.filter(o => o.status === 'in_progress').length} color="#8b5cf6" icon="🖨️" />
-                                <StatCard label="Completed" value={orders.filter(o => o.status === 'completed').length} color="#10b981" icon="✅" />
+                                <StatCard label="Assigned" value={orders.filter(o => o.status === 'confirmed').length} color="#3b82f6" icon={<Icons.Assigned />} />
+                                <StatCard label="Printing" value={orders.filter(o => o.status === 'in_progress').length} color="#8b5cf6" icon={<Icons.Printing />} />
+                                <StatCard label="Completed" value={orders.filter(o => o.status === 'completed').length} color="#10b981" icon={<Icons.Completed />} />
                                 <StatCard
                                     label="Machines Busy"
                                     value={machineStats?.statusCounts?.['In Use'] || 0}
                                     color="#ef4444"
-                                    icon="⚙️"
+                                    icon={<Icons.Busy />}
                                     subtitle={`${machineStats?.totalMachines || 0} total`}
                                 />
                             </div>

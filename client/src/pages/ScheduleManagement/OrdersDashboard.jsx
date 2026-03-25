@@ -14,6 +14,32 @@ const tdStyle = { padding: '20px 16px', fontSize: '14px', borderBottom: '1px sol
 
 
 
+const Icons = {
+    Back: () => (
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+    ),
+    Empty: () => (
+        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path>
+            <polyline points="3.29 7 12 12 20.71 7"></polyline>
+            <line x1="12" y1="22" x2="12" y2="12"></line>
+        </svg>
+    ),
+    Delete: () => (
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+        </svg>
+    ),
+    Done: () => (
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+    )
+};
+
 const OrdersDashboard = ({
     orders,
     operators,
@@ -97,20 +123,21 @@ const OrdersDashboard = ({
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 cursor: 'pointer',
-                                fontSize: '20px',
                                 color: '#0f172a',
                                 boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
                                 transition: 'all 0.2s'
                             }}
                         >
-                            ←
+                            <Icons.Back />
                         </button>
                         <h1 style={{ fontSize: '24px', fontWeight: '900', color: '#0f172a', margin: 0, letterSpacing: '-0.5px' }}>Production Queue</h1>
                     </div>
 
                     {orders.length === 0 ? (
                         <div style={{ textAlign: 'center', padding: '100px 32px', color: '#94a3b8' }}>
-                            <div style={{ fontSize: '64px', marginBottom: '20px' }}>📦</div>
+                            <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'center' }}>
+                                <Icons.Empty />
+                            </div>
                             <div style={{ fontWeight: '800', fontSize: '20px', color: '#64748b' }}>Queue is empty</div>
                             <p style={{ marginTop: '8px', fontSize: '15px' }}>All production orders have been completed or cleared.</p>
                         </div>
@@ -230,14 +257,16 @@ const OrdersDashboard = ({
                                                                     handleDeleteOrder(order._id);
                                                                 }
                                                             }}
-                                                                style={{ background: '#fff', color: '#ef4444', border: '1.5px solid #fee2e2', padding: '10px', borderRadius: '12px', fontWeight: '800', cursor: 'pointer', fontSize: '18px', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                                style={{ background: '#fff', color: '#ef4444', border: '1.5px solid #fee2e2', padding: '10px', borderRadius: '12px', fontWeight: '800', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                                                                 title="Delete Order"
                                                             >
-                                                                🗑️
+                                                                <Icons.Delete />
                                                             </button>
                                                         </div>
                                                     ) :
-                                                        <span style={{ color: '#94a3b8', fontSize: '12px', fontWeight: '800' }}>DONE ✅</span>
+                                                        <span style={{ color: '#10b981', background: '#ecfdf5', padding: '6px 12px', borderRadius: '12px', fontSize: '11px', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                                            DONE <Icons.Done />
+                                                        </span>
                                                     }
                                                 </td>
                                             </tr>
