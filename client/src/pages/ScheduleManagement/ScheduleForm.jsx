@@ -166,14 +166,16 @@ const ScheduleForm = ({
                                 required
                             >
                                 <option value="">Select Machine...</option>
-                                {machines.map(m => {
-                                    const isBusy = busyMachines.has(m._id);
-                                    return (
-                                        <option key={m._id} value={m._id} disabled={isBusy}>
-                                            {m.name} ({m.type || 'N/A'}) {isBusy ? '— (BUSY)' : ''}
-                                        </option>
-                                    );
-                                })}
+                                {machines
+                                    .filter(m => m.status !== 'Under Maintenance' && m.status !== 'Out of Order')
+                                    .map(m => {
+                                        const isBusy = busyMachines.has(m._id);
+                                        return (
+                                            <option key={m._id} value={m._id} disabled={isBusy}>
+                                                {m.name} ({m.type || 'N/A'}) {isBusy ? '— (BUSY)' : ''}
+                                            </option>
+                                        );
+                                    })}
                             </select>
                         </div>
 
@@ -333,7 +335,7 @@ const ScheduleForm = ({
                             >
                                 <option value="">Select Machine...</option>
                                 {machines
-                                    .filter(m => m.status === 'Available' || (selectedOrder.assignedMachineId?._id === m._id))
+                                    .filter(m => m.status !== 'Under Maintenance' && m.status !== 'Out of Order')
                                     .map(m => {
                                         const isBusy = busyMachines.has(m._id);
                                         return (
