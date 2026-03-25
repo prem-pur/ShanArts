@@ -10,10 +10,11 @@ const MachineManagement = () => {
     const [showMaintenanceModal, setShowMaintenanceModal] = useState(false);
     const [selectedMachine, setSelectedMachine] = useState(null);
     const [maintenanceData, setMaintenanceData] = useState({
-        lastMaintenanceDate: '',
-        nextMaintenanceDate: '',
+        breakdownDate: '',
         maintenanceNotes: ''
     });
+    const [showAddModal, setShowAddModal] = useState(false);
+    const [newMachineData, setNewMachineData] = useState({ name: '', type: '' });
 
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     const isScheduleManager = user.role === 'admin' || user.role === 'staff_schedule';
@@ -77,29 +78,79 @@ const MachineManagement = () => {
     const openMaintenanceModal = (machine) => {
         setSelectedMachine(machine);
         setMaintenanceData({
-            lastMaintenanceDate: machine.lastMaintenanceDate ? new Date(machine.lastMaintenanceDate).toISOString().split('T')[0] : '',
-            nextMaintenanceDate: machine.nextMaintenanceDate ? new Date(machine.nextMaintenanceDate).toISOString().split('T')[0] : '',
+            breakdownDate: machine.breakdownDate ? new Date(machine.breakdownDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
             maintenanceNotes: machine.notes || ''
         });
         setShowMaintenanceModal(true);
     };
 
     const updateMaintenance = async () => {
+        if (!selectedMachine) return;
         try {
             const token = localStorage.getItem('token');
-            await axios.patch(`${API_BASE_URL}/api/machines/${selectedMachine._id}/maintenance`, {
-                lastMaintenanceDate: maintenanceData.lastMaintenanceDate,
-                nextMaintenanceDate: maintenanceData.nextMaintenanceDate,
+            const response = await axios.patch(`${API_BASE_URL}/api/machines/${selectedMachine._id}/maintenance`, {
+                status: 'Under Maintenance',
+                breakdownDate: maintenanceData.breakdownDate,
                 maintenanceNotes: maintenanceData.maintenanceNotes
             }, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
-            setShowMaintenanceModal(false);
+            if (response.data.success) {
+                setShowMaintenanceModal(false);
+                fetchMachines();
+                fetchProductionSummary();
+                alert("Machine status updated to Under Maintenance.");
+            }
+        } catch (err) {
+            console.error('Failed to update maintenance info:', err);
+            const msg = err.response?.data?.message || err.message || "Unknown error occurred";
+            alert(`Failed: ${msg}`);
+        }
+    };
+
+    const handleSetAvailable = async (machineId) => {
+        try {
+            const token = localStorage.getItem('token');
+            await axios.patch(`${API_BASE_URL}/api/machines/${machineId}/maintenance`, {
+                status: 'Available'
+            }, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
             fetchMachines();
             fetchProductionSummary();
         } catch (err) {
-            console.error('Failed to update maintenance:', err);
+            console.error('Failed to set machine available:', err);
+        }
+    };
+
+    const handleAddMachine = async (e) => {
+        e.preventDefault();
+        try {
+            const token = localStorage.getItem('token');
+            await axios.post(`${API_BASE_URL}/api/machines`, newMachineData, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            setShowAddModal(false);
+            setNewMachineData({ name: '', type: '' });
+            fetchMachines();
+            fetchProductionSummary();
+        } catch (err) {
+            alert(err.response?.data?.message || 'Failed to add machine');
+        }
+    };
+
+    const handleDeleteMachine = async (machineId) => {
+        if (!window.confirm("Are you sure you want to permanently remove this machine from the system?")) return;
+        try {
+            const token = localStorage.getItem('token');
+            await axios.delete(`${API_BASE_URL}/api/machines/${machineId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            fetchMachines();
+            fetchProductionSummary();
+        } catch (err) {
+            alert(err.response?.data?.message || 'Failed to delete machine');
         }
     };
 
@@ -145,6 +196,25 @@ const MachineManagement = () => {
                         Monitor and manage production equipment status and maintenance
                     </p>
                 </div>
+                {isScheduleManager && (
+                    <button
+                        onClick={() => setShowAddModal(true)}
+                        style={{
+                            padding: '12px 24px',
+                            backgroundColor: '#111827',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '12px',
+                            fontWeight: '800',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px'
+                        }}
+                    >
+                        + Add Machine
+                    </button>
+                )}
             </div>
 
             {/* Production Summary */}
@@ -196,7 +266,6 @@ const MachineManagement = () => {
                     <option value="In Use">🔵 In Use</option>
                     <option value="Scheduled">🟣 Scheduled</option>
                     <option value="Under Maintenance">🟡 Under Maintenance</option>
-                    <option value="Out of Order">🔴 Out of Order</option>
                 </select>
             </div>
 
@@ -219,26 +288,89 @@ const MachineManagement = () => {
                                 padding: '24px',
                                 borderBottom: '1px solid #f3f4f6',
                                 display: 'grid',
-                                gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr',
-                                gap: '20px',
+                                gridTemplateColumns: '3fr 1fr 1fr',
+                                gap: '30px',
                                 alignItems: 'center'
                             }}>
-                                {/* Machine Info */}
+                                {/* Machine Info & Active Order */}
                                 <div>
-                                    <h4 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: '700', color: '#111827' }}>
+                                    <h4 style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: '800', color: '#111827' }}>
                                         {machine.name}
                                     </h4>
-                                    <p style={{ margin: '0 0 4px 0', color: '#6b7280', fontSize: '14px' }}>
+                                    <p style={{ margin: '0 0 8px 0', color: '#64748b', fontSize: '13px', fontWeight: '600' }}>
                                         {machine.type}
                                     </p>
-                                    <p style={{ margin: 0, color: '#6b7280', fontSize: '12px' }}>
-                                        📍 {machine.location}
-                                    </p>
-                                    {machine.currentOrderId && (
-                                        <p style={{ margin: '4px 0 0 0', color: '#3b82f6', fontSize: '12px' }}>
-                                            📋 Current: {machine.currentOrderId.orderId}
-                                        </p>
+                                    {(machine.status === 'In Use' || machine.status === 'Scheduled') && machine.currentOrderId && (
+                                        <div style={{
+                                            fontSize: '13px',
+                                            fontWeight: '800',
+                                            color: '#0f172a',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '8px',
+                                            marginBottom: '10px',
+                                            padding: '8px 12px',
+                                            background: '#f1f5f9',
+                                            borderRadius: '8px',
+                                            borderLeft: '4px solid #3b82f6'
+                                        }}>
+                                            <span style={{ color: '#3b82f6' }}>#{machine.currentOrderId.orderNumber}</span>
+                                            <span style={{ color: '#94a3b8' }}>•</span>
+                                            <span>{machine.operatorId?.name || 'Unassigned'}</span>
+                                            {machine.startTime && (
+                                                <>
+                                                    <span style={{ color: '#94a3b8' }}>•</span>
+                                                    <span style={{ color: '#64748b', fontWeight: '600' }}>
+                                                            🕒 Started: {new Date(machine.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                        </span>
+                                                </>
+                                            )}
+                                        </div>
                                     )}
+
+                                    {machine.assignedOrders && machine.assignedOrders.length > 0 && (
+                                        <div style={{ marginTop: '12px' }}>
+                                            <div style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.8px', color: '#94a3b8', fontWeight: '900', marginBottom: '6px' }}>
+                                                ⏭️ UP NEXT (ASSIGNED)
+                                            </div>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                                {machine.assignedOrders.map((order) => (
+                                                    <div key={order._id} style={{
+                                                        fontSize: '13px',
+                                                        fontWeight: '800',
+                                                        color: '#0f172a',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '8px',
+                                                        padding: '8px 12px',
+                                                        background: '#f1f5f9',
+                                                        borderRadius: '8px',
+                                                        borderLeft: '4px solid #3b82f6'
+                                                    }}>
+                                                        <span style={{ color: '#3b82f6' }}>#{order.orderNumber}</span>
+                                                        <span style={{ color: '#94a3b8' }}>•</span>
+                                                        <span>{order.customerId?.name || 'Customer'}</span>
+                                                        <span style={{ color: '#94a3b8' }}>•</span>
+                                                        <span style={{ color: '#64748b', fontWeight: '600' }}>{order.jobType}</span>
+                                                        <span style={{
+                                                            marginLeft: 'auto',
+                                                            fontSize: '10px',
+                                                            color: '#3b82f6',
+                                                            textTransform: 'uppercase',
+                                                            background: '#eff6ff',
+                                                            padding: '2px 8px',
+                                                            borderRadius: '4px',
+                                                            border: '1px solid #dbeafe',
+                                                            fontWeight: '900'
+                                                        }}>
+                                                                {order.status}
+                                                            </span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
                                 </div>
 
                                 {/* Status */}
@@ -246,10 +378,10 @@ const MachineManagement = () => {
                                     <div style={{
                                         display: 'inline-flex',
                                         alignItems: 'center',
-                                        padding: '6px 12px',
+                                        padding: '8px 16px',
                                         borderRadius: '20px',
                                         fontSize: '14px',
-                                        fontWeight: '600',
+                                        fontWeight: '700',
                                         color: 'white',
                                         backgroundColor: getStatusColor(machine.status)
                                     }}>
@@ -257,81 +389,91 @@ const MachineManagement = () => {
                                     </div>
                                 </div>
 
-                                {/* Operator */}
-                                <div>
-                                    {machine.operatorId ? (
-                                        <div>
-                                            <p style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: '#111827' }}>
-                                                {machine.operatorId.name}
-                                            </p>
-                                            <p style={{ margin: 0, fontSize: '12px', color: '#6b7280' }}>
-                                                Operator
-                                            </p>
-                                        </div>
-                                    ) : (
-                                        <p style={{ margin: 0, fontSize: '14px', color: '#6b7280' }}>
-                                            Unassigned
-                                        </p>
-                                    )}
-                                </div>
-
-                                {/* Time Info */}
-                                <div>
-                                    {machine.startTime && (
-                                        <p style={{ margin: '0 0 4px 0', fontSize: '12px', color: '#6b7280' }}>
-                                            🕒 Started: {new Date(machine.startTime).toLocaleTimeString()}
-                                        </p>
-                                    )}
-                                    {machine.estimatedEndTime && (
-                                        <p style={{ margin: 0, fontSize: '12px', color: '#6b7280' }}>
-                                            ⏱️ Est. End: {new Date(machine.estimatedEndTime).toLocaleTimeString()}
-                                        </p>
-                                    )}
-                                    {machine.nextMaintenanceDate && (
-                                        <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#f59e0b' }}>
-                                            🔧 Maintenance: {new Date(machine.nextMaintenanceDate).toLocaleDateString()}
-                                        </p>
-                                    )}
-                                </div>
-
-                                {/* Actions */}
                                 <div style={{ display: 'flex', gap: '8px', flexDirection: 'column' }}>
-                                    <select
-                                        value={machine.status}
-                                        onChange={(e) => updateMachineStatus(machine._id, e.target.value)}
-                                        style={{
-                                            padding: '8px',
-                                            border: '1px solid #d1d5db',
-                                            borderRadius: '6px',
-                                            fontSize: '14px'
-                                        }}
-                                    >
-                                        <option value="Available">🟢 Available</option>
-                                        <option value="In Use">🔵 In Use</option>
-                                        <option value="Scheduled">🟣 Scheduled</option>
-                                        <option value="Under Maintenance">🟡 Under Maintenance</option>
-                                        <option value="Out of Order">🔴 Out of Order</option>
-                                    </select>
+                                    {/* Manual status dropdown removed as requested. Transitions are now automated. */}
 
                                     <button
-                                        onClick={() => openMaintenanceModal(machine)}
+                                        onClick={() => machine.status === 'Under Maintenance' ? handleSetAvailable(machine._id) : openMaintenanceModal(machine)}
+                                        disabled={!isScheduleManager}
                                         style={{
                                             padding: '8px',
                                             border: '1px solid #d1d5db',
                                             borderRadius: '6px',
                                             fontSize: '12px',
-                                            backgroundColor: '#f3f4f6',
-                                            cursor: 'pointer'
+                                            backgroundColor: !isScheduleManager ? '#f3f4f6' : (machine.status === 'Under Maintenance' ? '#ecfdf5' : '#f3f4f6'),
+                                            color: !isScheduleManager ? '#94a3b8' : (machine.status === 'Under Maintenance' ? '#10b981' : '#1f2937'),
+                                            fontWeight: '700',
+                                            cursor: !isScheduleManager ? 'not-allowed' : 'pointer',
+                                            opacity: !isScheduleManager ? 0.7 : 1
                                         }}
+                                        title={!isScheduleManager ? "Only managers can update machine status" : ""}
                                     >
-                                        🔧 Maintenance
+                                        {machine.status === 'Under Maintenance' ? '🔄 Set Available' : '🔧 Maintenance'}
                                     </button>
+                                    {isScheduleManager && (
+                                        <button
+                                            onClick={() => handleDeleteMachine(machine._id)}
+                                            style={{
+                                                padding: '8px',
+                                                border: '1px solid #fca5a5',
+                                                borderRadius: '6px',
+                                                fontSize: '12px',
+                                                backgroundColor: '#fef2f2',
+                                                color: '#ef4444',
+                                                fontWeight: '700',
+                                                cursor: 'pointer'
+                                            }}
+                                        >
+                                            🗑️ Remove
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         ))}
                     </div>
                 )}
             </div>
+
+            {/* Add Machine Modal */}
+            {showAddModal && (
+                <div style={{
+                    position: 'fixed',
+                    inset: 0,
+                    background: 'rgba(0,0,0,0.5)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1000
+                }}>
+                    <div style={{ background: '#fff', width: '100%', maxWidth: '500px', borderRadius: '16px', padding: '32px' }}>
+                        <h3 style={{ margin: '0 0 24px 0', fontSize: '24px', fontWeight: '700' }}>Add New Machine</h3>
+                        <form onSubmit={handleAddMachine} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                            <div>
+                                <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', marginBottom: '8px' }}>Machine Name</label>
+                                <input type="text" value={newMachineData.name} onChange={(e) => setNewMachineData({ ...newMachineData, name: e.target.value })} style={{ width: '100%', padding: '12px', border: '1px solid #d1d5db', borderRadius: '8px' }} required />
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', marginBottom: '8px' }}>Machine Type</label>
+                                <select value={newMachineData.type} onChange={(e) => setNewMachineData({ ...newMachineData, type: e.target.value })} style={{ width: '100%', padding: '12px', border: '1px solid #d1d5db', borderRadius: '8px' }} required>
+                                    <option value="">Select Category...</option>
+                                    <option value="Digital Printer">Digital Printer</option>
+                                    <option value="Offset Printer">Offset Printer</option>
+                                    <option value="Large Format Printer">Large Format Printer</option>
+                                    <option value="Cutter">Cutter</option>
+                                    <option value="Laminator">Laminator</option>
+                                    <option value="Folding Machine">Folding Machine</option>
+                                    <option value="Embossing Machine">Embossing Machine</option>
+                                </select>
+                            </div>
+
+                            <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
+                                <button type="button" onClick={() => setShowAddModal(false)} style={{ flex: 1, padding: '12px', border: '1px solid #d1d5db', borderRadius: '8px', backgroundColor: '#f3f4f6', cursor: 'pointer', fontWeight: '600' }}>Cancel</button>
+                                <button type="submit" style={{ flex: 2, padding: '12px', border: 'none', borderRadius: '8px', backgroundColor: '#111827', color: 'white', fontWeight: '800', cursor: 'pointer' }}>Add Machine</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
 
             {/* Maintenance Modal */}
             {showMaintenanceModal && selectedMachine && (
@@ -358,24 +500,12 @@ const MachineManagement = () => {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                             <div>
                                 <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', marginBottom: '8px' }}>
-                                    Last Maintenance Date
+                                    Breakdown Date
                                 </label>
                                 <input
                                     type="date"
-                                    value={maintenanceData.lastMaintenanceDate}
-                                    onChange={(e) => setMaintenanceData({...maintenanceData, lastMaintenanceDate: e.target.value})}
-                                    style={{ width: '100%', padding: '12px', border: '1px solid #d1d5db', borderRadius: '8px' }}
-                                />
-                            </div>
-
-                            <div>
-                                <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', marginBottom: '8px' }}>
-                                    Next Maintenance Date
-                                </label>
-                                <input
-                                    type="date"
-                                    value={maintenanceData.nextMaintenanceDate}
-                                    onChange={(e) => setMaintenanceData({...maintenanceData, nextMaintenanceDate: e.target.value})}
+                                    value={maintenanceData.breakdownDate}
+                                    onChange={(e) => setMaintenanceData({ ...maintenanceData, breakdownDate: e.target.value })}
                                     style={{ width: '100%', padding: '12px', border: '1px solid #d1d5db', borderRadius: '8px' }}
                                 />
                             </div>
@@ -386,25 +516,27 @@ const MachineManagement = () => {
                                 </label>
                                 <textarea
                                     value={maintenanceData.maintenanceNotes}
-                                    onChange={(e) => setMaintenanceData({...maintenanceData, maintenanceNotes: e.target.value})}
+                                    onChange={(e) => setMaintenanceData({ ...maintenanceData, maintenanceNotes: e.target.value })}
                                     style={{ width: '100%', padding: '12px', border: '1px solid #d1d5db', borderRadius: '8px', minHeight: '100px', resize: 'vertical' }}
                                     placeholder="Enter maintenance details..."
                                 />
                             </div>
                         </div>
 
-                        <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
+                        <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
                             <button
+                                type="button"
                                 onClick={() => setShowMaintenanceModal(false)}
-                                style={{ flex: 1, padding: '12px', border: '1px solid #d1d5db', borderRadius: '8px', backgroundColor: '#f3f4f6', cursor: 'pointer' }}
+                                style={{ flex: 1, padding: '12px', border: '1px solid #d1d5db', borderRadius: '8px', backgroundColor: '#f9fafb', fontWeight: '600' }}
                             >
                                 Cancel
                             </button>
                             <button
+                                type="button"
                                 onClick={updateMaintenance}
-                                style={{ flex: 2, padding: '12px', border: 'none', borderRadius: '8px', backgroundColor: '#3b82f6', color: 'white', cursor: 'pointer' }}
+                                style={{ flex: 2, padding: '12px', border: 'none', borderRadius: '8px', backgroundColor: '#3b82f6', color: '#fff', fontWeight: '600' }}
                             >
-                                Update Maintenance
+                                Maintenance
                             </button>
                         </div>
                     </div>

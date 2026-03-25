@@ -6,6 +6,7 @@ const machineSchema = new mongoose.Schema(
         name: {
             type: String,
             required: true,
+            unique: true,
         },
         type: {
             type: String,
@@ -23,7 +24,7 @@ const machineSchema = new mongoose.Schema(
         // 3️⃣ Production Tracking Fields
         currentOrderId: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'ProductionOrder',
+            ref: 'ShopOrder',
         },
         startTime: {
             type: Date,
@@ -41,7 +42,7 @@ const machineSchema = new mongoose.Schema(
         // Existing fields (keeping for backward compatibility)
         currentJobId: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'ProductionOrder',
+            ref: 'ShopOrder',
         },
         operatorId: {
             type: mongoose.Schema.Types.ObjectId,
@@ -60,6 +61,9 @@ const machineSchema = new mongoose.Schema(
         notes: {
             type: String,
             default: ''
+        },
+        breakdownDate: {
+            type: Date
         }
     },
     {
