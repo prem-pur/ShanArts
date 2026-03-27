@@ -31,6 +31,7 @@ const invoiceRoutes = require('./modules/BillingManagement/invoices');
 const scheduleRoutes = require('./modules/ScheduleManagement/routes');
 const feedbackRoutes = require('./modules/FeedbackNotificationManagement/routes');
 const notificationRoutes = require('./modules/FeedbackNotificationManagement/notifications');
+const attendanceRoutes = require('./modules/UserManagement/attendanceRoutes');
 
 app.use("/api/orders", orderRoutes);
 app.use("/api/requests", requestRoutes);
@@ -45,6 +46,7 @@ app.use('/api/invoices', invoiceRoutes);
 app.use('/api/schedule', scheduleRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/attendance', attendanceRoutes);
 
 // Global error handler middleware
 app.use((err, req, res, next) => {
