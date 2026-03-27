@@ -29,6 +29,10 @@ const materialSchema = new mongoose.Schema(
             type: Boolean,
             default: true,
         },
+        deletionRequested: {
+            type: Boolean,
+            default: false,
+        },
     },
     {
         timestamps: true,

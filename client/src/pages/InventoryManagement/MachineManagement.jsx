@@ -349,7 +349,7 @@ const MachineManagement = () => {
                                                     }}>
                                                         <span style={{ color: '#3b82f6' }}>#{order.orderNumber}</span>
                                                         <span style={{ color: '#94a3b8' }}>•</span>
-                                                        <span>{order.customerId?.name || 'Customer'}</span>
+                                                        <span>{order.assignedOperatorId?.name || 'Unassigned Operator'}</span>
                                                         <span style={{ color: '#94a3b8' }}>•</span>
                                                         <span style={{ color: '#64748b', fontWeight: '600' }}>{order.jobType}</span>
                                                         <span style={{

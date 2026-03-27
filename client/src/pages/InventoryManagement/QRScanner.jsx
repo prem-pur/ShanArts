@@ -12,6 +12,7 @@ const QRScanner = ({ onClose, onStockUpdated }) => {
     const [quantity, setQuantity] = useState(1);
     const [operation, setOperation] = useState('add');
     const [notes, setNotes] = useState('');
+    const [password, setPassword] = useState('');
     const [status, setStatus] = useState({ type: null, message: '' });
     const [activeTab, setActiveTab] = useState('camera'); // 'camera' | 'manual'
     const [updating, setUpdating] = useState(false);
@@ -102,7 +103,7 @@ const QRScanner = ({ onClose, onStockUpdated }) => {
             const token = localStorage.getItem('token');
             const response = await axios.patch(
                 `${API_BASE_URL}/api/inventory/barcode/${code}`,
-                { quantity: Number(quantity), operation, notes: notes || `Stock ${operation} via QR scan` },
+                { quantity: Number(quantity), operation, notes: notes || `Stock ${operation} via QR scan`, password },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
 
@@ -114,6 +115,7 @@ const QRScanner = ({ onClose, onStockUpdated }) => {
             setScannedMaterial(null);
             setQuantity(1);
             setNotes('');
+            setPassword('');
             onStockUpdated?.();
         } catch (err) {
             setStatus({
@@ -129,6 +131,7 @@ const QRScanner = ({ onClose, onStockUpdated }) => {
         setScannedMaterial(null);
         setStatus({ type: null, message: '' });
         setManualCode('');
+        setPassword('');
         if (activeTab === 'camera') await startScanner();
     };
 
@@ -358,22 +361,57 @@ const QRScanner = ({ onClose, onStockUpdated }) => {
                                 </div>
                             </div>
 
+                            {/* Emergency warning if removing stock */}
+                            {operation === 'subtract' && (
+                                <div style={{
+                                    padding: '12px 16px',
+                                    borderRadius: '10px',
+                                    marginBottom: '16px',
+                                    background: '#fef2f2',
+                                    border: '1.5px solid #fca5a5',
+                                    color: '#dc2626',
+                                    fontSize: '13px',
+                                    fontWeight: '600',
+                                    display: 'flex',
+                                    alignItems: 'flex-start',
+                                    gap: '8px'
+                                }}>
+                                    <span style={{ fontSize: '16px', marginTop: '-2px' }}>⚠️</span>
+                                    <span><strong>Emergency Only:</strong> Removing stock will notify the admin and requires a compulsory note and your password.</span>
+                                </div>
+                            )}
+
                             <div style={{ marginBottom: '20px' }}>
                                 <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#374151', marginBottom: '6px' }}>
-                                    Notes (optional)
+                                    Notes {operation === 'subtract' ? '(Compulsory)' : '(optional)'}
                                 </label>
                                 <input
                                     type="text"
                                     value={notes}
                                     onChange={(e) => setNotes(e.target.value)}
-                                    placeholder="Add notes…"
+                                    placeholder={operation === 'subtract' ? 'Add reason for removal...' : 'Add notes...'}
                                     style={{ width: '100%', padding: '10px', borderRadius: '10px', border: '1.5px solid #e5e7eb', boxSizing: 'border-box' }}
                                 />
                             </div>
 
+                            {operation === 'subtract' && (
+                                <div style={{ marginBottom: '20px' }}>
+                                    <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#374151', marginBottom: '6px' }}>
+                                        Inventory Manager Password
+                                    </label>
+                                    <input
+                                        type="password"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        placeholder="Enter your password..."
+                                        style={{ width: '100%', padding: '10px', borderRadius: '10px', border: '1.5px solid #e5e7eb', boxSizing: 'border-box' }}
+                                    />
+                                </div>
+                            )}
+
                             <button
                                 onClick={handleUpdateStock}
-                                disabled={updating}
+                                disabled={updating || (operation === 'subtract' && (!password || !notes.trim()))}
                                 style={{
                                     width: '100%',
                                     padding: '14px',

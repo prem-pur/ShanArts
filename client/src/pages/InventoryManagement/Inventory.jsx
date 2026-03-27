@@ -3,6 +3,8 @@ import axios from 'axios';
 import { API_BASE_URL } from '../../apiBase';
 import QRCodeDisplay from './QRCodeDisplay';
 import QRScanner from './QRScanner';
+import AddMaterialModal from './AddMaterialModal';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Cell } from 'recharts';
 
 const Inventory = () => {
     const [materials, setMaterials] = useState([]);
@@ -10,30 +12,58 @@ const Inventory = () => {
     const [showAddModal, setShowAddModal] = useState(false);
     const [showStockInModal, setShowStockInModal] = useState(false);
     const [showQRScanner, setShowQRScanner] = useState(false);
+    const [categories, setCategories] = useState([]);
+    const [notifications, setNotifications] = useState([]);
     const [selectedMaterial, setSelectedMaterial] = useState(null);
     const [qrMaterial, setQrMaterial] = useState(null); // material whose QR to display
     const [newlyCreatedMaterial, setNewlyCreatedMaterial] = useState(null); // show QR after create
-    const [formData, setFormData] = useState({
-        name: '',
-        category: 'Paper',
-        unit: 'sheets',
-        reorderThreshold: 50,
-        costPerUnit: 0,
-        supplier: ''
-    });
     const [stockInData, setStockInData] = useState({
         quantity: 0,
         costPerUnit: 0,
         supplier: '',
         notes: ''
     });
+    const [showDeleteRequestModal, setShowDeleteRequestModal] = useState(false);
+    const [deletePassword, setDeletePassword] = useState('');
+    const [materialToDelete, setMaterialToDelete] = useState(null);
 
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     const isInventoryManager = user.role === 'admin' || user.role === 'staff_inventory';
 
     useEffect(() => {
         fetchMaterials();
+        fetchCategories();
+        if (user.role === 'admin') {
+            fetchNotifications();
+        }
     }, []);
+
+    const fetchNotifications = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.get(`${API_BASE_URL}/api/notifications`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const stockRemovalAlerts = (response.data.data || []).filter(n => n.type === 'stock_removal');
+            setNotifications(stockRemovalAlerts);
+        } catch (err) {
+            console.error('Failed to fetch notifications:', err);
+        }
+    };
+
+    const fetchCategories = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.get(`${API_BASE_URL}/api/inventory/categories`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (response.data.success) {
+                setCategories(response.data.data);
+            }
+        } catch (err) {
+            console.error('Failed to fetch categories:', err);
+        }
+    };
 
     const fetchMaterials = async () => {
         try {
@@ -46,25 +76,6 @@ const Inventory = () => {
             console.error('Failed to fetch inventory:', err);
         } finally {
             setLoading(false);
-        }
-    };
-
-    const handleAddMaterial = async (e) => {
-        e.preventDefault();
-        try {
-            const token = localStorage.getItem('token');
-            const response = await axios.post(`${API_BASE_URL}/api/inventory`, formData, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            setShowAddModal(false);
-            setFormData({ name: '', category: 'Paper', unit: 'sheets', reorderThreshold: 50, costPerUnit: 0, supplier: '' });
-            fetchMaterials();
-            // Show QR code for newly created material
-            if (response.data.material) {
-                setNewlyCreatedMaterial(response.data.material);
-            }
-        } catch (err) {
-            alert('Failed to add material');
         }
     };
 
@@ -86,6 +97,38 @@ const Inventory = () => {
         }
     };
 
+    const handleRequestDelete = async (e) => {
+        e.preventDefault();
+        try {
+            const token = localStorage.getItem('token');
+            await axios.post(`${API_BASE_URL}/api/inventory/${materialToDelete._id}/request-delete`, {
+                password: deletePassword
+            }, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            setShowDeleteRequestModal(false);
+            setDeletePassword('');
+            setMaterialToDelete(null);
+            fetchMaterials();
+            alert('Deletion request sent to admin successfully.');
+        } catch (err) {
+            alert(err.response?.data?.message || 'Failed to request deletion. Check your password.');
+        }
+    };
+
+    const handleAdminDelete = async (id) => {
+        if (!window.confirm('Are you sure you want to permanently delete this material?')) return;
+        try {
+            const token = localStorage.getItem('token');
+            await axios.delete(`${API_BASE_URL}/api/inventory/${id}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            fetchMaterials();
+        } catch (err) {
+            alert('Failed to delete material');
+        }
+    };
+
     const getCategoryIcon = (category) => {
         const icons = { Ink: '🧪', Paper: '📄', Vinyl: '🎞️', Other: '📦' };
         return icons[category] || '📦';
@@ -95,7 +138,19 @@ const Inventory = () => {
 
     return (
         <div style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto', fontFamily: "'Inter', sans-serif" }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '40px' }}>
+            <style>
+                {`
+                    @keyframes fadeInUp {
+                        from { opacity: 0; transform: translateY(20px); }
+                        to { opacity: 1; transform: translateY(0); }
+                    }
+                    .animate-fade-in {
+                        animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+                        opacity: 0;
+                    }
+                `}
+            </style>
+            <div className="animate-fade-in" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '40px' }}>
                 <div>
                     <h1 style={{ fontSize: '32px', fontWeight: '900', color: '#111827', letterSpacing: '-1px', marginBottom: '8px' }}>INVENTORY CONTROL</h1>
                     <p style={{ color: '#6b7280', fontSize: '16px' }}>Track and manage production materials and stock levels.</p>
@@ -118,12 +173,91 @@ const Inventory = () => {
                 )}
             </div>
 
+            {/* Emergency Stock Removal Alerts */}
+            {user.role === 'admin' && notifications.length > 0 && (
+                <div className="animate-fade-in" style={{ background: '#fff', borderRadius: '24px', padding: '32px', marginBottom: '40px', boxShadow: '0 10px 30px rgba(0,0,0,0.03)', border: '2px solid #fee2e2', animationDelay: '0.05s' }}>
+                    <h2 style={{ fontSize: '20px', fontWeight: '800', color: '#dc2626', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        🚨 Emergency Stock Removal Alerts
+                    </h2>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '300px', overflowY: 'auto' }}>
+                        {notifications.map(n => (
+                            <div key={n._id} style={{ padding: '16px', borderRadius: '12px', background: '#fff5f5', border: '1px solid #fecaca', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                <div>
+                                    <div style={{ fontWeight: '800', fontSize: '15px', color: '#991b1b', marginBottom: '6px' }}>{n.title}</div>
+                                    <div style={{ fontSize: '14px', color: '#7f1d1d', lineHeight: '1.5' }}>{n.message}</div>
+                                </div>
+                                <div style={{ fontSize: '12px', color: '#dc2626', fontWeight: '700', whiteSpace: 'nowrap', marginLeft: '16px' }}>
+                                    {new Date(n.createdAt).toLocaleString()}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Inventory Levels Dashboard Graph */}
+            <div className="animate-fade-in" style={{ background: '#fff', borderRadius: '24px', padding: '32px', marginBottom: '40px', boxShadow: '0 10px 30px rgba(0,0,0,0.03)', border: '1px solid #f3f4f6', animationDelay: '0.1s' }}>
+                <h2 style={{ fontSize: '20px', fontWeight: '800', color: '#111827', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    📊 Stock Levels Overview
+                </h2>
+                <div style={{ height: '350px', width: '100%' }}>
+                    {materials.length > 0 ? (
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={materials} margin={{ top: 20, right: 30, left: 0, bottom: 40 }}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                                <XAxis
+                                    dataKey="name"
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fill: '#6b7280', fontSize: 12, fontWeight: 600 }}
+                                    angle={-45}
+                                    textAnchor="end"
+                                />
+                                <YAxis
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fill: '#6b7280', fontSize: 12, fontWeight: 600 }}
+                                />
+                                <RechartsTooltip
+                                    cursor={{ fill: '#f9fafb' }}
+                                    content={({ active, payload }) => {
+                                        if (active && payload && payload.length) {
+                                            const data = payload[0].payload;
+                                            const isLow = data.currentStock <= data.reorderThreshold;
+                                            return (
+                                                <div style={{ background: '#111827', color: '#fff', padding: '12px 16px', borderRadius: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                                    <p style={{ margin: '0 0 6px 0', fontWeight: '800', fontSize: '14px' }}>{data.name}</p>
+                                                    <p style={{ margin: '0', fontSize: '13px', color: '#9ca3af' }}>
+                                                        Stock: <span style={{ color: isLow ? '#ef4444' : '#10b981', fontWeight: '700', fontSize: '16px' }}>{data.currentStock}</span> {data.unit}
+                                                    </p>
+                                                    {isLow && <p style={{ margin: '6px 0 0 0', fontSize: '11px', color: '#ef4444', fontWeight: '800', textTransform: 'uppercase' }}>⚠️ Low Stock Alert</p>}
+                                                </div>
+                                            );
+                                        }
+                                        return null;
+                                    }}
+                                />
+                                <Bar dataKey="currentStock" radius={[6, 6, 0, 0]} maxBarSize={50}>
+                                    {materials.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={entry.currentStock <= entry.reorderThreshold ? '#ef4444' : '#8b5cf6'} />
+                                    ))}
+                                </Bar>
+                            </BarChart>
+                        </ResponsiveContainer>
+                    ) : (
+                        <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', fontWeight: '600' }}>
+                            No inventory data available for graph.
+                        </div>
+                    )}
+                </div>
+            </div>
+
             {/* Material Cards */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '24px' }}>
-                {materials.map(item => {
+                {materials.map((item, index) => {
                     const isLowStock = item.currentStock <= item.reorderThreshold;
                     return (
-                        <div key={item._id} style={{ background: '#fff', borderRadius: '20px', padding: '24px', border: isLowStock ? '2px solid #fee2e2' : '1px solid #f0f0f0', boxShadow: '0 4px 20px rgba(0,0,0,0.04)', position: 'relative' }}>
+                        <div key={item._id} className="animate-fade-in" style={{ background: '#fff', borderRadius: '20px', padding: '24px', border: isLowStock ? '2px solid #fee2e2' : '1px solid #f0f0f0', boxShadow: '0 4px 20px rgba(0,0,0,0.04)', position: 'relative', animationDelay: `${0.2 + (index * 0.05)}s` }}>
                             {isLowStock && (
                                 <span style={{ position: 'absolute', top: '24px', right: '24px', background: '#dc2626', color: '#fff', fontSize: '10px', fontWeight: '900', padding: '4px 8px', borderRadius: '6px', textTransform: 'uppercase' }}>LOW STOCK</span>
                             )}
@@ -183,59 +317,52 @@ const Inventory = () => {
                                     </button>
                                 )}
                             </div>
+
+                            {/* Deletion Controls */}
+                            {isInventoryManager && (user.role !== 'admin' || item.deletionRequested) && (
+                                <div style={{ marginTop: '8px', display: 'flex', gap: '8px' }}>
+                                    {user.role === 'admin' ? (
+                                        <button
+                                            onClick={() => handleAdminDelete(item._id)}
+                                            style={{ flex: 1, padding: '10px', borderRadius: '10px', border: '2px solid #ef4444', background: '#fef2f2', color: '#ef4444', fontWeight: '700', fontSize: '13px', cursor: 'pointer', transition: 'all 0.2s' }}
+                                            onMouseOver={e => e.target.style.background = '#fecaca'}
+                                            onMouseOut={e => e.target.style.background = '#fef2f2'}
+                                        >
+                                            ⚠️ APPROVE DELETION
+                                        </button>
+                                    ) : (
+                                        <button
+                                            onClick={() => { setMaterialToDelete(item); setShowDeleteRequestModal(true); }}
+                                            disabled={item.deletionRequested}
+                                            style={{ flex: 1, padding: '10px', borderRadius: '10px', border: '1.5px solid #fecaca', background: item.deletionRequested ? '#f3f4f6' : 'none', color: item.deletionRequested ? '#9ca3af' : '#ef4444', fontWeight: '700', fontSize: '13px', cursor: item.deletionRequested ? 'not-allowed' : 'pointer', transition: 'all 0.2s' }}
+                                            onMouseOver={e => { if(!item.deletionRequested) e.target.style.background = '#fef2f2' }}
+                                            onMouseOut={e => { if(!item.deletionRequested) e.target.style.background = 'none' }}
+                                        >
+                                            {item.deletionRequested ? 'DELETION REQUESTED' : 'REQUEST DELETE'}
+                                        </button>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     );
                 })}
             </div>
 
             {/* Add Material Modal */}
-            {showAddModal && (
-                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-                    <form onSubmit={handleAddMaterial} style={{ background: '#fff', width: '100%', maxWidth: '500px', borderRadius: '24px', padding: '40px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' }}>
-                        <h3 style={{ fontSize: '24px', fontWeight: '900', marginBottom: '6px' }}>Add New Material</h3>
-                        <p style={{ color: '#9ca3af', fontSize: '13px', marginBottom: '24px' }}>A QR code will be automatically generated.</p>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                            <div>
-                                <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: '#374151', marginBottom: '8px' }}>Material Name</label>
-                                <input type="text" required style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1.5px solid #e5e7eb', boxSizing: 'border-box' }} value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
-                            </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                                <div>
-                                    <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: '#374151', marginBottom: '8px' }}>Category</label>
-                                    <select style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1.5px solid #e5e7eb' }} value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })}>
-                                        <option value="Paper">Paper</option>
-                                        <option value="Ink">Ink</option>
-                                        <option value="Vinyl">Vinyl</option>
-                                        <option value="Other">Other</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: '#374151', marginBottom: '8px' }}>Unit</label>
-                                    <input type="text" required style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1.5px solid #e5e7eb', boxSizing: 'border-box' }} value={formData.unit} onChange={e => setFormData({ ...formData, unit: e.target.value })} placeholder="sheets, ml, etc." />
-                                </div>
-                            </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                                <div>
-                                    <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: '#374151', marginBottom: '8px' }}>Reorder Threshold</label>
-                                    <input type="number" style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1.5px solid #e5e7eb', boxSizing: 'border-box' }} value={formData.reorderThreshold} onChange={e => setFormData({ ...formData, reorderThreshold: Number(e.target.value) })} />
-                                </div>
-                                <div>
-                                    <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: '#374151', marginBottom: '8px' }}>Cost Per Unit</label>
-                                    <input type="number" style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1.5px solid #e5e7eb', boxSizing: 'border-box' }} value={formData.costPerUnit} onChange={e => setFormData({ ...formData, costPerUnit: Number(e.target.value) })} />
-                                </div>
-                            </div>
-                            <div>
-                                <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: '#374151', marginBottom: '8px' }}>Supplier (Optional)</label>
-                                <input type="text" style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1.5px solid #e5e7eb', boxSizing: 'border-box' }} value={formData.supplier} onChange={e => setFormData({ ...formData, supplier: e.target.value })} />
-                            </div>
-                        </div>
-                        <div style={{ display: 'flex', gap: '16px', marginTop: '32px' }}>
-                            <button type="button" onClick={() => setShowAddModal(false)} style={{ flex: 1, padding: '14px', borderRadius: '12px', border: 'none', background: '#f3f4f6', fontWeight: '700', cursor: 'pointer' }}>Cancel</button>
-                            <button type="submit" style={{ flex: 2, padding: '14px', borderRadius: '12px', border: 'none', background: 'var(--accent-color)', color: '#fff', fontWeight: '800', cursor: 'pointer' }}>ADD MATERIAL + GENERATE QR</button>
-                        </div>
-                    </form>
-                </div>
-            )}
+            <AddMaterialModal
+                isOpen={showAddModal}
+                onClose={() => setShowAddModal(false)}
+                onSuccess={(material) => {
+                    setShowAddModal(false);
+                    fetchMaterials();
+                    if (material) {
+                        setNewlyCreatedMaterial(material);
+                    }
+                }}
+                categories={categories}
+                fetchCategories={fetchCategories}
+                userRole={user.role}
+            />
 
             {/* Newly Created Material QR modal */}
             {newlyCreatedMaterial && (
@@ -312,6 +439,26 @@ const Inventory = () => {
                         <div style={{ display: 'flex', gap: '16px', marginTop: '32px' }}>
                             <button type="button" onClick={() => setShowStockInModal(false)} style={{ flex: 1, padding: '14px', borderRadius: '12px', border: 'none', background: '#f3f4f6', fontWeight: '700', cursor: 'pointer' }}>Cancel</button>
                             <button type="submit" style={{ flex: 2, padding: '14px', borderRadius: '12px', border: 'none', background: '#111827', color: '#fff', fontWeight: '800', cursor: 'pointer' }}>RECORD STOCK</button>
+                        </div>
+                    </form>
+                </div>
+            )}
+
+            {/* Delete Request Password Modal */}
+            {showDeleteRequestModal && (
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+                    <form onSubmit={handleRequestDelete} style={{ background: '#fff', width: '100%', maxWidth: '400px', borderRadius: '24px', padding: '40px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' }}>
+                        <h3 style={{ fontSize: '24px', fontWeight: '900', marginBottom: '12px', color: '#dc2626' }}>Additional Security</h3>
+                        <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '24px' }}>Please enter your password to request the deletion of <strong>{materialToDelete?.name}</strong>.</p>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                            <div>
+                                <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: '#374151', marginBottom: '8px' }}>Your Password</label>
+                                <input type="password" required style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1.5px solid #e5e7eb', boxSizing: 'border-box' }} value={deletePassword} onChange={e => setDeletePassword(e.target.value)} />
+                            </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '16px', marginTop: '32px' }}>
+                            <button type="button" onClick={() => { setShowDeleteRequestModal(false); setDeletePassword(''); setMaterialToDelete(null); }} style={{ flex: 1, padding: '14px', borderRadius: '12px', border: 'none', background: '#f3f4f6', fontWeight: '700', cursor: 'pointer' }}>Cancel</button>
+                            <button type="submit" style={{ flex: 2, padding: '14px', borderRadius: '12px', border: 'none', background: '#dc2626', color: '#fff', fontWeight: '800', cursor: 'pointer' }}>REQUEST DELETION</button>
                         </div>
                     </form>
                 </div>
