@@ -10,6 +10,7 @@ const BarcodeScanner = ({ onScanComplete, onMaterialFound }) => {
     const [quantity, setQuantity] = useState(1);
     const [operation, setOperation] = useState('add');
     const [notes, setNotes] = useState('');
+    const [password, setPassword] = useState('');
     const inputRef = useRef(null);
 
     // Detect barcode scanner input (usually fast typing)
@@ -84,7 +85,8 @@ const BarcodeScanner = ({ onScanComplete, onMaterialFound }) => {
             const response = await axios.patch(`${API_BASE_URL}/api/inventory/barcode/${code}`, {
                 quantity,
                 operation,
-                notes: notes || `Stock ${operation} via barcode scan`
+                notes: notes || `Stock ${operation} via barcode scan`,
+                password
             }, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -102,6 +104,7 @@ const BarcodeScanner = ({ onScanComplete, onMaterialFound }) => {
             // Reset form
             setBarcode('');
             setNotes('');
+            setPassword('');
             setTimeout(() => setScanResult(null), 3000);
 
         } catch (error) {
@@ -298,15 +301,35 @@ const BarcodeScanner = ({ onScanComplete, onMaterialFound }) => {
                         </div>
                     </div>
 
+                    {/* Emergency warning if removing stock */}
+                    {operation === 'subtract' && (
+                        <div style={{
+                            padding: '12px 16px',
+                            borderRadius: '8px',
+                            marginBottom: '15px',
+                            background: '#fef2f2',
+                            border: '1px solid #fca5a5',
+                            color: '#dc2626',
+                            fontSize: '13px',
+                            fontWeight: '600',
+                            display: 'flex',
+                            alignItems: 'flex-start',
+                            gap: '8px'
+                        }}>
+                            <span style={{ fontSize: '16px', marginTop: '-2px' }}>⚠️</span>
+                            <span><strong>Emergency Only:</strong> Removing stock will notify the admin and requires a compulsory note and your password.</span>
+                        </div>
+                    )}
+
                     <div style={{ marginBottom: '10px' }}>
                         <label style={{ display: 'block', fontSize: '12px', marginBottom: '5px', color: '#6b7280' }}>
-                            Notes (optional)
+                            Notes {operation === 'subtract' ? '(Compulsory)' : '(optional)'}
                         </label>
                         <input
                             type="text"
                             value={notes}
                             onChange={(e) => setNotes(e.target.value)}
-                            placeholder="Add notes..."
+                            placeholder={operation === 'subtract' ? 'Add reason for removal...' : 'Add notes...'}
                             style={{
                                 width: '100%',
                                 padding: '8px',
@@ -316,17 +339,38 @@ const BarcodeScanner = ({ onScanComplete, onMaterialFound }) => {
                         />
                     </div>
 
+                    {operation === 'subtract' && (
+                        <div style={{ marginBottom: '15px' }}>
+                            <label style={{ display: 'block', fontSize: '12px', marginBottom: '5px', color: '#6b7280' }}>
+                                Inventory Manager Password
+                            </label>
+                            <input
+                                type="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                placeholder="Enter your password..."
+                                style={{
+                                    width: '100%',
+                                    padding: '8px',
+                                    border: '1px solid #d1d5db',
+                                    borderRadius: '4px'
+                                }}
+                            />
+                        </div>
+                    )}
+
                     <button
                         onClick={() => updateStock(scanResult.barcode || scanResult.qrCode)}
+                        disabled={operation === 'subtract' && (!password || !notes.trim())}
                         style={{
                             width: '100%',
                             padding: '10px',
                             border: 'none',
                             borderRadius: '6px',
-                            backgroundColor: '#10b981',
+                            backgroundColor: operation === 'subtract' && (!password || !notes.trim()) ? '#9ca3af' : '#10b981',
                             color: 'white',
                             fontWeight: '600',
-                            cursor: 'pointer'
+                            cursor: operation === 'subtract' && (!password || !notes.trim()) ? 'not-allowed' : 'pointer'
                         }}
                     >
                         ✅ Update Stock
