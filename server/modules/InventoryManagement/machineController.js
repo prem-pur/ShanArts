@@ -32,7 +32,7 @@ exports.getAllMachines = async (req, res, next) => {
                 assignedMachineId: machine._id,
                 status: { $nin: ['completed', 'cancelled', 'machine_maintenance'] },
                 _id: { $ne: machine.currentOrderId?._id || machine.currentOrderId }
-            }).populate('customerId', 'name').populate('assignedOperatorId', 'name').select('orderNumber status customerId jobType quantity assignedOperatorId').lean();
+            }).populate('customerId', 'name').populate('assignedOperatorId', 'name').select('orderNumber status customerId jobType quantity assignedOperatorId scheduledStart').sort({ scheduledStart: 1 }).lean();
 
             return {
                 ...machine.toObject(),
@@ -102,7 +102,7 @@ exports.getMachineById = async (req, res, next) => {
             assignedMachineId: machine._id,
             status: { $nin: ['completed', 'cancelled', 'machine_maintenance'] },
             _id: { $ne: machine.currentOrderId?._id || machine.currentOrderId }
-        }).populate('customerId', 'name').populate('assignedOperatorId', 'name').select('orderNumber status customerId jobType quantity assignedOperatorId').lean();
+        }).populate('customerId', 'name').populate('assignedOperatorId', 'name').select('orderNumber status customerId jobType quantity assignedOperatorId scheduledStart').sort({ scheduledStart: 1 }).lean();
 
         // Fetch unassigned backlog
         const potentialBacklog = await ShopOrder.find({

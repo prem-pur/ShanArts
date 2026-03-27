@@ -1,10 +1,69 @@
 const Material = require("./Material");
+const MaterialCategory = require("./MaterialCategory");
 const StockTransaction = require("./StockTransaction");
+const User = require("../UserManagement/User");
 const ApiError = require('../../utils/apiError');
 const notificationService = require('../../services/notificationService');
 const QRCode = require('qrcode');
 
 const inventoryController = {
+    // Get all material categories
+    async getCategories(req, res, next) {
+        try {
+            let categories = await MaterialCategory.find().sort({ name: 1 });
+
+            // Seed defaults if empty
+            if (categories.length === 0) {
+                const defaultCategories = [
+                    { name: 'Paper' },
+                    { name: 'Ink' },
+                    { name: 'Vinyl' },
+                    { name: 'Other' }
+                ];
+                await MaterialCategory.insertMany(defaultCategories);
+                categories = await MaterialCategory.find().sort({ name: 1 });
+            }
+
+            res.status(200).json({
+                success: true,
+                count: categories.length,
+                data: categories,
+            });
+        } catch (error) {
+            next(error);
+        }
+    },
+
+    // Add a material category
+    async addCategory(req, res, next) {
+        try {
+            const { name } = req.body;
+
+            if (!name) {
+                throw new ApiError('Category name is required', 400);
+            }
+
+            // Check if it already exists
+            const existingCategory = await MaterialCategory.findOne({ name: { $regex: new RegExp('^' + name + '$', 'i') } });
+            if (existingCategory) {
+                throw new ApiError('Category already exists', 400);
+            }
+
+            const newCategory = new MaterialCategory({ name });
+            await newCategory.save();
+
+            res.status(201).json({
+                success: true,
+                message: 'Category added successfully',
+                data: newCategory
+            });
+        } catch (error) {
+            if (error.code === 11000) {
+                return next(new ApiError('Category already exists', 400));
+            }
+            next(error);
+        }
+    },
     // Get all materials
     async getAllMaterials(req, res, next) {
         try {
@@ -73,7 +132,7 @@ const inventoryController = {
     async updateStockByCode(req, res, next) {
         try {
             const { code } = req.params;
-            const { quantity, operation = 'add', notes } = req.body;
+            const { quantity, operation = 'add', notes, password } = req.body;
 
             if (!quantity || quantity <= 0) {
                 throw new ApiError('Valid quantity is required', 400);
@@ -99,6 +158,20 @@ const inventoryController = {
 
             if (!material) {
                 throw new ApiError('Material not found with this barcode/QR code', 404);
+            }
+
+            // Verify additional requirements for stock removal (subtract)
+            if (operation === 'subtract') {
+                if (!notes || notes.trim() === '') {
+                    throw new ApiError('Notes are required for removing stock', 400);
+                }
+                if (!password) {
+                    throw new ApiError('Password is required for removing stock', 400);
+                }
+                const user = await User.findById(req.user._id);
+                if (!user || user.passwordHash !== password) {
+                    throw new ApiError('Invalid password', 401);
+                }
             }
 
             // Update stock based on operation
@@ -127,6 +200,23 @@ const inventoryController = {
                 userId: req.user._id
             });
             await stockTransaction.save();
+
+            // Notify admins of emergency stock removal
+            if (operation === 'subtract') {
+                try {
+                    const userDetails = await User.findById(req.user._id);
+                    const userName = userDetails ? userDetails.name : 'Unknown User';
+                    await notificationService.notifyAdmins(
+                        'stock_removal',
+                        `Emergency Stock Removal: ${material.name}`,
+                        `${userName} removed ${quantity} ${material.unit} of ${material.name}. Reason: ${notes}`,
+                        material._id,
+                        'Material'
+                    );
+                } catch (notificationError) {
+                    console.error('Failed to send stock removal notification:', notificationError);
+                }
+            }
 
             // Check if stock is below reorder threshold
             if (material.currentStock <= material.reorderThreshold) {
@@ -303,6 +393,38 @@ const inventoryController = {
 
             res.json({
                 message: 'Material deactivated successfully',
+                material,
+            });
+        } catch (error) {
+            next(error);
+        }
+    },
+
+    // Request material deletion (Staff)
+    async requestMaterialDeletion(req, res, next) {
+        try {
+            const { password } = req.body;
+
+            if (!password) {
+                throw new ApiError('Password is required', 400);
+            }
+
+            // Verify the user's password
+            const user = await User.findById(req.user._id);
+            if (!user || user.passwordHash !== password) {
+                throw new ApiError('Invalid password', 401);
+            }
+
+            const material = await Material.findById(req.params.id);
+            if (!material) {
+                throw new ApiError('Material not found', 404);
+            }
+
+            material.deletionRequested = true;
+            await material.save();
+
+            res.json({
+                message: 'Material deletion requested successfully',
                 material,
             });
         } catch (error) {
