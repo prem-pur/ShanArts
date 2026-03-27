@@ -2,7 +2,7 @@ const Notification = require('../modules/FeedbackNotificationManagement/Notifica
 const User = require('../modules/UserManagement/User');
 
 const notificationService = {
-    async createNotification(recipientId, type, title, message, relatedEntityId = null, relatedEntityType = null) {
+    async createNotification(recipientId, type, title, message, relatedEntityId = null, relatedEntityType = null, metadata = null) {
         try {
             const notification = new Notification({
                 recipientId,
@@ -11,6 +11,7 @@ const notificationService = {
                 message,
                 relatedEntityId,
                 relatedEntityType,
+                metadata,
             });
             await notification.save();
             return notification;
@@ -56,26 +57,24 @@ const notificationService = {
         }
     },
 
-    async notifyAdmins(type, title, message, relatedEntityId = null, relatedEntityType = null) {
+    async notifyAdmins(type, title, message, relatedEntityId = null, relatedEntityType = null, metadata = null) {
         try {
             const admins = await User.find({ role: 'admin', isActive: true });
 
-            const notifications = await Promise.all(
+            return await Promise.all(
                 admins.map(admin =>
-                    this.createNotification(admin._id, type, title, message, relatedEntityId, relatedEntityType)
+                    this.createNotification(admin._id, type, title, message, relatedEntityId, relatedEntityType, metadata)
                 )
             );
-
-            return notifications;
         } catch (error) {
             console.error('Error notifying admins:', error);
             throw error;
         }
     },
 
-    async notifyUser(userId, type, title, message, relatedEntityId = null, relatedEntityType = null) {
+    async notifyUser(userId, type, title, message, relatedEntityId = null, relatedEntityType = null, metadata = null) {
         try {
-            return await this.createNotification(userId, type, title, message, relatedEntityId, relatedEntityType);
+            return await this.createNotification(userId, type, title, message, relatedEntityId, relatedEntityType, metadata);
         } catch (error) {
             console.error('Error notifying user:', error);
             throw error;

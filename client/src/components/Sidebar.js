@@ -24,7 +24,6 @@ const Sidebar = () => {
             <nav style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
                 <SidebarLink to={user.role === 'admin' ? '/admin-dashboard' : user.role === 'staff_operator' ? '/operator' : user.role === 'staff_schedule' ? '/schedule' : user.role === 'staff_designer' ? '/orders' : user.role === 'staff_inventory' ? '/inventory' : user.role === 'staff_system' ? '/system-manager' : user.role === 'staff_finance' ? '/invoices' : '/admin-dashboard'} icon="🏠" label="Home" />
 
-                <SidebarLink to="/notifications" icon="🔔" label="Notifications" />
 
                 <SidebarLink to="/feedback" icon="💬" label="Feedback" />
 

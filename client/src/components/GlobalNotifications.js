@@ -1,13 +1,19 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { API_BASE_URL } from '../apiBase';
 
 const GlobalNotifications = () => {
+    const navigate = useNavigate();
+    const location = useLocation();
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [notifications, setNotifications] = useState([]);
 
     const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const isPublicRoute = ['/', '/customer-dashboard', '/staff-login'].includes(location.pathname);
 
     const unreadCount = useMemo(
         () => notifications.filter((item) => !item.isRead).length,
@@ -65,7 +71,12 @@ const GlobalNotifications = () => {
         }
     };
 
-    if (!token) return null;
+    const goToNotificationsPage = () => {
+        setOpen(false);
+        navigate('/notifications');
+    };
+
+    if (!token || !user.role || isPublicRoute) return null;
 
     return (
         <div className="global-notification-shell">
@@ -86,6 +97,7 @@ const GlobalNotifications = () => {
                         <div className="global-notification-actions">
                             <button type="button" onClick={fetchNotifications}>Refresh</button>
                             <button type="button" onClick={markAllAsRead} disabled={unreadCount === 0}>Read all</button>
+                            <button type="button" onClick={goToNotificationsPage}>See more</button>
                         </div>
                     </div>
 

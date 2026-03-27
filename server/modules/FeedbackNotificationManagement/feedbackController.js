@@ -22,14 +22,18 @@ const feedbackController = {
 
             await feedback.save();
 
-            // Notify admins about new feedback
-            await notificationService.notifyAdmins(
-                'customer_feedback',
-                `New Customer Feedback - ${rating}⭐`,
-                `${comment ? `"${comment.substring(0, 50)}..."` : 'New feedback received'} ${orderNumber ? `for order #${orderNumber}` : ''}`,
-                feedback._id,
-                'Feedback'
-            );
+            // Feedback should still be accepted even if notification delivery fails.
+            try {
+                await notificationService.notifyAdmins(
+                    'customer_feedback',
+                    `New Customer Feedback - ${rating}⭐`,
+                    `${comment ? `"${comment.substring(0, 50)}..."` : 'New feedback received'} ${orderNumber ? `for order #${orderNumber}` : ''}`,
+                    feedback._id,
+                    'Feedback'
+                );
+            } catch (notifyError) {
+                console.error('Failed to notify admins about feedback:', notifyError.message);
+            }
 
             return res.status(201).json({
                 message: 'Thank you for your feedback!',
@@ -96,16 +100,20 @@ const feedbackController = {
                 return res.status(404).json({ message: 'Feedback not found' });
             }
 
-            // Notify customer about admin response
+            // Response should be saved even if notification delivery fails.
             if (feedback.userId) {
-                await notificationService.notifyUser(
-                    feedback.userId,
-                    'feedback_response',
-                    'We Replied to Your Feedback',
-                    `Thank you for your feedback. We've reviewed it and have a response.`,
-                    feedback._id,
-                    'Feedback'
-                );
+                try {
+                    await notificationService.notifyUser(
+                        feedback.userId,
+                        'feedback_response',
+                        'We Replied to Your Feedback',
+                        `Thank you for your feedback. We've reviewed it and have a response.`,
+                        feedback._id,
+                        'Feedback'
+                    );
+                } catch (notifyError) {
+                    console.error('Failed to notify customer about feedback response:', notifyError.message);
+                }
             }
 
             return res.json({

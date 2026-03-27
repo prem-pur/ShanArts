@@ -10,7 +10,7 @@ const notificationSchema = new mongoose.Schema(
         },
         type: {
             type: String,
-            enum: ['order_update', 'delay_risk', 'low_stock', 'stock_removal', 'payment_due', 'job_assigned', 'feedback_received', 'general_announcement'],
+            enum: ['order_update', 'delay_risk', 'low_stock', 'stock_removal', 'payment_due', 'job_assigned', 'feedback_received', 'customer_feedback', 'feedback_response', 'general_announcement'],
             required: true,
         },
         title: {
@@ -30,6 +30,35 @@ const notificationSchema = new mongoose.Schema(
         relatedEntityType: {
             type: String,
             default: null,
+        },
+        metadata: {
+            type: mongoose.Schema.Types.Mixed,
+            default: null,
+        },
+        predictionVerification: {
+            status: {
+                type: String,
+                enum: ['pending', 'verified'],
+                default: 'pending',
+            },
+            isAccurate: {
+                type: Boolean,
+                default: null,
+            },
+            notes: {
+                type: String,
+                default: '',
+                trim: true,
+            },
+            verifiedBy: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'User',
+                default: null,
+            },
+            verifiedAt: {
+                type: Date,
+                default: null,
+            },
         },
         isRead: {
             type: Boolean,

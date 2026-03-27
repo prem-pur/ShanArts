@@ -6,9 +6,13 @@ const FeedbackPage = () => {
     const [feedback, setFeedback] = useState([]);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
+    const [respondingId, setRespondingId] = useState('');
+    const [responseDrafts, setResponseDrafts] = useState({});
     const [error, setError] = useState('');
     const [showForm, setShowForm] = useState(false);
     const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const isAdminView = user.role === 'admin' || user.role === 'staff_system';
 
     const [formData, setFormData] = useState({
         rating: 5,
@@ -21,7 +25,8 @@ const FeedbackPage = () => {
         if (!token) return;
         try {
             setLoading(true);
-            const response = await axios.get(`${API_BASE_URL}/api/feedback/my`, {
+            const endpoint = isAdminView ? `${API_BASE_URL}/api/feedback?limit=200&sort=-createdAt` : `${API_BASE_URL}/api/feedback/my`;
+            const response = await axios.get(endpoint, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             const list = Array.isArray(response.data) ? response.data : [];
@@ -29,11 +34,11 @@ const FeedbackPage = () => {
             setError('');
         } catch (err) {
             console.error('Failed to load feedback:', err);
-            setError('Failed to load your feedback.');
+            setError(isAdminView ? 'Failed to load feedback records.' : 'Failed to load your feedback.');
         } finally {
             setLoading(false);
         }
-    }, [token]);
+    }, [isAdminView, token]);
 
     useEffect(() => {
         fetchFeedback();
@@ -64,15 +69,37 @@ const FeedbackPage = () => {
         }
     };
 
+    const handleResponseDraft = (id, value) => {
+        setResponseDrafts((prev) => ({ ...prev, [id]: value }));
+    };
+
+    const handleRespond = async (id) => {
+        const response = (responseDrafts[id] || '').trim();
+        if (!response) return;
+
+        try {
+            setRespondingId(id);
+            const res = await axios.patch(
+                `${API_BASE_URL}/api/feedback/${id}/respond`,
+                { response },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            const updated = res.data?.feedback;
+            if (updated) {
+                setFeedback((prev) => prev.map((item) => (item._id === updated._id ? { ...item, ...updated } : item)));
+            }
+            setResponseDrafts((prev) => ({ ...prev, [id]: '' }));
+        } catch (err) {
+            setError(err.response?.data?.message || 'Failed to submit response');
+        } finally {
+            setRespondingId('');
+        }
+    };
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
-    };
-
-    const getRatingColor = (rating) => {
-        if (rating >= 4) return '#10b981';
-        if (rating >= 3) return '#f59e0b';
-        return '#ef4444';
     };
 
     const getCategoryEmoji = (category) => {
@@ -91,7 +118,9 @@ const FeedbackPage = () => {
         <div style={{ padding: '40px', maxWidth: '1000px' }}>
             <div style={{ marginBottom: '40px' }}>
                 <h1 style={{ fontSize: '32px', fontWeight: '900', marginBottom: '12px' }}>Feedback</h1>
-                <p style={{ color: '#6b7280', fontSize: '16px' }}>Share your experience with us</p>
+                <p style={{ color: '#6b7280', fontSize: '16px' }}>
+                    {isAdminView ? 'Review customer feedback and respond' : 'Share your experience with us'}
+                </p>
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
@@ -103,24 +132,43 @@ const FeedbackPage = () => {
                         fontSize: '14px',
                         fontWeight: '700'
                     }}>
-                        {feedback.length} Submitted
+                        {feedback.length} {isAdminView ? 'Received' : 'Submitted'}
                     </div>
                 </div>
-                <button
-                    onClick={() => setShowForm(!showForm)}
-                    style={{
-                        padding: '12px 24px',
-                        borderRadius: '8px',
-                        border: 'none',
-                        background: '#d32f2f',
-                        color: '#ffffff',
-                        fontWeight: '700',
-                        cursor: 'pointer',
-                        fontSize: '14px'
-                    }}
-                >
-                    {showForm ? '✕ Cancel' : '+ New Feedback'}
-                </button>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                    <button
+                        onClick={fetchFeedback}
+                        style={{
+                            padding: '12px 24px',
+                            borderRadius: '8px',
+                            border: '1px solid #d1d5db',
+                            background: '#ffffff',
+                            color: '#374151',
+                            fontWeight: '700',
+                            cursor: 'pointer',
+                            fontSize: '14px'
+                        }}
+                    >
+                        Refresh
+                    </button>
+                    {!isAdminView && (
+                        <button
+                            onClick={() => setShowForm(!showForm)}
+                            style={{
+                                padding: '12px 24px',
+                                borderRadius: '8px',
+                                border: 'none',
+                                background: '#d32f2f',
+                                color: '#ffffff',
+                                fontWeight: '700',
+                                cursor: 'pointer',
+                                fontSize: '14px'
+                            }}
+                        >
+                            {showForm ? '✕ Cancel' : '+ New Feedback'}
+                        </button>
+                    )}
+                </div>
             </div>
 
             {error && (
@@ -136,7 +184,7 @@ const FeedbackPage = () => {
                 </div>
             )}
 
-            {showForm && (
+            {!isAdminView && showForm && (
                 <div style={{
                     background: '#ffffff',
                     borderRadius: '16px',
@@ -305,14 +353,14 @@ const FeedbackPage = () => {
                 </div>
             )}
 
-            {!loading && feedback.length === 0 && !showForm && (
+            {!loading && feedback.length === 0 && (!showForm || isAdminView) && (
                 <div style={{
                     textAlign: 'center',
                     padding: '60px',
                     color: '#9ca3af',
                     fontSize: '16px'
                 }}>
-                    No feedback submitted yet. Share your experience!
+                    {isAdminView ? 'No customer feedback yet.' : 'No feedback submitted yet. Share your experience!'}
                 </div>
             )}
 
@@ -342,6 +390,11 @@ const FeedbackPage = () => {
                                         <div style={{ fontSize: '12px', color: '#6b7280' }}>
                                             {new Date(item.createdAt).toLocaleDateString()}
                                         </div>
+                                        {isAdminView && (
+                                            <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '2px' }}>
+                                                By: {item.userId?.name || 'Customer'}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 
@@ -407,6 +460,41 @@ const FeedbackPage = () => {
                                         <p style={{ margin: 0, fontSize: '13px', color: '#4b5563' }}>
                                             {item.response}
                                         </p>
+                                    </div>
+                                )}
+
+                                {isAdminView && !item.response && (
+                                    <div style={{ marginTop: '14px', display: 'flex', gap: '8px' }}>
+                                        <input
+                                            type="text"
+                                            value={responseDrafts[item._id] || ''}
+                                            onChange={(e) => handleResponseDraft(item._id, e.target.value)}
+                                            placeholder="Write a response to this feedback..."
+                                            style={{
+                                                flex: 1,
+                                                padding: '10px 12px',
+                                                borderRadius: '8px',
+                                                border: '1px solid #d1d5db',
+                                                fontSize: '13px'
+                                            }}
+                                        />
+                                        <button
+                                            onClick={() => handleRespond(item._id)}
+                                            disabled={!String(responseDrafts[item._id] || '').trim() || respondingId === item._id}
+                                            style={{
+                                                padding: '10px 14px',
+                                                borderRadius: '8px',
+                                                border: 'none',
+                                                background: '#111827',
+                                                color: '#fff',
+                                                fontWeight: '700',
+                                                fontSize: '12px',
+                                                cursor: 'pointer',
+                                                opacity: !String(responseDrafts[item._id] || '').trim() || respondingId === item._id ? 0.6 : 1
+                                            }}
+                                        >
+                                            {respondingId === item._id ? 'Sending...' : 'Respond'}
+                                        </button>
                                     </div>
                                 )}
                             </div>
