@@ -24,10 +24,6 @@ const Sidebar = () => {
             <nav style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
                 <SidebarLink to={user.role === 'admin' ? '/admin-dashboard' : user.role === 'staff_operator' ? '/operator' : user.role === 'staff_schedule' ? '/schedule' : user.role === 'staff_designer' ? '/orders' : user.role === 'staff_inventory' ? '/inventory' : user.role === 'staff_system' ? '/system-manager' : user.role === 'staff_finance' ? '/invoices' : '/admin-dashboard'} icon="🏠" label="Home" />
 
-                <SidebarLink to="/notifications" icon="🔔" label="Notifications" />
-
-                <SidebarLink to="/feedback" icon="💬" label="Feedback" />
-
                 {user.role !== 'staff_operator' && (
                     <div style={{ padding: '10px 32px', fontSize: '11px', fontWeight: '800', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '1.5px', marginTop: '16px' }}>Management</div>
                 )}
@@ -50,6 +46,10 @@ const Sidebar = () => {
 
                 {(user.role === 'admin' || user.role === 'staff_finance') && (
                     <SidebarLink to="/invoices" icon="🧾" label="Invoice" />
+                )}
+
+                {user.role === 'admin' && (
+                    <SidebarLink to="/admin-billing" icon="💰" label="Admin Billing" />
                 )}
 
                 {(user.role === 'admin' || user.role === 'staff_system') && (
