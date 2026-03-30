@@ -36,6 +36,7 @@ router.post("/create-from-request", async (req, res) => {
                 size: request.size,
                 quantity: 1
             },
+            customerPhone: request.customerPhone || "—", // Default if missing
             staffId: "system",
             status: "Draft"
         });
@@ -53,6 +54,7 @@ router.get("/", async (req, res) => {
         const orders = await ProductionOrder.find()
             .populate("requestId")
             .populate("currentVersionId")
+            .populate("shopOrderId")
             .sort({ createdAt: -1 });
         res.json(orders);
     } catch (err) {
@@ -65,7 +67,8 @@ router.get("/:id", async (req, res) => {
     try {
         const order = await ProductionOrder.findById(req.params.id)
             .populate("requestId")
-            .populate("currentVersionId");
+            .populate("currentVersionId")
+            .populate("shopOrderId");
         if (!order) return res.status(404).json({ error: "Order not found" });
         res.json(order);
     } catch (err) {
@@ -191,10 +194,11 @@ const upload = multer({ storage: storage });
 // CREATE MANUAL ORDER
 router.post("/create-manual", async (req, res) => {
     try {
-        const { customerName, customerId, printSpecs } = req.body;
+        const { customerName, customerId, customerPhone, printSpecs } = req.body;
         const newOrder = new ProductionOrder({
             customerName,
             customerId,
+            customerPhone,
             orderId: `ORD-${Date.now()}`, // Simple ID generation
             printSpecs: printSpecs || {},
             staffId: "system",
@@ -245,7 +249,21 @@ router.put("/:id/specs", async (req, res) => {
 // DELETE ORDER
 router.delete("/:id", async (req, res) => {
     try {
-        await ProductionOrder.findByIdAndDelete(req.params.id);
+        const order = await ProductionOrder.findByIdAndDelete(req.params.id);
+        if (order && order.assignedMachineId) {
+            await Machine.findByIdAndUpdate(order.assignedMachineId, {
+                status: 'Available',
+                currentOrderId: null,
+                currentJobId: null,
+                operatorId: null,
+                startTime: null,
+                estimatedEndTime: null
+            });
+            await Schedule.updateMany(
+                { orderId: req.params.id },
+                { status: 'cancelled' }
+            );
+        }
         res.json({ message: "Order deleted" });
     } catch (err) {
         res.status(500).json({ error: err.message });

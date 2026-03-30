@@ -23,6 +23,9 @@ const ProductionOrderSchema = new mongoose.Schema({
     customerId: {
         type: String // For manual orders (optional, user-entered)
     },
+    customerPhone: {
+        type: String // For manual orders or contact
+    },
     shopOrderId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "ShopOrder"

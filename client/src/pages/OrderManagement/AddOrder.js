@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { Store, Truck, Car } from 'lucide-react';
 import { API_BASE_URL } from '../../apiBase';
 
 const AddOrder = ({ onOrderCreated, onCancel }) => {
@@ -20,7 +21,6 @@ const AddOrder = ({ onOrderCreated, onCancel }) => {
     });
 
     const [samplePhoto, setSamplePhoto] = useState(null);
-    const [designFiles, setDesignFiles] = useState([]);
 
     const productTemplates = {
         poster: {
@@ -139,8 +139,6 @@ const AddOrder = ({ onOrderCreated, onCancel }) => {
     const handleFileChange = (e) => {
         if (e.target.name === 'samplePhoto') {
             setSamplePhoto(e.target.files[0]);
-        } else {
-            setDesignFiles([...e.target.files]);
         }
     };
 
@@ -191,7 +189,6 @@ const AddOrder = ({ onOrderCreated, onCancel }) => {
         data.append('priority', formData.priority || 'normal');
 
         if (samplePhoto) data.append('samplePhoto', samplePhoto);
-        designFiles.forEach(file => data.append('designFiles', file));
 
         try {
             const token = localStorage.getItem('token');
@@ -312,24 +309,24 @@ const AddOrder = ({ onOrderCreated, onCancel }) => {
                             <div>
                                 <label style={labelStyle}>Delivery Method</label>
                                 <div style={{ display: 'flex', gap: '12px' }}>
-                                    <label style={{ flex: 1, padding: '16px', borderRadius: '12px', border: `2px solid ${formData.deliveryMethod === 'pickup' ? 'var(--accent-color)' : '#e5e7eb'}`, cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s', background: formData.deliveryMethod === 'pickup' ? '#fff5f5' : '#fff' }}>
+                                    <label style={{ flex: 1, padding: '16px', borderRadius: '12px', border: `2px solid ${formData.deliveryMethod === 'pickup' ? 'var(--accent-color)' : '#e5e7eb'}`, cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s', background: formData.deliveryMethod === 'pickup' ? '#fff5f5' : '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
                                         <input type="radio" name="deliveryMethod" value="pickup" checked={formData.deliveryMethod === 'pickup'} onChange={handleInputChange} style={{ display: 'none' }} />
-                                        <div style={{ fontSize: '20px' }}>🏪</div>
+                                        <Store size={24} color={formData.deliveryMethod === 'pickup' ? 'var(--accent-color)' : '#94a3b8'} />
                                         <div style={{ fontWeight: '700', fontSize: '14px', color: formData.deliveryMethod === 'pickup' ? 'var(--accent-color)' : '#374151' }}>Pickup</div>
                                     </label>
 
-                                    <label style={{ flex: 1, padding: '16px', borderRadius: '12px', border: `2px solid ${formData.deliveryMethod === 'delivery' ? 'var(--accent-color)' : '#e5e7eb'}`, cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s', background: formData.deliveryMethod === 'delivery' ? '#fff5f5' : '#fff' }}>
+                                    <label style={{ flex: 1, padding: '16px', borderRadius: '12px', border: `2px solid ${formData.deliveryMethod === 'delivery' ? 'var(--accent-color)' : '#e5e7eb'}`, cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s', background: formData.deliveryMethod === 'delivery' ? '#fff5f5' : '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
                                         <input type="radio" name="deliveryMethod" value="delivery" checked={formData.deliveryMethod === 'delivery'} onChange={handleInputChange} style={{ display: 'none' }} />
-                                        <div style={{ fontSize: '20px' }}>🚚</div>
+                                        <Truck size={24} color={formData.deliveryMethod === 'delivery' ? 'var(--accent-color)' : '#94a3b8'} />
                                         <div style={{ fontWeight: '700', fontSize: '14px', color: formData.deliveryMethod === 'delivery' ? 'var(--accent-color)' : '#374151' }}>
                                             Delivery
                                             <div style={{ fontSize: '10px', color: formData.address.distance > 10 ? '#ef4444' : '#6b7280', marginTop: '2px' }}>(within 10km)</div>
                                         </div>
                                     </label>
 
-                                    <label style={{ flex: 1, padding: '16px', borderRadius: '12px', border: `2px solid ${formData.deliveryMethod === 'pickme' ? 'var(--accent-color)' : '#e5e7eb'}`, cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s', background: formData.deliveryMethod === 'pickme' ? '#fff5f5' : '#fff' }}>
+                                    <label style={{ flex: 1, padding: '16px', borderRadius: '12px', border: `2px solid ${formData.deliveryMethod === 'pickme' ? 'var(--accent-color)' : '#e5e7eb'}`, cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s', background: formData.deliveryMethod === 'pickme' ? '#fff5f5' : '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
                                         <input type="radio" name="deliveryMethod" value="pickme" checked={formData.deliveryMethod === 'pickme'} onChange={handleInputChange} style={{ display: 'none' }} />
-                                        <div style={{ fontSize: '20px' }}>🚖</div>
+                                        <Car size={24} color={formData.deliveryMethod === 'pickme' ? 'var(--accent-color)' : '#94a3b8'} />
                                         <div style={{ fontWeight: '700', fontSize: '14px', color: formData.deliveryMethod === 'pickme' ? 'var(--accent-color)' : '#374151' }}>
                                             PickMe
                                             <div style={{ fontSize: '10px', color: formData.address.distance > 10 ? '#ef4444' : '#6b7280', marginTop: '2px' }}>(within 10km)</div>
@@ -362,14 +359,21 @@ const AddOrder = ({ onOrderCreated, onCancel }) => {
 
                     {step === 2 && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                                <div>
-                                    <label style={labelStyle}>Sample Photos</label>
-                                    <input type="file" name="samplePhoto" onChange={handleFileChange} style={{ fontSize: '13px' }} />
+                            <div>
+                                <label style={labelStyle}>Reference / Sample Photo</label>
+                                <div style={{
+                                    border: '1px dashed #e5e7eb',
+                                    padding: '16px',
+                                    borderRadius: '10px',
+                                    background: '#f9fafb',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '12px'
+                                }}>
+                                    <input type="file" name="samplePhoto" onChange={handleFileChange} style={{ fontSize: '13px', width: '100%' }} />
                                 </div>
-                                <div>
-                                    <label style={labelStyle}>Design Files</label>
-                                    <input type="file" name="designFiles" multiple onChange={handleFileChange} style={{ fontSize: '13px' }} />
+                                <div style={{ marginTop: '4px', fontSize: '11px', color: '#6b7280' }}>
+                                    Upload any inspiration or rough sketches (Optional)
                                 </div>
                             </div>
 

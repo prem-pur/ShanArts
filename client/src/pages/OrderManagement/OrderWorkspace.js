@@ -1,36 +1,23 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
+import {
+    Bell,
+    Search,
+    Image as ImageIcon,
+    Send,
+    Paintbrush,
+    Trash2,
+    ChevronLeft,
+    ChevronRight,
+    Check,
+    AlertCircle,
+    FileText,
+    File,
+    XCircle
+} from "lucide-react";
 import DesignEditor from "./DesignEditor";
 import { API_BASE_URL } from "../../apiBase";
 import { useNavigate, useLocation } from "react-router-dom";
-
-const BellIcon = () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-);
-
-const SearchIcon = () => (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-);
-
-const ImageIcon = ({ size = 24 }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-);
-
-const SendIcon = () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-);
-
-const PaintIcon = () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>
-);
-
-const TrashIcon = () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-);
-
-const ImageIconLarge = () => (
-    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-);
 
 const STATUS = {
     DRAFT: "Draft",
@@ -69,18 +56,28 @@ const OrderWorkspace = () => {
                     // 1. If we already had an order selected, keep it selected but with fresh data
                     if (prev) {
                         const updatedOrder = sortedOrders.find(o => o._id === prev._id);
-                        return updatedOrder || prev;
+                        if (updatedOrder) {
+                            if (prev.currentVersionId && !updatedOrder.currentVersionId) {
+                                return { ...updatedOrder, currentVersionId: prev.currentVersionId };
+                            }
+                            return updatedOrder;
+                        }
+                        return prev;
                     }
                     // 2. If we navigated from a specific order link
                     if (location.state?.selectedOrderId) {
                         const navOrder = sortedOrders.find(o => o._id === location.state.selectedOrderId);
                         if (navOrder) {
-                            setViewMode("studio"); // It's fine to call this here, React batches state updates
+                            setViewMode("studio");
                             return navOrder;
                         }
                     }
-                    // 3. Fallback to the first order
-                    return sortedOrders.length > 0 ? sortedOrders[0] : null;
+                    // 3. Fallback to the first order, start in studio mode directly
+                    if (sortedOrders.length > 0) {
+                        setViewMode("studio");
+                        return sortedOrders[0];
+                    }
+                    return null;
                 });
             })
             .catch(err => console.error(err))
@@ -89,17 +86,26 @@ const OrderWorkspace = () => {
 
     useEffect(() => {
         fetchOrders();
+        // Add auto-refresh every 30 seconds to keep statuses in sync
+        const interval = setInterval(fetchOrders, 30000);
+        return () => clearInterval(interval);
     }, [fetchOrders]);
 
     // Fetch the linked ShopOrder when a studio order is selected
     useEffect(() => {
         if (selectedOrder?.shopOrderId) {
-            const token = localStorage.getItem('token');
-            axios.get(`${API_BASE_URL}/api/shop-orders/${selectedOrder.shopOrderId}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-                .then(res => setShopOrder(res.data))
-                .catch(() => setShopOrder(null));
+            // Check if shopOrderId is already a populated object
+            if (typeof selectedOrder.shopOrderId === 'object' && selectedOrder.shopOrderId._id) {
+                setShopOrder(selectedOrder.shopOrderId);
+            } else {
+                // If it's just an ID string, fetch it
+                const token = localStorage.getItem('token');
+                axios.get(`${API_BASE_URL}/api/shop-orders/${selectedOrder.shopOrderId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                })
+                    .then(res => setShopOrder(res.data))
+                    .catch(() => setShopOrder(null));
+            }
         } else {
             setShopOrder(null);
         }
@@ -111,7 +117,11 @@ const OrderWorkspace = () => {
         if (s === 'draft' || s === 'design in progress' || !s) return STATUS.DRAFT;
         if (s === 'sent to customer' || s === 'waiting_approval' || s === 'waiting approval') return STATUS.SENT;
         if (s === 'rejected' || s === 'revision_requested' || s === 'revision requested') return STATUS.REJECTED;
-        if (s === 'approved' || s === 'scheduled') return STATUS.APPROVED;
+        if (s === 'approved' || s === 'scheduled' || s === 'confirmed' ||
+            s === 'in progress' || s === 'in_progress' ||
+            s === 'printing' || s === 'machine_maintenance') {
+            return STATUS.APPROVED;
+        }
         if (s === 'completed') return STATUS.COMPLETED;
 
         return rawStatus;
@@ -141,7 +151,10 @@ const OrderWorkspace = () => {
             setLoading(true);
             const token = localStorage.getItem('token');
             // Use shopOrderId if available (for orders created from customer orders)
-            const orderId = selectedOrder.shopOrderId || selectedOrder._id;
+            // Ensure we use the ID string even if it's populated as an object
+            const shopOrderId = selectedOrder.shopOrderId?._id || selectedOrder.shopOrderId;
+            const orderId = shopOrderId || selectedOrder._id;
+
             await axios.post(`${API_BASE_URL}/api/shop-orders/${orderId}/submit-design`, {}, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -149,7 +162,7 @@ const OrderWorkspace = () => {
             const btn = document.getElementById('send-approval-btn');
             if (btn) {
                 const originalText = btn.innerText;
-                btn.innerText = "✅ SENT!";
+                btn.innerHTML = '<span style="display: flex; align-items: center; gap: 4px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> SENT!</span>';
                 btn.style.background = "#059669";
                 setTimeout(() => {
                     if (btn) {
@@ -175,6 +188,7 @@ const OrderWorkspace = () => {
 
     const filteredOrders = orders.filter(order => {
         const status = normalizeStatus(order.status);
+
         if (filterTab !== "all" && status !== filterTab) return false;
         if (!searchTerm.trim()) return true;
         const term = searchTerm.toLowerCase();
@@ -198,7 +212,7 @@ const OrderWorkspace = () => {
                     }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                             <div style={{ color: '#ef4444', display: 'flex' }}>
-                                <BellIcon />
+                                <Bell size={20} />
                             </div>
                             <div>
                                 <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '900', color: '#b91c1c' }}>
@@ -231,7 +245,7 @@ const OrderWorkspace = () => {
                     </div>
                     <div style={{ position: 'relative' }}>
                         <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', display: 'flex' }}>
-                            <SearchIcon />
+                            <Search size={18} />
                         </span>
                         <input
                             placeholder="Search orders..."
@@ -322,8 +336,13 @@ const OrderWorkspace = () => {
                                         color: isApproved ? '#059669' : isDraft ? '#64748b' : isRejected ? '#ef4444' : '#64748b',
                                         textTransform: 'uppercase',
                                         letterSpacing: '0.8px',
-                                        border: `1px solid ${isApproved ? '#a7f3d0' : isDraft ? '#e2e8f0' : isRejected ? '#fecaca' : '#e2e8f0'}`
+                                        border: `1px solid ${isApproved ? '#a7f3d0' : isDraft ? '#e2e8f0' : isRejected ? '#fecaca' : '#e2e8f0'}`,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '4px'
                                     }}>
+                                        {isApproved && <Check size={10} strokeWidth={3} />}
+                                        {isRejected && <AlertCircle size={10} strokeWidth={3} />}
                                         {status}
                                     </span>
                                 </div>
@@ -375,7 +394,7 @@ const OrderWorkspace = () => {
                                         onMouseEnter={e => e.currentTarget.style.transform = 'translateX(2px)'}
                                         onMouseLeave={e => e.currentTarget.style.transform = 'translateX(0)'}
                                     >
-                                        Open Studio <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                        Open Studio <ChevronRight size={12} strokeWidth={3} />
                                     </button>
                                 </div>
                             </div>
@@ -393,25 +412,40 @@ const OrderWorkspace = () => {
             <div style={{ padding: '24px 40px', maxWidth: '1400px', margin: '0 auto', animation: 'fadeIn 0.4s ease-out' }}>
                 <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', paddingBottom: '12px', borderBottom: '1px solid #e5e7eb' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                        <button onClick={() => setViewMode("list")} style={{ width: '32px', height: '32px', borderRadius: '50%', border: 'none', background: '#fff', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}>
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                        <button onClick={() => navigate('/design-workspace')} style={{ width: '32px', height: '32px', borderRadius: '50%', border: 'none', background: '#fff', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}>
+                            <ChevronLeft size={18} strokeWidth={3} />
                         </button>
-                        <h2 style={{ fontSize: '20px', fontWeight: '900', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            Studio: {selectedOrder.customerName}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                            <span style={{ fontSize: '13px', fontWeight: '700', color: '#94a3b8' }}>Studio:</span>
+                            <select
+                                value={selectedOrder._id}
+                                onChange={e => {
+                                    const found = orders.find(o => o._id === e.target.value);
+                                    if (found) setSelectedOrder(found);
+                                }}
+                                style={{ fontSize: '18px', fontWeight: '900', color: '#0f172a', border: 'none', background: 'transparent', cursor: 'pointer', outline: 'none', maxWidth: '280px', fontFamily: "'Inter', sans-serif" }}
+                            >
+                                {orders.map(o => (
+                                    <option key={o._id} value={o._id}>{o.customerName || 'Untitled'}</option>
+                                ))}
+                            </select>
                             <span style={{
-                                fontSize: '11px',
-                                fontWeight: '800',
-                                padding: '4px 10px',
-                                borderRadius: '8px',
+                                fontSize: '11px', fontWeight: '800', padding: '4px 10px', borderRadius: '8px',
                                 background: selectedOrder.status === STATUS.DRAFT ? '#fef3c7' : '#dbeafe',
                                 color: selectedOrder.status === STATUS.DRAFT ? '#d97706' : '#2563eb',
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.05em',
-                                border: `1px solid ${selectedOrder.status === STATUS.DRAFT ? '#fde68a' : '#bfdbfe'}`
+                                textTransform: 'uppercase', letterSpacing: '0.05em',
+                                border: `1px solid ${selectedOrder.status === STATUS.DRAFT ? '#fde68a' : '#bfdbfe'}`,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px'
                             }}>
+                                {normalizeStatus(selectedOrder.status) === STATUS.DRAFT && <Paintbrush size={10} />}
+                                {normalizeStatus(selectedOrder.status) === STATUS.SENT && <Send size={10} />}
+                                {normalizeStatus(selectedOrder.status) === STATUS.APPROVED && <Check size={10} strokeWidth={3} />}
+                                {normalizeStatus(selectedOrder.status) === STATUS.REJECTED && <AlertCircle size={10} />}
                                 {normalizeStatus(selectedOrder.status)}
                             </span>
-                        </h2>
+                        </div>
                     </div>
                     <div style={{ display: 'flex', gap: '8px' }}>
                         {(normalizeStatus(selectedOrder.status) === STATUS.DRAFT || normalizeStatus(selectedOrder.status) === STATUS.REJECTED) && (
@@ -434,14 +468,14 @@ const OrderWorkspace = () => {
                                     gap: '8px'
                                 }}
                             >
-                                <SendIcon /> {loading ? 'SENDING...' : 'SEND FOR APPROVAL'}
+                                <Send size={16} /> {loading ? 'SENDING...' : 'SEND FOR APPROVAL'}
                             </button>
                         )}
                         <button onClick={() => setShowEditor(true)} style={{ background: 'transparent', color: 'var(--accent-color)', border: '1.5px solid var(--accent-color)', padding: '8px 16px', borderRadius: '8px', fontWeight: '800', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <PaintIcon /> LAUNCH EDITOR
+                            <Paintbrush size={16} /> LAUNCH EDITOR
                         </button>
                         <button onClick={() => handleDeleteOrder(selectedOrder._id)} style={{ background: '#f3f4f6', color: '#374151', border: 'none', padding: '8px 16px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <TrashIcon /> DELETE
+                            <Trash2 size={16} /> DELETE
                         </button>
                     </div>
                 </header>
@@ -449,15 +483,22 @@ const OrderWorkspace = () => {
                 <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                         <div style={{ background: '#fff', padding: '20px', borderRadius: '16px', border: '1.5px solid #d1d5db', boxShadow: 'var(--shadow-sm)' }}>
-                            <h3 style={{ fontSize: '15px', fontWeight: '800', marginBottom: '14px', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <span style={{ color: '#64748b', display: 'flex' }}><ImageIcon /></span> Design Preview
-                            </h3>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+                                <h3 style={{ fontSize: '15px', fontWeight: '800', margin: 0, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <span style={{ color: '#64748b', display: 'flex' }}><ImageIcon /></span> Design Preview
+                                </h3>
+                                {selectedOrder.currentVersionId && (
+                                    <button onClick={() => setShowEditor(true)} style={{ background: 'transparent', color: 'var(--accent-color)', border: '1.5px solid var(--accent-color)', padding: '6px 14px', borderRadius: '8px', fontWeight: '800', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(239, 68, 68, 0.15)' }} onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'} onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
+                                        <Paintbrush size={16} /> Edit Design
+                                    </button>
+                                )}
+                            </div>
                             <div style={{ background: '#f9fafb', borderRadius: '12px', border: '2px dashed #e5e7eb', height: '380px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                                 {selectedOrder.currentVersionId ? (
                                     <img src={`${API_BASE_URL}${selectedOrder.currentVersionId.pngFilePath}`} alt="Preview" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
                                 ) : (
                                     <div style={{ textAlign: 'center', color: '#94a3b8' }}>
-                                        <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'center' }}><ImageIconLarge /></div>
+                                        <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'center' }}><ImageIcon size={48} strokeWidth={1} /></div>
                                         <p style={{ fontWeight: '600', fontSize: '13px' }}>No design versions created yet.</p>
                                         <button onClick={() => setShowEditor(true)} style={{ marginTop: '12px', background: 'transparent', border: '1.5px solid var(--accent-color)', color: 'var(--accent-color)', padding: '6px 14px', borderRadius: '8px', fontWeight: '800', cursor: 'pointer', fontSize: '12px' }}>Create First Version</button>
                                     </div>
@@ -465,46 +506,8 @@ const OrderWorkspace = () => {
                             </div>
                         </div>
 
-                        <div style={{ background: '#fff', padding: '20px', borderRadius: '16px', border: '1.5px solid #d1d5db', boxShadow: 'var(--shadow-sm)' }}>
-                            <h3 style={{ fontSize: '15px', fontWeight: '800', marginBottom: '14px', color: 'var(--text-primary)' }}>Customer Brief</h3>
-                            <div style={{ color: 'var(--text-secondary)', lineHeight: '1.6', fontSize: '13px', background: '#f9fafb', padding: '14px', borderRadius: '10px' }}>
-                                {shopOrder?.preferences || selectedOrder.requestId?.textContent || 'No specific instructions provided.'}
-                            </div>
-
-                            {/* Customer uploaded sample photo */}
-                            {shopOrder?.samplePhoto && (
-                                <div style={{ marginTop: '14px' }}>
-                                    <div style={{ fontSize: '11px', fontWeight: '800', color: '#374151', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.4px' }}>Sample / Reference Photo</div>
-                                    <img
-                                        src={`${API_BASE_URL}${shopOrder.samplePhoto}`}
-                                        alt="Customer sample"
-                                        style={{ width: '100%', borderRadius: '10px', border: '1.5px solid #d1d5db', objectFit: 'cover', maxHeight: '180px' }}
-                                    />
-                                </div>
-                            )}
-
-                            {/* Customer uploaded design files */}
-                            {shopOrder?.designFiles?.length > 0 && (
-                                <div style={{ marginTop: '14px' }}>
-                                    <div style={{ fontSize: '11px', fontWeight: '800', color: '#374151', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.4px' }}>Design Files</div>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                        {shopOrder.designFiles.map((filePath, i) => {
-                                            const fileName = filePath.split('/').pop();
-                                            const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(fileName);
-                                            return (
-                                                <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: '#f3f4f6', borderRadius: '8px' }}>
-                                                    <span style={{ fontSize: '11px', fontWeight: '600', color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '140px' }}>
-                                                        {isImage ? '🖼️' : '📄'} {fileName}
-                                                    </span>
-                                                    <a href={`${API_BASE_URL}${filePath}`} target="_blank" rel="noreferrer" style={{ fontSize: '10px', color: 'var(--accent-color)', fontWeight: '800', textDecoration: 'none' }}>VIEW</a>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
                     </div>
+
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                         <div style={{ background: '#fff', padding: '20px', borderRadius: '16px', border: '1.5px solid #d1d5db', boxShadow: 'var(--shadow-sm)' }}>
@@ -518,8 +521,8 @@ const OrderWorkspace = () => {
                                 const changes = changesMatch ? changesMatch[1].trim() : null;
                                 return (
                                     <div style={{ background: '#fff5f5', border: '1.5px solid #fca5a5', padding: '14px', borderRadius: '10px', marginBottom: '16px' }}>
-                                        <div style={{ fontWeight: '900', color: '#dc2626', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: '8px' }}>
-                                            🚫 Rejected
+                                        <div style={{ fontWeight: '900', color: '#dc2626', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                            <XCircle size={14} strokeWidth={2.5} /> Rejected
                                         </div>
                                         <div style={{ marginBottom: changes ? '8px' : 0 }}>
                                             <div style={{ fontSize: '10px', fontWeight: '800', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: '4px' }}>Reason</div>
@@ -546,31 +549,73 @@ const OrderWorkspace = () => {
                                 <DetailRow label="Material" value={selectedOrder.printSpecs?.material || "Standard"} />
                             </div>
                         </div>
+
+                        <div style={{ background: '#fff', padding: '20px', borderRadius: '16px', border: '1.5px solid #d1d5db', boxShadow: 'var(--shadow-sm)' }}>
+                            <h3 style={{ fontSize: '15px', fontWeight: '800', marginBottom: '14px', color: 'var(--text-primary)' }}>Customer Brief</h3>
+                            <div style={{ color: 'var(--text-secondary)', lineHeight: '1.6', fontSize: '13px', background: '#f9fafb', padding: '14px', borderRadius: '10px' }}>
+                                {shopOrder?.preferences ||
+                                    selectedOrder.printSpecs?.preferences ||
+                                    selectedOrder.requestId?.textContent ||
+                                    'No specific instructions provided.'}
+                            </div>
+
+                            {/* Customer uploaded sample photo */}
+                            {(shopOrder?.samplePhoto || selectedOrder.printSpecs?.samplePhoto) && (
+                                <div style={{ marginTop: '14px' }}>
+                                    <div style={{ fontSize: '11px', fontWeight: '800', color: '#374151', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.4px' }}>Sample / Reference Photo</div>
+                                    <img
+                                        src={`${API_BASE_URL}${shopOrder?.samplePhoto || selectedOrder.printSpecs?.samplePhoto}`}
+                                        alt="Customer sample"
+                                        style={{ width: '100%', borderRadius: '10px', border: '1.5px solid #d1d5db', objectFit: 'cover', maxHeight: '180px' }}
+                                    />
+                                </div>
+                            )}
+
+                            {/* Customer uploaded design files */}
+                            {shopOrder?.designFiles?.length > 0 && (
+                                <div style={{ marginTop: '14px' }}>
+                                    <div style={{ fontSize: '11px', fontWeight: '800', color: '#374151', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.4px' }}>Design Files</div>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                        {shopOrder.designFiles.map((filePath, i) => {
+                                            const fileName = filePath.split('/').pop();
+                                            const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(fileName);
+                                            return (
+                                                <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: '#f3f4f6', borderRadius: '8px' }}>
+                                                <span style={{ fontSize: '11px', fontWeight: '600', color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '140px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                    {isImage ? <ImageIcon size={14} /> : <File size={14} />} {fileName}
+                                                </span>
+                                                    <a href={`${API_BASE_URL}${filePath}`} target="_blank" rel="noreferrer" style={{ fontSize: '10px', color: 'var(--accent-color)', fontWeight: '800', textDecoration: 'none' }}>VIEW</a>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
 
-                {showEditor && (
-                    <DesignEditor
-                        template={{ name: 'Studio Design', type: selectedOrder.printSpecs?.designType, layoutJson: { width: 900, height: 600, elements: [] } }}
-                        order={selectedOrder}
-                        onClose={(saved, newVersion) => {
-                            setShowEditor(false);
-                            if (saved && newVersion) {
-                                // Instantly patch the selectedOrder for snappy UI update
-                                setSelectedOrder(prev => ({
-                                    ...prev,
-                                    currentVersionId: newVersion
-                                }));
-                            }
-                            fetchOrders();
-                        }}
-                    />
-                )}
             </div>
         );
     };
 
     if (loading && orders.length === 0) return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f3f4f6', color: '#64748b', fontWeight: '600' }}>Loading Studio...</div>;
+
+    // Focused Editor View (Mockup UI)
+    if (showEditor && selectedOrder) {
+        return (
+            <DesignEditor
+                order={selectedOrder}
+                onClose={(saved, newVersion) => {
+                    setShowEditor(false);
+                    if (saved && newVersion) {
+                        setSelectedOrder(prev => ({ ...prev, currentVersionId: newVersion }));
+                    }
+                    fetchOrders();
+                }}
+            />
+        );
+    }
 
     return (
         <div style={{ backgroundColor: '#f3f4f6', minHeight: '100vh', fontFamily: "'Inter', sans-serif" }}>
@@ -585,6 +630,7 @@ const OrderWorkspace = () => {
                             const formData = new FormData(e.target);
                             const payload = {
                                 customerName: formData.get('customerName'),
+                                customerPhone: formData.get('customerPhone'),
                                 status: STATUS.DRAFT,
                                 printSpecs: {
                                     designType: formData.get('designType'),
@@ -606,6 +652,10 @@ const OrderWorkspace = () => {
                             <div>
                                 <label style={{ display: 'block', marginBottom: '6px', fontWeight: '700', fontSize: '13px' }}>Customer Name</label>
                                 <input name="customerName" placeholder="Enter name" required style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #e5e7eb', background: '#f9fafb', fontSize: '14px', outline: 'none' }} />
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '6px', fontWeight: '700', fontSize: '13px' }}>Phone Number</label>
+                                <input name="customerPhone" placeholder="0XXXXXXXXX" style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #e5e7eb', background: '#f9fafb', fontSize: '14px', outline: 'none' }} />
                             </div>
                             <div>
                                 <label style={{ display: 'block', marginBottom: '6px', fontWeight: '700', fontSize: '13px' }}>Category</label>
