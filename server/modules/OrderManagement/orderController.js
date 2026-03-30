@@ -7,6 +7,47 @@ const aiService = require('../../services/aiService');
 const notificationService = require('../../services/notificationService');
 const scheduleService = require('../../services/scheduleService');
 
+async function syncMachineState(machineId) {
+    if (!machineId) return;
+    const Machine = require('../InventoryManagement/Machine');
+    const ShopOrderModel = require('./ShopOrder');
+
+    const machine = await Machine.findById(machineId);
+    if (!machine) return;
+
+    if (machine.status === 'Under Maintenance' || machine.status === 'Out of Order') {
+        return;
+    }
+
+    const earliestOrder = await ShopOrderModel.findOne({
+        assignedMachineId: machineId,
+        status: { $nin: ['completed', 'cancelled', 'machine_maintenance'] }
+    }).sort({ scheduledStart: 1 });
+
+    if (earliestOrder) {
+        let newStatus = 'Scheduled';
+        if (earliestOrder.status === 'printing' || earliestOrder.status === 'in_progress') {
+            newStatus = 'In Use';
+        }
+
+        await Machine.findByIdAndUpdate(machineId, {
+            status: newStatus,
+            currentOrderId: earliestOrder._id,
+            operatorId: earliestOrder.assignedOperatorId,
+            startTime: earliestOrder.scheduledStart || new Date(),
+            estimatedEndTime: earliestOrder.scheduledEnd || null
+        });
+    } else {
+        await Machine.findByIdAndUpdate(machineId, {
+            status: 'Available',
+            currentOrderId: null,
+            operatorId: null,
+            startTime: null,
+            estimatedEndTime: null
+        });
+    }
+}
+
 const orderController = {
     // Create new order
     async createOrder(req, res, next) {
@@ -72,6 +113,7 @@ const orderController = {
             const productionOrder = new ProductionOrder({
                 customerName,
                 customerId,
+                customerPhone: order.customerPhone, // Copy from ShopOrder
                 orderId: order.orderNumber,
                 printSpecs: {
                     designType: jobType,
@@ -240,22 +282,7 @@ const orderController = {
 
             // Sync Machine Status
             if (order.assignedMachineId) {
-                const Machine = require('../InventoryManagement/Machine');
-                if (status === 'printing' || status === 'in_progress') {
-                    await Machine.findByIdAndUpdate(order.assignedMachineId, {
-                        status: 'In Use',
-                        startTime: order.scheduledStart || new Date(),
-                        estimatedEndTime: order.scheduledEnd
-                    });
-                } else if (status === 'completed' || status === 'cancelled') {
-                    await Machine.findByIdAndUpdate(order.assignedMachineId, {
-                        status: 'Available',
-                        currentOrderId: null,
-                        operatorId: null,
-                        startTime: null,
-                        estimatedEndTime: null
-                    });
-                }
+                await syncMachineState(order.assignedMachineId);
             }
 
             // Handle job completion (Inventory & Invoice)
@@ -386,6 +413,20 @@ const orderController = {
                 throw new ApiError('Order not found', 404);
             }
 
+            // Sync Machine Status
+            if (order.assignedMachineId) {
+                await syncMachineState(order.assignedMachineId);
+            }
+
+            // Also delete corresponding ProductionOrder if exists
+            const productionOrder = await ProductionOrder.findOneAndDelete({ shopOrderId: order._id });
+            if (productionOrder) {
+                await Schedule.updateMany(
+                    { orderId: productionOrder._id },
+                    { status: 'cancelled' }
+                );
+            }
+
             res.json({
                 message: 'Order deleted successfully',
             });
@@ -448,14 +489,7 @@ const orderController = {
 
             // Update Machine Status to Scheduled
             if (assignedMachineId) {
-                const Machine = require('../InventoryManagement/Machine');
-                await Machine.findByIdAndUpdate(assignedMachineId, {
-                    status: 'Scheduled',
-                    currentOrderId: order._id,
-                    operatorId: assignedOperatorId,
-                    startTime: scheduledStart,
-                    estimatedEndTime: scheduledEnd
-                });
+                await syncMachineState(assignedMachineId);
             }
 
             // Sync with ProductionOrder
@@ -541,24 +575,11 @@ const orderController = {
             await order.save();
 
             // Update Machine Status
-            const Machine = require('../InventoryManagement/Machine');
-            // If machine changed, make the old one available
-            if (oldMachineId && oldMachineId.toString() !== assignedMachineId) {
-                await Machine.findByIdAndUpdate(oldMachineId, {
-                    status: 'Available',
-                    currentOrderId: null,
-                    operatorId: null
-                });
+            if (oldMachineId && oldMachineId.toString() !== assignedMachineId?.toString()) {
+                await syncMachineState(oldMachineId);
             }
-            // Set new machine to Scheduled
             if (assignedMachineId) {
-                await Machine.findByIdAndUpdate(assignedMachineId, {
-                    status: 'Scheduled',
-                    currentOrderId: order._id,
-                    operatorId: assignedOperatorId,
-                    startTime: scheduledStart,
-                    estimatedEndTime: scheduledEnd
-                });
+                await syncMachineState(assignedMachineId);
             }
 
             // Sync with ProductionOrder
