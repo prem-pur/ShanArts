@@ -2,6 +2,38 @@ const mongoose = require('mongoose');
 const Notification = require('./Notification');
 
 const notificationController = {
+	async getAllNotifications(req, res, next) {
+		try {
+			const limit = Math.min(parseInt(req.query.limit || '200', 10), 500);
+			const filters = { isDismissed: false };
+
+			if (req.query.type) {
+				filters.type = req.query.type;
+			}
+
+			if (req.query.recipientId) {
+				filters.recipientId = req.query.recipientId;
+			}
+
+			if (req.query.isRead === 'true') {
+				filters.isRead = true;
+			}
+
+			if (req.query.isRead === 'false') {
+				filters.isRead = false;
+			}
+
+			const notifications = await Notification.find(filters)
+				.sort({ createdAt: -1 })
+				.limit(limit)
+				.lean();
+
+			return res.json({ data: notifications });
+		} catch (error) {
+			return next(error);
+		}
+	},
+
 	async getMyNotifications(req, res, next) {
 		try {
 			const limit = Math.min(parseInt(req.query.limit || '50', 10), 200);

@@ -16,6 +16,9 @@ router.get('/', auth, roleCheck(['admin', 'staff_system']), feedbackController.g
 // Respond to feedback (admin only)
 router.patch('/:id/respond', auth, roleCheck(['admin', 'staff_system']), feedbackController.respondToFeedback);
 
+// Delete feedback (admin only)
+router.delete('/:id', auth, roleCheck(['admin', 'staff_system']), feedbackController.deleteFeedback);
+
 // Get feedback statistics (admin only)
 router.get('/stats', auth, roleCheck(['admin', 'staff_system']), feedbackController.getFeedbackStats);
 
