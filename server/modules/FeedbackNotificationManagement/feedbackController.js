@@ -58,11 +58,57 @@ const feedbackController = {
 
     async getAllFeedback(req, res, next) {
         try {
-            const { status, category, limit = 50, sort = '-createdAt' } = req.query;
+            const {
+                status,
+                category,
+                limit = 50,
+                sort = '-createdAt',
+                search,
+                minRating,
+                maxRating,
+                startDate,
+                endDate,
+                userId,
+                resolved
+            } = req.query;
             const filters = {};
 
+            // Status filter
             if (status) filters.status = status;
+
+            // Category filter
             if (category) filters.category = category;
+
+            // Rating range filter
+            if (minRating || maxRating) {
+                filters.rating = {};
+                if (minRating) filters.rating.$gte = parseInt(minRating, 10);
+                if (maxRating) filters.rating.$lte = parseInt(maxRating, 10);
+            }
+
+            // Date range filter
+            if (startDate || endDate) {
+                filters.createdAt = {};
+                if (startDate) filters.createdAt.$gte = new Date(startDate);
+                if (endDate) filters.createdAt.$lte = new Date(endDate);
+            }
+
+            // User filter
+            if (userId) filters.userId = userId;
+
+            // Resolved filter (true = resolved, false = unresolved)
+            if (resolved !== undefined) {
+                filters.status = resolved === 'true' ? 'resolved' : { $ne: 'resolved' };
+            }
+
+            // Search in comment text
+            if (search) {
+                filters.$or = [
+                    { comment: { $regex: search, $options: 'i' } },
+                    { response: { $regex: search, $options: 'i' } },
+                    { orderNumber: { $regex: search, $options: 'i' } }
+                ];
+            }
 
             const feedback = await Feedback.find(filters)
                 .populate('userId', 'name email')
@@ -139,6 +185,25 @@ const feedbackController = {
                 submitted,
                 resolved,
                 averageRating: avgRating[0]?.average || 0,
+            });
+        } catch (error) {
+            return next(error);
+        }
+    },
+
+    async deleteFeedback(req, res, next) {
+        try {
+            const { id } = req.params;
+
+            const feedback = await Feedback.findByIdAndDelete(id);
+
+            if (!feedback) {
+                return res.status(404).json({ message: 'Feedback not found' });
+            }
+
+            return res.json({
+                message: 'Feedback deleted successfully',
+                feedbackId: feedback._id,
             });
         } catch (error) {
             return next(error);

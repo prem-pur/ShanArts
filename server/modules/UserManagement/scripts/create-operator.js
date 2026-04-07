@@ -18,18 +18,18 @@ async function createOperator() {
             },
             { upsert: true, new: true }
         );
-        
+
         console.log('Operator created/updated:', operator);
-        
+
         // Assign operator to Digital Printer 1
         const Machine = require('../../InventoryManagement/Machine');
         await Machine.findByIdAndUpdate(
             '69a58336e17052fa75632f58',
             { operatorId: operator._id }
         );
-        
+
         console.log('Digital Printer 1 assigned to Pamoda');
-        
+
         process.exit(0);
     } catch (error) {
         console.error('Error:', error);
@@ -38,4 +38,3 @@ async function createOperator() {
 }
 
 createOperator();
-
