@@ -1,4 +1,4 @@
-const express = require("express");
+const express = require("express"); // Restart trigger 3
 const mongoose = require("mongoose");
 const cors = require("cors");
 require("dotenv").config();
@@ -18,76 +18,71 @@ app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 // Health Check
 app.get('/api/health', (req, res) => res.json({ status: 'ok', mongo: mongoose.connection.readyState }));
 
-async function migrateFeedbackIndexes() {
-    try {
-        const feedbackCollection = mongoose.connection.collection('feedbacks');
-        const indexes = await feedbackCollection.indexes();
-        const hasLegacyOrderIdIndex = indexes.some((index) => index.name === 'orderId_1');
+const orderRoutes = require("./modules/OrderManagement/orderRoutes");
+const requestRoutes = require("./modules/OrderManagement/requestRoutes");
+const templateRoutes = require("./modules/OrderManagement/templateRoutes");
 
-        if (hasLegacyOrderIdIndex) {
-            await feedbackCollection.dropIndex('orderId_1');
-            console.log('Dropped legacy feedback index: orderId_1');
-        }
-    } catch (error) {
-        console.warn('Feedback index migration skipped:', error.message);
-    }
-}
+// Shop Management Routes
+const authRoutes = require('./modules/UserManagement/auth');
+const shopOrderRoutes = require('./modules/OrderManagement/shop-orders');
+const machineRoutes = require('./modules/InventoryManagement/machines');
+const inventoryRoutes = require('./modules/InventoryManagement/inventory');
+const invoiceRoutes = require('./modules/BillingManagement/invoices');
+const billingRoutes = require('./modules/BillingManagement/billingRoutes');
+const scheduleRoutes = require('./modules/ScheduleManagement/routes');
+const feedbackRoutes = require('./modules/FeedbackNotificationManagement/routes');
+const notificationRoutes = require('./modules/FeedbackNotificationManagement/notifications');
+const attendanceRoutes = require('./modules/UserManagement/attendanceRoutes');
 
-// Connect to MongoDB BEFORE mounting routes
-mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/orderDB', {
-    connectTimeoutMS: 10000,
-    socketTimeoutMS: 45000,
-})
+app.use("/api/orders", orderRoutes);
+app.use("/api/requests", requestRoutes);
+app.use("/api/templates", templateRoutes);
+
+// Mount Shop Management Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/shop-orders', shopOrderRoutes);
+app.use('/api/machines', machineRoutes);
+app.use('/api/inventory', inventoryRoutes);
+app.use('/api/invoices', invoiceRoutes);
+app.use('/api/billing', billingRoutes);
+app.use('/api/schedule', scheduleRoutes);
+app.use('/api/feedback', feedbackRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/attendance', attendanceRoutes);
+
+// Global error handler middleware
+app.use((err, req, res, next) => {
+    const statusCode = err.status || 500;
+    res.status(statusCode).json({
+        message: err.message || 'Internal Server Error',
+        status: statusCode
+    });
+});
+
+mongoose.connect(process.env.MONGO_URI)
     .then(async () => {
         console.log("MongoDB Connected");
+        // Seed Admin User on startup if it doesn't exist
+        try {
+            const User = require('./modules/UserManagement/User');
+            const adminEmail = 'sachi@gmail.com';
+            const existingAdmin = await User.findOne({ email: adminEmail });
 
-        // Cleanup stale indexes that conflict with optional feedback order references.
-        await migrateFeedbackIndexes();
-        const Feedback = require('./modules/FeedbackNotificationManagement/Feedback');
-        await Feedback.syncIndexes();
-        
-        // Now mount routes after connection is established
-        const orderRoutes = require("./modules/OrderManagement/orderRoutes");
-        const requestRoutes = require("./modules/OrderManagement/requestRoutes");
-        const templateRoutes = require("./modules/OrderManagement/templateRoutes");
-
-        // Shop Management Routes
-        const authRoutes = require('./modules/UserManagement/auth');
-        const shopOrderRoutes = require('./modules/OrderManagement/shop-orders');
-        const machineRoutes = require('./modules/InventoryManagement/machines');
-        const inventoryRoutes = require('./modules/InventoryManagement/inventory');
-        const invoiceRoutes = require('./modules/BillingManagement/invoices');
-        const scheduleRoutes = require('./modules/ScheduleManagement/routes');
-        const feedbackRoutes = require('./modules/FeedbackNotificationManagement/routes');
-        const notificationRoutes = require('./modules/FeedbackNotificationManagement/notifications');
-
-        app.use("/api/orders", orderRoutes);
-        app.use("/api/requests", requestRoutes);
-        app.use("/api/templates", templateRoutes);
-
-        // Mount Shop Management Routes
-        app.use('/api/auth', authRoutes);
-        app.use('/api/shop-orders', shopOrderRoutes);
-        app.use('/api/machines', machineRoutes);
-        app.use('/api/inventory', inventoryRoutes);
-        app.use('/api/invoices', invoiceRoutes);
-        app.use('/api/schedule', scheduleRoutes);
-        app.use('/api/feedback', feedbackRoutes);
-        app.use('/api/notifications', notificationRoutes);
-
-        // Global error handler middleware
-        app.use((err, req, res, next) => {
-            const statusCode = err.status || 500;
-            res.status(statusCode).json({
-                message: err.message || 'Internal Server Error',
-                status: statusCode
-            });
-        });
-
-        const PORT = process.env.PORT || 5000;
-        app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+            if (!existingAdmin) {
+                const admin = new User({
+                    name: 'Sachi Admin',
+                    email: adminEmail,
+                    passwordHash: '12345', // As per current system logic
+                    role: 'admin'
+                });
+                await admin.save();
+                console.log('✅ Admin user automatically created on startup!');
+            }
+        } catch (err) {
+            console.error('❌ Error creating initial admin user:', err.message);
+        }
     })
-    .catch(err => {
-        console.error("MongoDB Connection Error:", err.message);
-        process.exit(1);
-    });
+    .catch(err => console.log(err));
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

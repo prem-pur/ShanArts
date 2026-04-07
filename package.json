@@ -1,7 +1,7 @@
 {
-    "name": "printing-management-system",
+    "name": "shan-art-advertising",
     "version": "1.0.0",
-    "description": "Root package for Printing Management System",
+    "description": "Shan Art Advertising - Management System",
     "scripts": {
         "dev-server": "npm run dev --prefix server",
         "dev-client": "npm run start --prefix client",
