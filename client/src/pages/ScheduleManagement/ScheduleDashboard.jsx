@@ -6,6 +6,7 @@ import OrdersDashboard from './OrdersDashboard';
 import OperatorsDashboard from './OperatorsDashboard';
 import WeeklyTimeline from './WeeklyTimeline';
 import UpcomingJobs from './UpcomingJobs';
+import { useToast, ToastContainer } from './Toast';
 
 const Icons = {
     Awaiting: () => (
@@ -42,6 +43,7 @@ const Icons = {
 
 const ScheduleDashboard = () => {
     const navigate = useNavigate();
+    const { toasts, showToast, removeToast } = useToast();
     const [activeView, setActiveView] = useState('overview'); // overview, orders, operators
     const [orders, setOrders] = useState([]);
     const [operators, setOperators] = useState([]);
@@ -103,7 +105,7 @@ const ScheduleDashboard = () => {
             const now = new Date();
 
             if (d < now) {
-                alert("Cannot schedule in the past.");
+                showToast("Cannot schedule in the past.", 'warning');
                 return;
             }
 
@@ -158,19 +160,19 @@ const ScheduleDashboard = () => {
     const handleAssign = async (e) => {
         e.preventDefault();
         if (!assignment.assignedOperatorId || !assignment.assignedMachineId) {
-            alert("Please select both an operator and a machine.");
+            showToast("Please select both an operator and a machine.", 'warning');
             return;
         }
 
         const startD = new Date(assignment.scheduledStart);
         if (startD < new Date()) {
-            alert("Scheduled start time cannot be in the past.");
+            showToast("Scheduled start time cannot be in the past.", 'warning');
             return;
         }
 
         const hours = startD.getHours();
         if (hours < 8 || hours >= 17) {
-            alert("Scheduling is allowed only between 8:00 AM and 5:00 PM.");
+            showToast("Scheduling is allowed only between 8:00 AM and 5:00 PM.", 'warning');
             return;
         }
 
@@ -206,8 +208,9 @@ const ScheduleDashboard = () => {
                 const machId = conflict.assignedMachineId?._id || conflict.assignedMachineId;
                 if (opId === assignment.assignedOperatorId) who.push('operator');
                 if (machId === assignment.assignedMachineId) who.push('machine');
-                alert(
-                    `Scheduling conflict: The selected ${who.join(' and ')} is already assigned to Order #${conflict.orderNumber} during this time period.\n\nPlease choose a different ${who.join(' or ')} or a different time slot.`
+                showToast(
+                    `Conflict: Selected ${who.join(' & ')} already assigned to Order #${conflict.orderNumber} in this time slot.`,
+                    'error'
                 );
                 return;
             }
@@ -223,7 +226,7 @@ const ScheduleDashboard = () => {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
-            alert(isReschedule ? "Order rescheduled successfully!" : "Order assigned successfully!");
+            showToast(isReschedule ? "Order rescheduled successfully!" : "Order assigned successfully!", 'success');
             setSelectedOrder(null);
             setAssignment({
                 assignedOperatorId: '',
@@ -235,9 +238,8 @@ const ScheduleDashboard = () => {
                 rescheduleReason: ''
             });
             await fetchData();
-            setActiveView('overview');
         } catch (err) {
-            alert(err.response?.data?.message || "Failed to assign order");
+            showToast(err.response?.data?.message || "Failed to assign order", 'error');
         }
     };
 
@@ -247,10 +249,10 @@ const ScheduleDashboard = () => {
             await axios.delete(`${API_BASE_URL}/api/shop-orders/${orderId}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            alert("Order deleted successfully!");
+            showToast("Order deleted successfully!", 'success');
             fetchData();
         } catch (err) {
-            alert(err.response?.data?.message || "Failed to delete order");
+            showToast(err.response?.data?.message || "Failed to delete order", 'error');
         }
     };
 
@@ -310,6 +312,7 @@ const ScheduleDashboard = () => {
             fontFamily: "'Inter', sans-serif",
             color: '#1e293b'
         }}>
+            <ToastContainer toasts={toasts} onRemove={removeToast} />
             <div style={{ padding: '40px', maxWidth: '1400px', margin: '0 auto' }}>
                 {/* Top Navigation & Header */}
                 <div style={{
@@ -322,14 +325,15 @@ const ScheduleDashboard = () => {
                 }}>
                     <div>
                         <h1 style={{
-                            fontSize: '42px',
+                            fontSize: '32px',
                             fontWeight: '900',
-                            color: '#0f172a',
+                            color: '#111827',
                             margin: 0,
-                            letterSpacing: '-1.5px',
-                            lineHeight: 1
+                            letterSpacing: '-1px',
+                            lineHeight: 1,
+                            textTransform: 'uppercase'
                         }}>
-                            Scheduling Manager
+                            Schedule Management
                         </h1>
                         <p style={{
                             color: '#64748b',
@@ -357,7 +361,7 @@ const ScheduleDashboard = () => {
                                     padding: '12px 28px',
                                     borderRadius: '12px',
                                     border: 'none',
-                                    background: activeView === tab ? '#0f172a' : 'transparent',
+                                    background: activeView === tab ? '#D93232' : 'transparent',
                                     color: activeView === tab ? '#fff' : '#64748b',
                                     fontWeight: '700',
                                     cursor: 'pointer',
@@ -394,7 +398,7 @@ const ScheduleDashboard = () => {
                     {activeView === 'overview' ? (
                         <>
                             {/* Stats Bar */}
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '20px', marginBottom: '36px' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '36px' }}>
                                 <StatCard
                                     label="Awaiting"
                                     value={orders.filter(o => o.status === 'scheduled').length}
@@ -405,13 +409,6 @@ const ScheduleDashboard = () => {
                                 <StatCard label="Assigned" value={orders.filter(o => o.status === 'confirmed').length} color="#3b82f6" icon={<Icons.Assigned />} />
                                 <StatCard label="Printing" value={orders.filter(o => o.status === 'in_progress').length} color="#8b5cf6" icon={<Icons.Printing />} />
                                 <StatCard label="Completed" value={orders.filter(o => o.status === 'completed').length} color="#10b981" icon={<Icons.Completed />} />
-                                <StatCard
-                                    label="Machines Busy"
-                                    value={machineStats?.statusCounts?.['In Use'] || 0}
-                                    color="#ef4444"
-                                    icon={<Icons.Busy />}
-                                    subtitle={`${machineStats?.totalMachines || 0} total`}
-                                />
                             </div>
 
                             {/* Two Column: Timeline + Upcoming Jobs */}
@@ -444,6 +441,7 @@ const ScheduleDashboard = () => {
                             handleEstChange={handleEstChange}
                             onBack={() => setActiveView('overview')}
                             handleDeleteOrder={handleDeleteOrder}
+                            showToast={showToast}
                         />
                     ) : (
                         <OperatorsDashboard

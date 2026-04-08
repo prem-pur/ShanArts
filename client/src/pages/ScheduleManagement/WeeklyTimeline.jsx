@@ -3,7 +3,7 @@ import React, { useMemo } from 'react';
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 const ORDER_COLORS = {
-    scheduled: { bg: '#f8fafc', text: '#334155', border: '#cbd5e1' }, 
+    scheduled: { bg: '#f8fafc', text: '#334155', border: '#cbd5e1' },
     rescheduled: { bg: '#fff5f5', text: '#000000', border: '#000000' },
     urgent: { bg: '#fff5f5', text: '#ef4444', border: '#ef4444' }, // Added for Legend
     in_progress: { bg: '#eff6ff', text: '#3b82f6', border: '#3b82f6' },
@@ -207,27 +207,27 @@ const WeeklyTimeline = ({ machines, orders }) => {
 
                                     return (
                                         <div key={order._id}
-                                            title={`#${order.orderNumber} | ${order.jobType || ''} | ${new Date(order.scheduledStart).toLocaleString()}${isUrgent ? ' | URGENT' : ''}${isRescheduled ? ' | RESCHEDULED' : ''}`}
-                                            style={{
-                                                position: 'absolute',
-                                                top: '8px', height: '32px',
-                                                borderRadius: '8px',
-                                                background: finalBg,
-                                                border: finalBorder,
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                padding: '0 10px',
-                                                gap: '6px',
-                                                fontSize: '11px',
-                                                fontWeight: '900',
-                                                color: finalColor,
-                                                zIndex: 10,
-                                                whiteSpace: 'nowrap',
-                                                boxShadow: isUrgent ? '0 4px 12px rgba(239, 68, 68, 0.2)' : '0 2px 6px rgba(0,0,0,0.05)',
-                                                cursor: 'default',
-                                                ...barStyle,
-                                                minWidth: '40px'
-                                            }}>
+                                             title={`#${order.orderNumber} | ${order.jobType || ''} | ${new Date(order.scheduledStart).toLocaleString()}${isUrgent ? ' | URGENT' : ''}${isRescheduled ? ' | RESCHEDULED' : ''}`}
+                                             style={{
+                                                 position: 'absolute',
+                                                 top: '8px', height: '32px',
+                                                 borderRadius: '8px',
+                                                 background: finalBg,
+                                                 border: finalBorder,
+                                                 display: 'flex',
+                                                 alignItems: 'center',
+                                                 padding: '0 10px',
+                                                 gap: '6px',
+                                                 fontSize: '11px',
+                                                 fontWeight: '900',
+                                                 color: finalColor,
+                                                 zIndex: 10,
+                                                 whiteSpace: 'nowrap',
+                                                 boxShadow: isUrgent ? '0 4px 12px rgba(239, 68, 68, 0.2)' : '0 2px 6px rgba(0,0,0,0.05)',
+                                                 cursor: 'default',
+                                                 ...barStyle,
+                                                 minWidth: '40px'
+                                             }}>
                                             <span style={{ pointerEvents: 'none' }}></span>
                                         </div>
                                     );

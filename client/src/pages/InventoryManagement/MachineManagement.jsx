@@ -189,8 +189,16 @@ const MachineManagement = () => {
         <div style={{ padding: '40px', fontFamily: "'Inter', sans-serif" }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
                 <div>
-                    <h1 style={{ fontSize: '32px', fontWeight: '900', color: '#111827', marginBottom: '8px' }}>
-                        🖨️ Machine Management
+                    <h1 style={{
+                        fontSize: '28px',
+                        fontWeight: '900',
+                        color: '#111827',
+                        margin: 0,
+                        letterSpacing: '-1px',
+                        lineHeight: 1,
+                        textTransform: 'uppercase'
+                    }}>
+                        Machine Control
                     </h1>
                     <p style={{ color: '#6b7280', fontSize: '16px' }}>
                         Monitor and manage production equipment status and maintenance
@@ -201,7 +209,7 @@ const MachineManagement = () => {
                         onClick={() => setShowAddModal(true)}
                         style={{
                             padding: '12px 24px',
-                            backgroundColor: '#111827',
+                            backgroundColor: '#D93232',
                             color: 'white',
                             border: 'none',
                             borderRadius: '12px',
@@ -220,24 +228,25 @@ const MachineManagement = () => {
             {/* Production Summary */}
             {productionSummary && (
                 <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                    display: 'flex',
                     gap: '20px',
-                    marginBottom: '40px'
+                    marginBottom: '40px',
+                    flexWrap: 'wrap',
+                    alignItems: 'center'
                 }}>
-                    <div style={{ background: '#fff', padding: '24px', borderRadius: '12px', border: '1px solid #e5e7eb' }}>
-                        <h3 style={{ margin: '0 0 16px 0', color: '#374151' }}>📊 Total Machines</h3>
-                        <div style={{ fontSize: '36px', fontWeight: '900', color: '#111827' }}>
+                    <div style={{ background: '#fff', padding: '22px 26px', borderRadius: '14px', border: '1px solid #e5e7eb', whiteSpace: 'nowrap', minWidth: '200px' }}>
+                        <div style={{ fontSize: '13px', color: '#6b7280', fontWeight: '700', marginBottom: '8px' }}>📊 Total Machines</div>
+                        <div style={{ fontSize: '28px', fontWeight: '900', color: '#111827' }}>
                             {productionSummary.totalMachines}
                         </div>
                     </div>
 
                     {Object.entries(productionSummary.statusCounts).map(([status, count]) => (
-                        <div key={status} style={{ background: '#fff', padding: '24px', borderRadius: '12px', border: '1px solid #e5e7eb' }}>
-                            <h3 style={{ margin: '0 0 16px 0', color: '#374151' }}>
+                        <div key={status} style={{ background: '#fff', padding: '22px 26px', borderRadius: '14px', border: '1px solid #e5e7eb', whiteSpace: 'nowrap', minWidth: '190px' }}>
+                            <div style={{ fontSize: '13px', color: '#6b7280', fontWeight: '700', marginBottom: '8px' }}>
                                 {getStatusIcon(status)} {status}
-                            </h3>
-                            <div style={{ fontSize: '36px', fontWeight: '900', color: getStatusColor(status) }}>
+                            </div>
+                            <div style={{ fontSize: '28px', fontWeight: '900', color: getStatusColor(status) }}>
                                 {count}
                             </div>
                         </div>
@@ -321,7 +330,7 @@ const MachineManagement = () => {
                                                 <>
                                                     <span style={{ color: '#94a3b8' }}>•</span>
                                                     <span style={{ color: '#64748b', fontWeight: '600' }}>
-                                                            🕒 Started: {new Date(machine.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                            🕒 Start date: {new Date(machine.startTime).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                                         </span>
                                                 </>
                                             )}
@@ -351,7 +360,7 @@ const MachineManagement = () => {
                                                         <span style={{ color: '#94a3b8' }}>•</span>
                                                         <span>{order.assignedOperatorId?.name || 'Unassigned Operator'}</span>
                                                         <span style={{ color: '#94a3b8' }}>•</span>
-                                                        <span style={{ color: '#64748b', fontWeight: '600' }}>{order.jobType}</span>
+                                                        <span style={{ color: '#64748b', fontWeight: '600' }}>{order.jobType} • 🕒 {new Date(order.scheduledStart).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                                                         <span style={{
                                                             marginLeft: 'auto',
                                                             fontSize: '10px',
@@ -396,15 +405,16 @@ const MachineManagement = () => {
                                         onClick={() => machine.status === 'Under Maintenance' ? handleSetAvailable(machine._id) : openMaintenanceModal(machine)}
                                         disabled={!isScheduleManager}
                                         style={{
-                                            padding: '8px',
-                                            border: '1px solid #d1d5db',
-                                            borderRadius: '6px',
-                                            fontSize: '12px',
-                                            backgroundColor: !isScheduleManager ? '#f3f4f6' : (machine.status === 'Under Maintenance' ? '#ecfdf5' : '#f3f4f6'),
-                                            color: !isScheduleManager ? '#94a3b8' : (machine.status === 'Under Maintenance' ? '#10b981' : '#1f2937'),
+                                            padding: '10px',
+                                            border: '1px solid #dfe3ea',
+                                            borderRadius: '10px',
+                                            fontSize: '13px',
+                                            backgroundColor: !isScheduleManager ? '#f3f4f6' : '#eef0f6',
+                                            color: !isScheduleManager ? '#94a3b8' : '#5b4f78',
                                             fontWeight: '700',
                                             cursor: !isScheduleManager ? 'not-allowed' : 'pointer',
-                                            opacity: !isScheduleManager ? 0.7 : 1
+                                            opacity: !isScheduleManager ? 0.7 : 1,
+                                            width: '100%'
                                         }}
                                         title={!isScheduleManager ? "Only managers can update machine status" : ""}
                                     >
@@ -414,14 +424,15 @@ const MachineManagement = () => {
                                         <button
                                             onClick={() => handleDeleteMachine(machine._id)}
                                             style={{
-                                                padding: '8px',
-                                                border: '1px solid #fca5a5',
-                                                borderRadius: '6px',
-                                                fontSize: '12px',
-                                                backgroundColor: '#fef2f2',
-                                                color: '#ef4444',
+                                                padding: '10px',
+                                                border: '1px solid #f3c7c9',
+                                                borderRadius: '10px',
+                                                fontSize: '13px',
+                                                backgroundColor: '#fff7f7',
+                                                color: '#d93232',
                                                 fontWeight: '700',
-                                                cursor: 'pointer'
+                                                cursor: 'pointer',
+                                                width: '100%'
                                             }}
                                         >
                                             🗑️ Remove
@@ -468,7 +479,7 @@ const MachineManagement = () => {
 
                             <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
                                 <button type="button" onClick={() => setShowAddModal(false)} style={{ flex: 1, padding: '12px', border: '1px solid #d1d5db', borderRadius: '8px', backgroundColor: '#f3f4f6', cursor: 'pointer', fontWeight: '600' }}>Cancel</button>
-                                <button type="submit" style={{ flex: 2, padding: '12px', border: 'none', borderRadius: '8px', backgroundColor: '#111827', color: 'white', fontWeight: '800', cursor: 'pointer' }}>Add Machine</button>
+                                <button type="submit" style={{ flex: 2, padding: '12px', border: 'none', borderRadius: '8px', backgroundColor: '#D93232', color: 'white', fontWeight: '800', cursor: 'pointer' }}>Add Machine</button>
                             </div>
                         </form>
                     </div>
@@ -534,7 +545,7 @@ const MachineManagement = () => {
                             <button
                                 type="button"
                                 onClick={updateMaintenance}
-                                style={{ flex: 2, padding: '12px', border: 'none', borderRadius: '8px', backgroundColor: '#3b82f6', color: '#fff', fontWeight: '600' }}
+                                style={{ flex: 2, padding: '12px', border: 'none', borderRadius: '8px', backgroundColor: '#D93232', color: '#fff', fontWeight: '600' }}
                             >
                                 Maintenance
                             </button>

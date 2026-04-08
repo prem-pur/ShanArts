@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 const STATUS_CONFIG = {
     scheduled: { label: 'Awaiting', color: '#f59e0b', bg: '#fffbeb' },
@@ -15,12 +15,6 @@ const Icons = {
             <polyline points="15 18 9 12 15 6"></polyline>
         </svg>
     ),
-    Operator: () => (
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-            <circle cx="12" cy="7" r="4"></circle>
-        </svg>
-    ),
     NoOperators: () => (
         <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
@@ -32,12 +26,20 @@ const Icons = {
 };
 
 const OperatorsDashboard = ({ operators, orders, machineStats, onBack }) => {
+    const [searchTerm, setSearchTerm] = useState('');
+
     const operatorWorkloads = operators.map(op => ({
         ...op,
         tasks: orders.filter(o =>
             (o.assignedOperatorId?._id || o.assignedOperatorId) === op._id && o.status !== 'completed'
         )
     }));
+
+    const filteredOperators = operatorWorkloads.filter(op => {
+        const term = searchTerm.trim().toLowerCase();
+        if (!term) return true;
+        return op.name.toLowerCase().includes(term) || (op.role || '').toLowerCase().includes(term);
+    });
 
     const awaiting = orders.filter(o => o.status === 'scheduled').length;
     const assigned = orders.filter(o => o.status === 'confirmed').length;
@@ -55,30 +57,69 @@ const OperatorsDashboard = ({ operators, orders, machineStats, onBack }) => {
                 border: '1px solid rgba(0,0,0,0.03)',
                 boxShadow: '0 10px 30px rgba(0,0,0,0.04)'
             }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '24px' }}>
-                    <button
-                        onClick={onBack}
-                        style={{
-                            background: '#fff',
-                            border: '1.5px solid #e2e8f0',
-                            width: '42px',
-                            height: '42px',
-                            borderRadius: '12px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            cursor: 'pointer',
-                            color: '#0f172a',
-                            boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
-                            transition: 'all 0.2s'
-                        }}
-                    >
-                        <Icons.Back />
-                    </button>
-                    <h3 style={{ fontSize: '20px', fontWeight: '800', margin: 0, color: '#111827' }}>Production Operators</h3>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '20px', marginBottom: '24px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                        <button
+                            onClick={onBack}
+                            style={{
+                                background: '#fff',
+                                border: '1.5px solid #e2e8f0',
+                                width: '42px',
+                                height: '42px',
+                                borderRadius: '12px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                cursor: 'pointer',
+                                color: '#0f172a',
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
+                                transition: 'all 0.2s'
+                            }}
+                        >
+                            <Icons.Back />
+                        </button>
+                        <h3 style={{ fontSize: '20px', fontWeight: '800', margin: 0, color: '#111827' }}>Production Operators</h3>
+                    </div>
+                    <div style={{ minWidth: '280px', width: '100%', maxWidth: '360px' }}>
+                        <div style={{ position: 'relative', width: '100%' }}>
+                            <span style={{
+                                position: 'absolute',
+                                left: '14px',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                color: '#9ca3af',
+                                width: '16px',
+                                height: '16px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                pointerEvents: 'none'
+                            }}>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M11 4a7 7 0 1 0 4.9 12.1l4 4a1 1 0 0 0 1.4-1.4l-4-4A7 7 0 0 0 11 4zm0 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10z" fill="#9ca3af"/>
+                                </svg>
+                            </span>
+                            <input
+                                type="text"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                placeholder="Search operators..."
+                                style={{
+                                    width: '100%',
+                                    padding: '12px 16px 12px 40px',
+                                    borderRadius: '16px',
+                                    border: '1px solid #e2e8f0',
+                                    fontSize: '14px',
+                                    color: '#111827',
+                                    outline: 'none',
+                                    boxShadow: 'inset 0 1px 2px rgba(15,23,42,0.06)'
+                                }}
+                            />
+                        </div>
+                    </div>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '24px' }}>
-                    {operatorWorkloads.map(op => (
+                    {filteredOperators.map(op => (
                         <div key={op._id} style={{
                             border: '1.5px solid #f3f4f6',
                             borderRadius: '20px',
@@ -100,7 +141,7 @@ const OperatorsDashboard = ({ operators, orders, machineStats, onBack }) => {
                                         color: '#64748b',
                                         border: '1px solid #f1f5f9'
                                     }}>
-                                        <Icons.Operator />
+                                        <span style={{ fontSize: '24px' }}>👷</span>
                                     </div>
                                     <div>
                                         <div style={{ fontWeight: '900', fontSize: '18px', color: '#111827' }}>{op.name}</div>
@@ -192,12 +233,12 @@ const OperatorsDashboard = ({ operators, orders, machineStats, onBack }) => {
                             )}
                         </div>
                     ))}
-                    {operators.length === 0 && (
+                    {filteredOperators.length === 0 && (
                         <div style={{ textAlign: 'center', padding: '80px', color: '#9ca3af', gridColumn: '1/-1' }}>
                             <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'center' }}>
                                 <Icons.NoOperators />
                             </div>
-                            <div style={{ fontWeight: '700', fontSize: '18px' }}>No operators available</div>
+                            <div style={{ fontWeight: '700', fontSize: '18px' }}>{operators.length === 0 ? 'No operators available' : 'No operators match your search'}</div>
                         </div>
                     )}
                 </div>

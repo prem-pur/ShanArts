@@ -25,16 +25,17 @@ const inputStyle = {
 };
 
 const ScheduleForm = ({
-    selectedOrder,
-    setSelectedOrder,
-    operators,
-    machines,
-    assignment,
-    setAssignment,
-    handleAssign,
-    handleStartTimeChange,
-    orders = []
-}) => {
+                          selectedOrder,
+                          setSelectedOrder,
+                          operators,
+                          machines,
+                          assignment,
+                          setAssignment,
+                          handleAssign,
+                          handleStartTimeChange,
+                          orders = [],
+                          showToast
+                      }) => {
     if (!selectedOrder) return null;
 
     const isRescheduling = selectedOrder.status !== 'scheduled';
@@ -116,7 +117,7 @@ const ScheduleForm = ({
             <form onSubmit={(e) => {
                 if (assignment.scheduledStart && assignment.scheduledEnd && new Date(assignment.scheduledEnd) <= new Date(assignment.scheduledStart)) {
                     e.preventDefault();
-                    alert('Estimated End Time must be after Start Time');
+                    showToast('Estimated End Time must be after Start Time', 'warning');
                     return;
                 }
                 handleAssign(e);

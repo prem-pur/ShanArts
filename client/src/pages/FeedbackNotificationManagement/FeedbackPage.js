@@ -10,6 +10,7 @@ const FeedbackPage = () => {
     const [responseDrafts, setResponseDrafts] = useState({});
     const [error, setError] = useState('');
     const [showForm, setShowForm] = useState(false);
+    const [deletingId, setDeletingId] = useState('');
     const token = localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     const isAdminView = user.role === 'admin' || user.role === 'staff_system';
@@ -21,11 +22,46 @@ const FeedbackPage = () => {
         orderNumber: '',
     });
 
+    // Admin filter state
+    const [filters, setFilters] = useState({
+        search: '',
+        status: '',
+        category: '',
+        minRating: '',
+        maxRating: '',
+        startDate: '',
+        endDate: '',
+        resolved: ''
+    });
+
+    const buildQueryString = (filterObj) => {
+        const params = new URLSearchParams();
+        params.append('limit', '200');
+        params.append('sort', '-createdAt');
+
+        if (filterObj.search) params.append('search', filterObj.search);
+        if (filterObj.status) params.append('status', filterObj.status);
+        if (filterObj.category) params.append('category', filterObj.category);
+        if (filterObj.minRating) params.append('minRating', filterObj.minRating);
+        if (filterObj.maxRating) params.append('maxRating', filterObj.maxRating);
+        if (filterObj.startDate) params.append('startDate', filterObj.startDate);
+        if (filterObj.endDate) params.append('endDate', filterObj.endDate);
+        if (filterObj.resolved) params.append('resolved', filterObj.resolved);
+
+        return params.toString();
+    };
+
     const fetchFeedback = useCallback(async () => {
         if (!token) return;
         try {
             setLoading(true);
-            const endpoint = isAdminView ? `${API_BASE_URL}/api/feedback?limit=200&sort=-createdAt` : `${API_BASE_URL}/api/feedback/my`;
+            let endpoint;
+            if (isAdminView) {
+                const queryString = buildQueryString(filters);
+                endpoint = `${API_BASE_URL}/api/feedback?${queryString}`;
+            } else {
+                endpoint = `${API_BASE_URL}/api/feedback/my`;
+            }
             const response = await axios.get(endpoint, {
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -38,7 +74,7 @@ const FeedbackPage = () => {
         } finally {
             setLoading(false);
         }
-    }, [isAdminView, token]);
+    }, [isAdminView, token, filters]);
 
     useEffect(() => {
         fetchFeedback();
@@ -97,10 +133,51 @@ const FeedbackPage = () => {
         }
     };
 
+    const handleDeleteFeedback = async (id) => {
+        if (!window.confirm('Are you sure you want to delete this feedback? This action cannot be undone.')) {
+            return;
+        }
+
+        try {
+            setDeletingId(id);
+            await axios.delete(
+                `${API_BASE_URL}/api/feedback/${id}`,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            setFeedback((prev) => prev.filter((item) => item._id !== id));
+            setError('');
+        } catch (err) {
+            setError(err.response?.data?.message || 'Failed to delete feedback');
+        } finally {
+            setDeletingId('');
+        }
+    };
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
+
+    const handleFilterChange = (e) => {
+        const { name, value } = e.target;
+        setFilters((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const resetFilters = () => {
+        setFilters({
+            search: '',
+            status: '',
+            category: '',
+            minRating: '',
+            maxRating: '',
+            startDate: '',
+            endDate: '',
+            resolved: ''
+        });
+    };
+
+    const hasActiveFilters = Object.values(filters).some(v => v !== '');
 
     const getCategoryEmoji = (category) => {
         const emojis = {
@@ -181,6 +258,269 @@ const FeedbackPage = () => {
                     border: '1px solid #fee2e2'
                 }}>
                     {error}
+                </div>
+            )}
+
+            {isAdminView && (
+                <div style={{
+                    background: '#ffffff',
+                    borderRadius: '12px',
+                    padding: '24px',
+                    marginBottom: '32px',
+                    border: '1px solid #e5e7eb',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+                }}>
+                    <h3 style={{ fontSize: '16px', fontWeight: '800', marginBottom: '16px', margin: '0 0 16px 0' }}>🔍 Filter & Search Feedback</h3>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '16px' }}>
+                        {/* Search Input */}
+                        <div>
+                            <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#6b7280', marginBottom: '6px' }}>
+                                Search (Comment, Response, Order #)
+                            </label>
+                            <input
+                                type="text"
+                                name="search"
+                                value={filters.search}
+                                onChange={handleFilterChange}
+                                placeholder="Search feedback..."
+                                style={{
+                                    width: '100%',
+                                    padding: '10px',
+                                    borderRadius: '6px',
+                                    border: '1px solid #d1d5db',
+                                    fontSize: '13px',
+                                    color: '#374151'
+                                }}
+                            />
+                        </div>
+
+                        {/* Status Filter */}
+                        <div>
+                            <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#6b7280', marginBottom: '6px' }}>
+                                Status
+                            </label>
+                            <select
+                                name="status"
+                                value={filters.status}
+                                onChange={handleFilterChange}
+                                style={{
+                                    width: '100%',
+                                    padding: '10px',
+                                    borderRadius: '6px',
+                                    border: '1px solid #d1d5db',
+                                    fontSize: '13px',
+                                    color: '#374151',
+                                    background: '#ffffff'
+                                }}
+                            >
+                                <option value="">All Statuses</option>
+                                <option value="submitted">Submitted</option>
+                                <option value="read">Read</option>
+                                <option value="resolved">Resolved</option>
+                            </select>
+                        </div>
+
+                        {/* Resolved Filter */}
+                        <div>
+                            <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#6b7280', marginBottom: '6px' }}>
+                                Resolution Status
+                            </label>
+                            <select
+                                name="resolved"
+                                value={filters.resolved}
+                                onChange={handleFilterChange}
+                                style={{
+                                    width: '100%',
+                                    padding: '10px',
+                                    borderRadius: '6px',
+                                    border: '1px solid #d1d5db',
+                                    fontSize: '13px',
+                                    color: '#374151',
+                                    background: '#ffffff'
+                                }}
+                            >
+                                <option value="">All</option>
+                                <option value="true">Resolved Only</option>
+                                <option value="false">Unresolved Only</option>
+                            </select>
+                        </div>
+
+                        {/* Category Filter */}
+                        <div>
+                            <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#6b7280', marginBottom: '6px' }}>
+                                Category
+                            </label>
+                            <select
+                                name="category"
+                                value={filters.category}
+                                onChange={handleFilterChange}
+                                style={{
+                                    width: '100%',
+                                    padding: '10px',
+                                    borderRadius: '6px',
+                                    border: '1px solid #d1d5db',
+                                    fontSize: '13px',
+                                    color: '#374151',
+                                    background: '#ffffff'
+                                }}
+                            >
+                                <option value="">All Categories</option>
+                                <option value="quality">Quality</option>
+                                <option value="service">Service</option>
+                                <option value="delivery">Delivery</option>
+                                <option value="pricing">Pricing</option>
+                                <option value="communication">Communication</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        {/* Min Rating */}
+                        <div>
+                            <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#6b7280', marginBottom: '6px' }}>
+                                Min Rating
+                            </label>
+                            <select
+                                name="minRating"
+                                value={filters.minRating}
+                                onChange={handleFilterChange}
+                                style={{
+                                    width: '100%',
+                                    padding: '10px',
+                                    borderRadius: '6px',
+                                    border: '1px solid #d1d5db',
+                                    fontSize: '13px',
+                                    color: '#374151',
+                                    background: '#ffffff'
+                                }}
+                            >
+                                <option value="">Any</option>
+                                <option value="1">1+ Stars</option>
+                                <option value="2">2+ Stars</option>
+                                <option value="3">3+ Stars</option>
+                                <option value="4">4+ Stars</option>
+                                <option value="5">5 Stars Only</option>
+                            </select>
+                        </div>
+
+                        {/* Max Rating */}
+                        <div>
+                            <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#6b7280', marginBottom: '6px' }}>
+                                Max Rating
+                            </label>
+                            <select
+                                name="maxRating"
+                                value={filters.maxRating}
+                                onChange={handleFilterChange}
+                                style={{
+                                    width: '100%',
+                                    padding: '10px',
+                                    borderRadius: '6px',
+                                    border: '1px solid #d1d5db',
+                                    fontSize: '13px',
+                                    color: '#374151',
+                                    background: '#ffffff'
+                                }}
+                            >
+                                <option value="">Any</option>
+                                <option value="1">1 Star Only</option>
+                                <option value="2">Up to 2 Stars</option>
+                                <option value="3">Up to 3 Stars</option>
+                                <option value="4">Up to 4 Stars</option>
+                                <option value="5">5 Stars</option>
+                            </select>
+                        </div>
+
+                        {/* Start Date */}
+                        <div>
+                            <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#6b7280', marginBottom: '6px' }}>
+                                Start Date
+                            </label>
+                            <input
+                                type="date"
+                                name="startDate"
+                                value={filters.startDate}
+                                onChange={handleFilterChange}
+                                style={{
+                                    width: '100%',
+                                    padding: '10px',
+                                    borderRadius: '6px',
+                                    border: '1px solid #d1d5db',
+                                    fontSize: '13px',
+                                    color: '#374151'
+                                }}
+                            />
+                        </div>
+
+                        {/* End Date */}
+                        <div>
+                            <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#6b7280', marginBottom: '6px' }}>
+                                End Date
+                            </label>
+                            <input
+                                type="date"
+                                name="endDate"
+                                value={filters.endDate}
+                                onChange={handleFilterChange}
+                                style={{
+                                    width: '100%',
+                                    padding: '10px',
+                                    borderRadius: '6px',
+                                    border: '1px solid #d1d5db',
+                                    fontSize: '13px',
+                                    color: '#374151'
+                                }}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Filter Action Buttons */}
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                        <button
+                            onClick={() => fetchFeedback()}
+                            style={{
+                                padding: '10px 20px',
+                                borderRadius: '6px',
+                                border: 'none',
+                                background: '#111827',
+                                color: '#ffffff',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                fontSize: '13px'
+                            }}
+                        >
+                            🔍 Apply Filters
+                        </button>
+                        {hasActiveFilters && (
+                            <button
+                                onClick={() => {
+                                    resetFilters();
+                                    setFilters({
+                                        search: '',
+                                        status: '',
+                                        category: '',
+                                        minRating: '',
+                                        maxRating: '',
+                                        startDate: '',
+                                        endDate: '',
+                                        resolved: ''
+                                    });
+                                }}
+                                style={{
+                                    padding: '10px 20px',
+                                    borderRadius: '6px',
+                                    border: '1px solid #d1d5db',
+                                    background: '#ffffff',
+                                    color: '#6b7280',
+                                    fontWeight: '600',
+                                    cursor: 'pointer',
+                                    fontSize: '13px'
+                                }}
+                            >
+                                ✕ Reset Filters
+                            </button>
+                        )}
+                    </div>
                 </div>
             )}
 
@@ -494,6 +834,28 @@ const FeedbackPage = () => {
                                             }}
                                         >
                                             {respondingId === item._id ? 'Sending...' : 'Respond'}
+                                        </button>
+                                    </div>
+                                )}
+
+                                {isAdminView && (
+                                    <div style={{ marginTop: '14px', display: 'flex', gap: '8px' }}>
+                                        <button
+                                            onClick={() => handleDeleteFeedback(item._id)}
+                                            disabled={deletingId === item._id}
+                                            style={{
+                                                padding: '8px 12px',
+                                                borderRadius: '6px',
+                                                border: '1px solid #fecaca',
+                                                background: '#fef2f2',
+                                                color: '#dc2626',
+                                                fontWeight: '600',
+                                                fontSize: '12px',
+                                                cursor: deletingId === item._id ? 'not-allowed' : 'pointer',
+                                                opacity: deletingId === item._id ? 0.6 : 1
+                                            }}
+                                        >
+                                            {deletingId === item._id ? 'Deleting...' : '🗑️ Delete'}
                                         </button>
                                     </div>
                                 )}
