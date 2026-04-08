@@ -1,10 +1,18 @@
-# Node modules
+# 📦 Node modules
 node_modules/
-npm-debug.log
-yarn-error.log
-*.tgz
 
-# Python
+# 🧾 Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 🔐 Environment variables
+.env
+.env.local
+.env.*.local
+
+# 🐍 Python
 __pycache__/
 *.py[cod]
 *$py.class
@@ -12,29 +20,30 @@ __pycache__/
 .Python
 env/
 venv/
-.env
-.venv
+.venv/
 *.egg-info/
+
+# 🏗 Build outputs
 dist/
 build/
 
-# IDE
+# 📁 Uploads (keep folder, ignore files)
+server/public/uploads/*
+!server/public/uploads/.gitkeep
+
+# 💻 IDE / Editor
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
-.DS_Store
 
-# OS
+# 🧹 OS files
+.DS_Store
 Thumbs.db
-.DS_Store
 
-# Build outputs (but keep build and dist for production builds to be visible)
-client/build/
-server/public/uploads/*
-!server/public/uploads/.gitkeep
+# 📦 Archives
+*.tgz
 
-# Environment files
-.env.local
-.env.*.local
+# 🧪 Coverage
+coverage/
