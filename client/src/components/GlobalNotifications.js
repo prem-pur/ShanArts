@@ -27,7 +27,9 @@ const GlobalNotifications = () => {
             const response = await axios.get(`${API_BASE_URL}/api/notifications/my`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
-            const list = Array.isArray(response.data) ? response.data : [];
+            const list = Array.isArray(response.data)
+                ? response.data
+                : (Array.isArray(response.data?.data) ? response.data.data : []);
             setNotifications(list);
         } catch (error) {
             console.error('Failed to load notifications:', error);
@@ -73,6 +75,11 @@ const GlobalNotifications = () => {
 
     const goToNotificationsPage = () => {
         setOpen(false);
+        if (user.role === 'customer') {
+            navigate('/customer-home?tab=notifications');
+            return;
+        }
+
         navigate('/notifications');
     };
 
