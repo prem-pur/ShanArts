@@ -59,9 +59,10 @@ app.use((err, req, res, next) => {
     });
 });
 
+console.log("⏳ Connecting to MongoDB at:", process.env.MONGO_URI);
 mongoose.connect(process.env.MONGO_URI)
     .then(async () => {
-        console.log("MongoDB Connected");
+        console.log("✅ MongoDB Connected");
         // Seed Admin User on startup if it doesn't exist
         try {
             const User = require('./modules/UserManagement/User');
@@ -82,7 +83,7 @@ mongoose.connect(process.env.MONGO_URI)
             console.error('❌ Error creating initial admin user:', err.message);
         }
     })
-    .catch(err => console.log(err));
+    .catch(err => console.error("❌ MongoDB Connection Failed:", err.message));
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
