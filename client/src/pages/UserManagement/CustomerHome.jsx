@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import * as Router from 'react-router-dom';
 import axios from 'axios';
+import { jsPDF } from 'jspdf';
 import {
     LayoutDashboard,
     PlusCircle,
@@ -19,7 +20,8 @@ import {
     Star,
     ChevronDown,
     MapPin,
-    Smartphone
+    Smartphone,
+    Download
 } from 'lucide-react';
 import { API_BASE_URL } from '../../apiBase';
 import AddOrder from '../OrderManagement/AddOrder';
@@ -53,8 +55,14 @@ const CustomerHome = () => {
     const [paymentData, setPaymentData] = useState({
         amount: 0,
         method: 'card',
-        reference: ''
+        reference: '',
+        cardNumber: '',
+        cardExpiry: '',
+        cardCvv: ''
     });
+    const [paymentSlip, setPaymentSlip] = useState(null);
+    const [paymentError, setPaymentError] = useState('');
+    const [paymentSubmitting, setPaymentSubmitting] = useState(false);
     const [profileData, setProfileData] = useState({
         name: '',
         phone: ''
@@ -154,6 +162,136 @@ const CustomerHome = () => {
         }
     };
 
+    const validateCardNumber = (value) => {
+        const digits = value.replace(/\D/g, '');
+        if (digits.length < 13 || digits.length > 19) return false;
+
+        let sum = 0;
+        let shouldDouble = false;
+        for (let index = digits.length - 1; index >= 0; index -= 1) {
+            let digit = Number(digits[index]);
+            if (shouldDouble) {
+                digit *= 2;
+                if (digit > 9) digit -= 9;
+            }
+            sum += digit;
+            shouldDouble = !shouldDouble;
+        }
+
+        return sum % 10 === 0;
+    };
+
+    const validateExpiryDate = (value) => {
+        const match = /^([0-1]?\d)\/(\d{2}|\d{4})$/.exec(value.trim());
+        if (!match) return false;
+
+        const month = Number(match[1]);
+        if (month < 1 || month > 12) return false;
+
+        const year = match[2].length === 2 ? Number(`20${match[2]}`) : Number(match[2]);
+        const expiry = new Date(year, month, 0, 23, 59, 59);
+        return expiry >= new Date();
+    };
+
+    const formatCardNumberInput = (value) => {
+        const digits = value.replace(/\D/g, '').slice(0, 19);
+        return digits.replace(/(\d{4})(?=\d)/g, '$1 ').trim();
+    };
+
+    const formatExpiryDateInput = (value) => {
+        const digits = value.replace(/\D/g, '').slice(0, 6);
+        if (digits.length <= 2) {
+            return digits;
+        }
+        return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+    };
+
+    const loadImageAsDataUrl = async (imagePath) => {
+        const response = await fetch(imagePath);
+        const blob = await response.blob();
+
+        return await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        });
+    };
+
+    const handleDownloadInvoicePdf = async (invoice) => {
+        try {
+            const doc = new jsPDF();
+            const pageWidth = doc.internal.pageSize.getWidth();
+
+            const logoDataUrl = await loadImageAsDataUrl(`${process.env.PUBLIC_URL}/logo.png`);
+            doc.addImage(logoDataUrl, 'PNG', 14, 10, 56, 28);
+
+            doc.setFontSize(18);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Invoice', pageWidth - 14, 20, { align: 'right' });
+
+            doc.setFontSize(11);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Invoice Number: ${invoice.invoiceNumber || 'N/A'}`, pageWidth - 14, 28, { align: 'right' });
+            doc.text(`Date: ${new Date(invoice.createdAt || Date.now()).toLocaleDateString()}`, pageWidth - 14, 34, { align: 'right' });
+
+            doc.setDrawColor(220, 220, 220);
+            doc.line(14, 44, pageWidth - 14, 44);
+
+            doc.setFont('helvetica', 'bold');
+            doc.text('Bill To', 14, 55);
+
+            doc.setFont('helvetica', 'normal');
+            doc.text(user.name || 'Customer', 14, 62);
+            if (user.email) {
+                doc.text(user.email, 14, 68);
+            }
+
+            doc.setFont('helvetica', 'bold');
+            doc.text('Order Details', 14, 82);
+
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Order Number: ${invoice.orderId?.orderNumber || 'N/A'}`, 14, 89);
+            doc.text(`Due Date: ${invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : 'N/A'}`, 14, 95);
+            doc.text(`Payment Status: ${(invoice.paymentStatus || 'unpaid').replace(/_/g, ' ')}`, 14, 101);
+
+            doc.setDrawColor(230, 230, 230);
+            doc.setFillColor(249, 250, 251);
+            doc.rect(14, 112, pageWidth - 28, 34, 'FD');
+
+            doc.setFont('helvetica', 'bold');
+            doc.text('Summary', 18, 121);
+
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Total Amount: LKR ${(invoice.totalAmount || 0).toLocaleString()}`, 18, 129);
+            doc.text(`Amount Paid: LKR ${(invoice.amountPaid || 0).toLocaleString()}`, 18, 135);
+            doc.text(`Balance Due: LKR ${(invoice.balanceDue || 0).toLocaleString()}`, 18, 141);
+
+            doc.setFontSize(9);
+            doc.setTextColor(120, 120, 120);
+            doc.text('Thank you for choosing SHAN Art Advertising.', 14, 275);
+
+            doc.save(`Invoice-${invoice.invoiceNumber || invoice._id}.pdf`);
+        } catch (error) {
+            console.error('Failed to generate invoice PDF:', error);
+            alert('Failed to generate invoice PDF. Please try again.');
+        }
+    };
+
+    const resetPaymentForm = () => {
+        setPaymentData({
+            amount: 0,
+            method: 'card',
+            reference: '',
+            cardNumber: '',
+            cardExpiry: '',
+            cardCvv: ''
+        });
+        setPaymentSlip(null);
+        setPaymentError('');
+        setPaymentSubmitting(false);
+    };
+
     const handleApproval = async (action) => {
         if (action === 'reject') {
             if (!rejectionReason.trim()) {
@@ -249,23 +387,86 @@ const CustomerHome = () => {
 
     const handleRecordPayment = async (e) => {
         e.preventDefault();
+        setPaymentError('');
+
+        const paymentAmount = Number(paymentData.amount);
+        if (!Number.isFinite(paymentAmount) || paymentAmount <= 0) {
+            setPaymentError('Payment amount must be greater than 0.');
+            return;
+        }
+
+        if (selectedInvoice && paymentAmount > Number(selectedInvoice.balanceDue || 0)) {
+            setPaymentError(`Amount cannot exceed the balance due of LKR ${Number(selectedInvoice.balanceDue || 0).toLocaleString()}.`);
+            return;
+        }
+
+        if ((paymentData.method === 'card' || paymentData.method === 'online') && !paymentData.reference.trim()) {
+            setPaymentError('Reference / Transaction ID is required for card payments.');
+            return;
+        }
+
+        if (paymentData.method === 'card') {
+            if (!validateCardNumber(paymentData.cardNumber)) {
+                setPaymentError('Enter a valid card number.');
+                return;
+            }
+            if (!validateExpiryDate(paymentData.cardExpiry)) {
+                setPaymentError('Enter a valid card expiry date in MM/YY format.');
+                return;
+            }
+            if (!/^\d{3,4}$/.test(paymentData.cardCvv.trim())) {
+                setPaymentError('Enter a valid 3 or 4 digit CVV.');
+                return;
+            }
+        }
+
+        if (paymentData.method === 'bank_transfer' && !paymentSlip) {
+            setPaymentError('Please upload the bank transfer slip before submitting.');
+            return;
+        }
+
         try {
+            setPaymentSubmitting(true);
             const token = localStorage.getItem('token');
-            await axios.post(`${API_BASE_URL}/api/invoices/${selectedInvoice._id}/payments`, paymentData, {
+            const formData = new FormData();
+            formData.append('amount', String(paymentAmount));
+            formData.append('method', paymentData.method);
+            formData.append('reference', paymentData.reference);
+            formData.append('cardNumber', paymentData.cardNumber);
+            formData.append('cardExpiry', paymentData.cardExpiry);
+            formData.append('cardCvv', paymentData.cardCvv);
+            if (paymentSlip) {
+                formData.append('slip', paymentSlip);
+            }
+
+            const response = await axios.post(`${API_BASE_URL}/api/invoices/${selectedInvoice._id}/payments`, formData, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            alert('Payment recorded successfully!');
+            if (response.data?.data?.payment?.status === 'pending_approval') {
+                alert('Your bank transfer has been sent for admin approval.');
+            } else {
+                alert('Payment recorded successfully!');
+            }
             setShowPaymentModal(false);
             setSelectedInvoice(null);
-            setPaymentData({ amount: 0, method: 'card', reference: '' });
+            resetPaymentForm();
             fetchData();
         } catch (err) {
-            alert(err.response?.data?.message || 'Failed to record payment');
+            setPaymentError(err.response?.data?.message || 'Failed to record payment');
+        } finally {
+            setPaymentSubmitting(false);
         }
     };
 
     const isPickup = (invoice) => {
         return invoice?.orderId?.deliveryMethod === 'pickup';
+    };
+
+    const paymentStatusColors = {
+        paid: '#059669',
+        partial: '#d97706',
+        pending_approval: '#7c3aed',
+        unpaid: '#dc2626'
     };
 
     const feedbackList = Array.isArray(recentFeedback) ? recentFeedback : [];
@@ -469,19 +670,37 @@ const CustomerHome = () => {
                                     </div>
                                     <div style={{ textAlign: 'right' }}>
                                         <div style={{ fontSize: '20px', fontWeight: '900', color: 'var(--accent-color)' }}>LKR {invoice.totalAmount?.toLocaleString()}</div>
-                                        <div style={{ fontSize: '12px', color: invoice.paymentStatus === 'paid' ? '#10b981' : '#f59e0b', fontWeight: '700', marginTop: '4px', marginBottom: '12px' }}>{invoice.paymentStatus?.toUpperCase()}</div>
-                                        {invoice.paymentStatus !== 'paid' && (
+                                        <div style={{ fontSize: '12px', color: paymentStatusColors[invoice.paymentStatus] || '#f59e0b', fontWeight: '700', marginTop: '4px', marginBottom: '12px' }}>{invoice.paymentStatus?.replace(/_/g, ' ').toUpperCase()}</div>
+                                        <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
                                             <button
-                                                onClick={() => {
-                                                    setSelectedInvoice(invoice);
-                                                    setPaymentData({ ...paymentData, amount: invoice.balanceDue || invoice.totalAmount });
-                                                    setShowPaymentModal(true);
-                                                }}
-                                                style={{ padding: '6px 16px', borderRadius: '8px', border: 'none', background: '#111827', color: '#fff', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}
+                                                onClick={() => handleDownloadInvoicePdf(invoice)}
+                                                style={{ padding: '6px 12px', borderRadius: '8px', border: '1px solid #d1d5db', background: '#fff', color: '#111827', fontSize: '11px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
                                             >
-                                                PAY NOW
+                                                <Download size={13} />
+                                                DOWNLOAD PDF
                                             </button>
-                                        )}
+                                            {invoice.paymentStatus !== 'paid' && (
+                                                <button
+                                                    onClick={() => {
+                                                        setSelectedInvoice(invoice);
+                                                        setPaymentData({
+                                                            amount: Number(invoice.balanceDue || 0),
+                                                            method: isPickup(invoice) ? 'card' : 'bank_transfer',
+                                                            reference: user.email || '',
+                                                            cardNumber: '',
+                                                            cardExpiry: '',
+                                                            cardCvv: ''
+                                                        });
+                                                        setPaymentSlip(null);
+                                                        setPaymentError('');
+                                                        setShowPaymentModal(true);
+                                                    }}
+                                                    style={{ padding: '6px 16px', borderRadius: '8px', border: 'none', background: '#111827', color: '#fff', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}
+                                                >
+                                                    PAY NOW
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             ))}
@@ -1058,8 +1277,8 @@ const CustomerHome = () => {
 
                 {/* Payment Modal */}
                 {showPaymentModal && selectedInvoice && (
-                    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-                        <div style={{ background: '#fff', width: '100%', maxWidth: '500px', borderRadius: '24px', padding: '40px' }}>
+                    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '16px' }}>
+                        <div style={{ background: '#fff', width: '100%', maxWidth: '430px', maxHeight: 'calc(100vh - 32px)', borderRadius: '24px', padding: '24px', overflowY: 'auto' }}>
                             <h3 style={{ fontSize: '24px', fontWeight: '900', marginBottom: '8px' }}>Complete Payment</h3>
                             <p style={{ color: '#6b7280', marginBottom: '24px' }}>Invoice #{selectedInvoice.invoiceNumber} for {selectedInvoice.orderId?.orderNumber}</p>
 
@@ -1071,12 +1290,20 @@ const CustomerHome = () => {
                                 </div>
                             </div>
 
+                            {paymentError && (
+                                <div style={{ background: '#fee2e2', border: '1px solid #fca5a5', color: '#dc2626', padding: '12px 16px', borderRadius: '10px', fontSize: '13px', fontWeight: '600', marginBottom: '16px' }}>
+                                    {paymentError}
+                                </div>
+                            )}
+
                             <form onSubmit={handleRecordPayment} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                                 <div>
                                     <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: '#374151', marginBottom: '8px' }}>Amount to Pay (LKR)</label>
                                     <input
                                         type="number"
                                         max={selectedInvoice.balanceDue}
+                                        min="1"
+                                        step="0.01"
                                         required
                                         style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1.5px solid #e5e7eb', fontSize: '16px', fontWeight: '700' }}
                                         value={paymentData.amount}
@@ -1088,7 +1315,10 @@ const CustomerHome = () => {
                                     <select
                                         style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1.5px solid #e5e7eb', fontSize: '14px', fontWeight: '600' }}
                                         value={paymentData.method}
-                                        onChange={e => setPaymentData({ ...paymentData, method: e.target.value })}
+                                        onChange={e => {
+                                            setPaymentData({ ...paymentData, method: e.target.value });
+                                            setPaymentError('');
+                                        }}
                                         required
                                     >
                                         <option value="card">Credit/Debit Card</option>
@@ -1096,6 +1326,7 @@ const CustomerHome = () => {
                                         <option value="pickme_pay">PickMe Pay</option>
                                     </select>
                                 </div>
+
                                 <div>
                                     <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: '#374151', marginBottom: '8px' }}>Reference / Transaction ID</label>
                                     <input
@@ -1104,38 +1335,70 @@ const CustomerHome = () => {
                                         style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1.5px solid #e5e7eb', fontSize: '14px' }}
                                         value={paymentData.reference}
                                         onChange={e => setPaymentData({ ...paymentData, reference: e.target.value })}
-                                        required={paymentData.method !== 'card'}
+                                        required={paymentData.method === 'card' || paymentData.method === 'online'}
                                     />
                                 </div>
 
                                 {paymentData.method === 'card' && (
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '8px' }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                                         <div>
                                             <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: '#374151', marginBottom: '8px' }}>Card Number</label>
-                                            <input type="text" placeholder="XXXX XXXX XXXX XXXX" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1.5px solid #e5e7eb', fontSize: '14px' }} required={paymentData.method === 'card'} />
+                                            <input
+                                                type="text"
+                                                inputMode="numeric"
+                                                placeholder="XXXX XXXX XXXX XXXX"
+                                                maxLength={23}
+                                                value={paymentData.cardNumber}
+                                                onChange={e => setPaymentData({ ...paymentData, cardNumber: formatCardNumberInput(e.target.value) })}
+                                                style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1.5px solid #e5e7eb', fontSize: '14px' }}
+                                            />
                                         </div>
                                         <div style={{ display: 'flex', gap: '16px' }}>
                                             <div style={{ flex: 1 }}>
                                                 <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: '#374151', marginBottom: '8px' }}>Expiry Date</label>
-                                                <input type="text" placeholder="MM/YY" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1.5px solid #e5e7eb', fontSize: '14px' }} required={paymentData.method === 'card'} />
+                                                <input
+                                                    type="text"
+                                                    placeholder="MM/YY"
+                                                    value={paymentData.cardExpiry}
+                                                    onChange={e => setPaymentData({ ...paymentData, cardExpiry: formatExpiryDateInput(e.target.value) })}
+                                                    style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1.5px solid #e5e7eb', fontSize: '14px' }}
+                                                />
                                             </div>
                                             <div style={{ flex: 1 }}>
                                                 <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: '#374151', marginBottom: '8px' }}>CVV</label>
-                                                <input type="password" placeholder="XXX" maxLength="4" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1.5px solid #e5e7eb', fontSize: '14px' }} required={paymentData.method === 'card'} />
+                                                <input
+                                                    type="password"
+                                                    inputMode="numeric"
+                                                    placeholder="XXX"
+                                                    maxLength="4"
+                                                    value={paymentData.cardCvv}
+                                                    onChange={e => setPaymentData({ ...paymentData, cardCvv: e.target.value })}
+                                                    style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1.5px solid #e5e7eb', fontSize: '14px' }}
+                                                />
                                             </div>
                                         </div>
                                     </div>
                                 )}
 
                                 {paymentData.method === 'bank_transfer' && (
-                                    <div style={{ marginTop: '8px' }}>
-                                        <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: '#374151', marginBottom: '8px' }}>Upload Payment Slip</label>
-                                        <input type="file" accept="image/*,.pdf" style={{ width: '100%', padding: '10px', borderRadius: '12px', border: '1.5px dashed var(--accent-color)', fontSize: '14px', background: '#fffafa' }} required={paymentData.method === 'bank_transfer'} />
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                        <div>
+                                            <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: '#374151', marginBottom: '8px' }}>Upload Transfer Slip</label>
+                                            <input
+                                                type="file"
+                                                accept="image/*,.pdf"
+                                                onChange={e => setPaymentSlip(e.target.files?.[0] || null)}
+                                                style={{ width: '100%', padding: '10px', borderRadius: '12px', border: '1.5px dashed var(--accent-color)', fontSize: '14px', background: '#fffafa' }}
+                                            />
+                                        </div>
+                                        <div style={{ fontSize: '12px', color: '#6b7280' }}>
+                                            Once uploaded, the payment will be sent to admin for approval before it is marked as paid.
+                                        </div>
                                     </div>
                                 )}
 
                                 {paymentData.method === 'pickme_pay' && (
-                                    <div style={{ padding: '16px', borderRadius: '12px', background: '#fef3c7', color: '#92400e', fontSize: '13px', fontWeight: '600', marginTop: '8px' }}>
+                                    <div style={{ padding: '16px', borderRadius: '12px', background: '#fef3c7', color: '#92400e', fontSize: '13px', fontWeight: '600' }}>
                                         Please complete the payment via the PickMe App.
                                     </div>
                                 )}
@@ -1146,27 +1409,20 @@ const CustomerHome = () => {
                                         onClick={() => {
                                             setShowPaymentModal(false);
                                             setSelectedInvoice(null);
+                                            resetPaymentForm();
                                         }}
                                         style={{ flex: 1, padding: '16px', borderRadius: '14px', border: 'none', background: '#f3f4f6', fontWeight: '700', cursor: 'pointer' }}
                                     >
                                         {paymentData.method === 'pickme_pay' ? 'Close' : 'Cancel'}
                                     </button>
 
-                                    {paymentData.method === 'card' && (
+                                    {paymentData.method !== 'pickme_pay' && (
                                         <button
                                             type="submit"
-                                            style={{ flex: 2, padding: '16px', borderRadius: '14px', border: 'none', background: 'var(--accent-color)', color: '#fff', fontWeight: '800', cursor: 'pointer', boxShadow: '0 4px 15px rgba(211, 47, 47, 0.4)' }}
+                                            disabled={paymentSubmitting}
+                                            style={{ flex: 2, padding: '16px', borderRadius: '14px', border: 'none', background: paymentSubmitting ? '#9ca3af' : 'var(--accent-color)', color: '#fff', fontWeight: '800', cursor: paymentSubmitting ? 'not-allowed' : 'pointer', boxShadow: '0 4px 15px rgba(211, 47, 47, 0.4)' }}
                                         >
-                                            PAY NOW
-                                        </button>
-                                    )}
-
-                                    {paymentData.method === 'bank_transfer' && (
-                                        <button
-                                            type="submit"
-                                            style={{ flex: 2, padding: '16px', borderRadius: '14px', border: 'none', background: 'var(--accent-color)', color: '#fff', fontWeight: '800', cursor: 'pointer', boxShadow: '0 4px 15px rgba(211, 47, 47, 0.4)' }}
-                                        >
-                                            UPLOAD SLIP
+                                            {paymentData.method === 'bank_transfer' ? 'UPLOAD SLIP' : 'PAY NOW'}
                                         </button>
                                     )}
                                 </div>
