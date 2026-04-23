@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { MapPin, Phone, Mail, Clock } from 'lucide-react';
 
 const Home = () => {
     const navigate = useNavigate();
@@ -28,16 +29,16 @@ const Home = () => {
 
             <section className="landing-hero">
                 <div className="hero-content">
-                    <h1 className="hero-title">
+                    <h1 className="hero-title animate-in">
                         Elevate Your Brand<br/>
                         with <span className="text-highlight">Precision</span>
                     </h1>
-                    <p className="hero-subtitle">
+                    <p className="hero-subtitle animate-in-delay">
                         From high-impact digital prints to state-of-the-art signage,<br/>
                         we bring your vision to life with uncompromising quality and<br/>
                         futuristic design.
                     </p>
-                    <div className="hero-btns">
+                    <div className="hero-btns animate-in-delay">
                         <button
                             className="btn-premium primary"
                             onClick={() => navigate('/customer-dashboard')}
@@ -52,6 +53,23 @@ const Home = () => {
                         </button>
                     </div>
                 </div>
+
+                <div className="hero-ambient-glow">
+                    <div className="glow-orb orb-1"></div>
+                    <div className="glow-orb orb-2"></div>
+                    <div className="glow-orb orb-3"></div>
+                </div>
+
+
+
+                <div className="glow-particles">
+                    <div className="particle"></div>
+                    <div className="particle"></div>
+                    <div className="particle"></div>
+                    <div className="particle"></div>
+                    <div className="particle"></div>
+                    <div className="particle"></div>
+                </div>
             </section>
 
             <section className="landing-section about-section" id="about">
@@ -63,7 +81,9 @@ const Home = () => {
                 <div className="about-content">
                     <div className="about-info-grid">
                         <div className="about-info-card">
-                            <div className="about-info-icon">📍</div>
+                            <div className="about-info-icon">
+                                <MapPin size={24} />
+                            </div>
                             <h3>Our Location</h3>
                             <p>8CF3+2G8, Anuradhapura</p>
                             <a 
@@ -77,20 +97,22 @@ const Home = () => {
                         </div>
                         
                         <div className="about-info-card">
-                            <div className="about-info-icon">📞</div>
+                            <div className="about-info-icon">
+                                <Phone size={24} />
+                            </div>
                             <h3>Connect With Us</h3>
                             <div className="contact-item">
-                                <span className="contact-label">Phone:</span>
                                 <a href="tel:0777234505" className="contact-value">077 723 4505</a>
                             </div>
                             <div className="contact-item">
-                                <span className="contact-label">Email:</span>
                                 <a href="mailto:shanart2012@gmail.com" className="contact-value">shanart2012@gmail.com</a>
                             </div>
                         </div>
 
                         <div className="about-info-card">
-                            <div className="about-info-icon">⏰</div>
+                            <div className="about-info-icon">
+                                <Clock size={24} />
+                            </div>
                             <h3>Business Hours</h3>
                             <p>Mon - Fri: 8:30 AM - 6:00 PM</p>
                             <p>Sat: 9:00 AM - 2:00 PM</p>
