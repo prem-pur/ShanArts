@@ -35,7 +35,7 @@ const OutstandingStrip = ({ data }) => {
     if (!data) return null;
     return (
         <div style={{
-            background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+            background: 'linear-gradient(135deg, #6366F1 0%, #8B5CF6 50%, #4F46E5 100%)',
             borderRadius: '16px', 
             padding: '24px', 
             marginBottom: '32px',
@@ -44,7 +44,7 @@ const OutstandingStrip = ({ data }) => {
             alignItems: 'center', 
             flexWrap: 'wrap', 
             gap: '16px',
-            boxShadow: '0 10px 25px rgba(239, 68, 68, 0.2)'
+            boxShadow: '0 10px 30px var(--accent-glow)'
         }}>
             <div>
                 <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.8)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Total Outstanding Balance</div>
@@ -136,7 +136,7 @@ const BillingManagement = () => {
     const statusBg = { paid: '#d1fae5', partial: '#fef3c7', pending_approval: '#ede9fe', unpaid: '#fee2e2' };
 
     return (
-        <div style={{ padding: '28px 36px', maxWidth: '1400px', margin: '0 auto', fontFamily: "'Inter', sans-serif", backgroundColor: '#f3f4f6', minHeight: '100vh' }}>
+        <div className="shan-page" style={{ padding: '28px 36px', maxWidth: '1400px', margin: '0 auto', fontFamily: 'var(--font-sans, sans-serif)', backgroundColor: 'var(--bg-color)', minHeight: '100vh', color: 'var(--text-primary)' }}>
             <style>{`
                 @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
             `}</style>
@@ -144,10 +144,10 @@ const BillingManagement = () => {
             {/* Page Header */}
             <div style={{ marginBottom: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
                 <div>
-                  <h1 style={{ fontSize: '26px', fontWeight: '800', color: '#0f172a', margin: 0, letterSpacing: '-0.5px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <Wallet size={28} color="#ef4444" /> Billing Management
+                  <h1 style={{ fontSize: '26px', fontWeight: '800', color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.5px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <Wallet size={28} color="var(--accent-color)" /> Billing Management
                   </h1>
-                  <p style={{ color: '#64748b', fontSize: '14px', marginTop: '6px', fontWeight: '500' }}>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginTop: '6px', fontWeight: '500' }}>
                       {isFinance
                         ? 'Production financial control and revenue tracking center'
                         : 'Review and settle your account balances'}
@@ -156,7 +156,7 @@ const BillingManagement = () => {
                 {isFinance && (
                     <button
                         onClick={() => { fetchPending(); setShowCreate(true); }}
-                        style={{ padding: '12px 24px', borderRadius: '12px', border: 'none', background: '#ef4444', color: '#fff', fontWeight: '800', cursor: 'pointer', fontSize: '14px', boxShadow: '0 4px 14px rgba(239, 68, 68, 0.2)', display: 'flex', alignItems: 'center', gap: '8px', transition: 'transform 0.2s' }}
+                        style={{ padding: '12px 24px', borderRadius: '12px', border: 'none', background: 'var(--accent-color)', color: '#fff', fontWeight: '800', cursor: 'pointer', fontSize: '14px', boxShadow: '0 4px 20px var(--accent-glow)', display: 'flex', alignItems: 'center', gap: '8px', transition: 'transform 0.2s' }}
                         onMouseOver={e => e.currentTarget.style.transform = 'translateY(-2px)'}
                         onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}
                     >
@@ -171,7 +171,7 @@ const BillingManagement = () => {
             )}
 
             {/* Navigation Tabs */}
-            <div style={{ display: 'flex', gap: '6px', background: '#e2e8f080', padding: '6px', borderRadius: '16px', marginBottom: '32px', width: 'fit-content' }}>
+            <div style={{ display: 'flex', gap: '6px', background: 'var(--surface-muted)', padding: '6px', borderRadius: '16px', marginBottom: '32px', width: 'fit-content' }}>
                 {tabs.map(tab => (
                     <button
                         key={tab.id}
@@ -183,24 +183,24 @@ const BillingManagement = () => {
                             fontSize: '13px',
                             fontWeight: '700',
                             cursor: 'pointer',
-                            background: activeTab === tab.id ? '#fff' : 'transparent',
-                            color: activeTab === tab.id ? '#0f172a' : '#64748b',
-                            boxShadow: activeTab === tab.id ? '0 4px 12px rgba(0,0,0,0.05)' : 'none',
+                            background: activeTab === tab.id ? 'var(--card-bg)' : 'transparent',
+                            color: activeTab === tab.id ? 'var(--text-primary)' : 'var(--text-secondary)',
+                            boxShadow: activeTab === tab.id ? 'var(--shadow-md)' : 'none',
                             transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                             display: 'flex',
                             alignItems: 'center',
                             gap: '8px'
                         }}
                     >
-                        <tab.icon size={16} color={activeTab === tab.id ? '#ef4444' : '#64748b'} />
+                        <tab.icon size={16} color={activeTab === tab.id ? 'var(--accent-color)' : 'var(--text-secondary)'} />
                         {tab.label}
                         {tab.id === 'pending' && pendingOrders.length > 0 && (
-                            <span style={{ background: '#ef4444', color: '#fff', padding: '2px 8px', borderRadius: '8px', fontSize: '10px', fontWeight: '900' }}>
+                            <span style={{ background: 'var(--accent-color)', color: '#fff', padding: '2px 8px', borderRadius: '8px', fontSize: '10px', fontWeight: '900' }}>
                                 {pendingOrders.length}
                             </span>
                         )}
                         {tab.id === 'outstanding' && outstandingData?.count > 0 && (
-                            <span style={{ background: '#111827', color: '#fff', padding: '2px 8px', borderRadius: '8px', fontSize: '10px', fontWeight: '900' }}>
+                            <span style={{ background: 'var(--text-primary)', color: 'var(--bg-color)', padding: '2px 8px', borderRadius: '8px', fontSize: '10px', fontWeight: '900' }}>
                                 {outstandingData.count}
                             </span>
                         )}
@@ -209,7 +209,7 @@ const BillingManagement = () => {
             </div>
 
             {/* Viewport Content */}
-            <div style={{ background: '#fff', borderRadius: '24px', border: '1px solid #e2e8f0', boxShadow: '0 4px 24px rgba(0,0,0,0.03)', padding: '32px', animation: 'fadeIn 0.3s ease-out' }}>
+            <div style={{ background: 'var(--card-bg)', borderRadius: '24px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)', padding: '32px', animation: 'fadeIn 0.3s ease-out' }}>
 
                 {activeTab === 'invoices' && (
                     <InvoiceList onSelectInvoice={setSelectedInvoice} refreshKey={refreshKey} />
@@ -218,21 +218,21 @@ const BillingManagement = () => {
                 {activeTab === 'pending' && isFinance && (
                     <div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                            <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: '#0f172a' }}>Orders Awaiting Billing</h3>
+                            <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: 'var(--text-primary)' }}>Orders Awaiting Billing</h3>
                             <button
                                 onClick={fetchPending}
-                                style={{ padding: '8px 16px', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#fff', color: '#64748b', fontWeight: '700', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                                style={{ padding: '8px 16px', borderRadius: '10px', border: '1px solid var(--border-color)', background: 'var(--surface-muted-2)', color: 'var(--text-secondary)', fontWeight: '700', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}
                             >
                                 <RefreshCcw size={14} /> Refresh
                             </button>
                         </div>
 
                         {loadingPending ? (
-                            <div style={{ textAlign: 'center', padding: '60px', color: '#64748b', fontWeight: '600' }}>Analyzing pending production jobs...</div>
+                            <div style={{ textAlign: 'center', padding: '60px', color: 'var(--text-secondary)', fontWeight: '600' }}>Analyzing pending production jobs...</div>
                         ) : pendingOrders.length === 0 ? (
-                            <div style={{ textAlign: 'center', padding: '80px 40px', color: '#64748b' }}>
-                                <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'center' }}><CheckCircle2 size={48} color="#64748b" /></div>
-                                <div style={{ fontWeight: '800', fontSize: '18px', color: '#0f172a' }}>All Clear!</div>
+                            <div style={{ textAlign: 'center', padding: '80px 40px', color: 'var(--text-secondary)' }}>
+                                <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'center' }}><CheckCircle2 size={48} color="#7A83A0" /></div>
+                                <div style={{ fontWeight: '800', fontSize: '18px', color: 'var(--text-primary)' }}>All Clear!</div>
                                 <div style={{ fontWeight: '500', marginTop: '4px' }}>Every completed production job has been successfully invoiced.</div>
                             </div>
                         ) : (
@@ -241,14 +241,14 @@ const BillingManagement = () => {
                                     <thead>
                                     <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
                                         {['Order #', 'Customer', 'Type', 'Delivery', 'Total', 'Action'].map(h => (
-                                            <th key={h} style={{ padding: '16px', color: '#64748b', fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', textAlign: 'left', letterSpacing: '0.5px' }}>{h}</th>
+                                            <th key={h} style={{ padding: '16px', color: 'var(--text-secondary)', fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', textAlign: 'left', letterSpacing: '0.5px' }}>{h}</th>
                                         ))}
                                     </tr>
                                     </thead>
                                     <tbody>
                                     {pendingOrders.map(order => (
                                         <tr key={order._id} style={{ borderBottom: '1px solid #f8fafc', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background = '#fcfdfe'} onMouseOut={e => e.currentTarget.style.background = 'transparent'}>
-                                            <td style={{ padding: '16px', fontWeight: '900', color: '#0f172a' }}>#{order.orderNumber}</td>
+                                            <td style={{ padding: '16px', fontWeight: '900', color: 'var(--text-primary)' }}>#{order.orderNumber}</td>
                                             <td style={{ padding: '16px' }}>
                                                 <div style={{ fontWeight: '700', color: '#334155', fontSize: '14px' }}>{order.customerId?.name || 'Guest'}</div>
                                                 <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '500' }}>{order.customerId?.email}</div>
@@ -259,11 +259,11 @@ const BillingManagement = () => {
                                             <td style={{ padding: '16px' }}>
                                                 <span style={{ fontSize: '11px', fontWeight: '800', color: order.deliveryMethod === 'pickup' ? '#111827' : '#ef4444', textTransform: 'uppercase' }}>{order.deliveryMethod}</span>
                                             </td>
-                                            <td style={{ padding: '16px', fontWeight: '900', color: '#0f172a' }}>LKR {(order.totalPrice || 0).toLocaleString()}</td>
+                                            <td style={{ padding: '16px', fontWeight: '900', color: 'var(--text-primary)' }}>LKR {(order.totalPrice || 0).toLocaleString()}</td>
                                             <td style={{ padding: '16px' }}>
                                                 <button
                                                     onClick={() => { setPendingOrders(prev => prev); setShowCreate(true); }}
-                                                    style={{ padding: '8px 16px', borderRadius: '10px', border: 'none', background: '#1e293b', color: '#fff', fontSize: '11px', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                                                    style={{ padding: '8px 16px', borderRadius: '10px', border: 'none', background: 'var(--text-primary)', color: 'var(--bg-color)', fontSize: '11px', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
                                                 >
                                                     <FileText size={14} /> Create Invoice
                                                 </button>
@@ -280,21 +280,21 @@ const BillingManagement = () => {
                 {activeTab === 'outstanding' && isFinance && (
                     <div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                            <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: '#0f172a' }}>Overdue & Outstanding Records</h3>
+                            <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: 'var(--text-primary)' }}>Overdue & Outstanding Records</h3>
                             <button
                                 onClick={fetchOutstanding}
-                                style={{ padding: '8px 16px', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#fff', color: '#64748b', fontWeight: '700', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                                style={{ padding: '8px 16px', borderRadius: '10px', border: '1px solid var(--border-color)', background: 'var(--surface-muted-2)', color: 'var(--text-secondary)', fontWeight: '700', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}
                             >
                                 <RefreshCcw size={14} /> Refresh
                             </button>
                         </div>
 
                         {loadingOutstanding ? (
-                            <div style={{ textAlign: 'center', padding: '60px', color: '#64748b', fontWeight: '600' }}>Retrieving outstanding account data...</div>
+                            <div style={{ textAlign: 'center', padding: '60px', color: 'var(--text-secondary)', fontWeight: '600' }}>Retrieving outstanding account data...</div>
                         ) : outstandingList.length === 0 ? (
-                            <div style={{ textAlign: 'center', padding: '80px 40px', color: '#64748b' }}>
-                                <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'center' }}><CheckCircle2 size={48} color="#64748b" /></div>
-                                <div style={{ fontWeight: '800', fontSize: '18px', color: '#0f172a' }}>Perfect Reconciliation</div>
+                            <div style={{ textAlign: 'center', padding: '80px 40px', color: 'var(--text-secondary)' }}>
+                                <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'center' }}><CheckCircle2 size={48} color="#7A83A0" /></div>
+                                <div style={{ fontWeight: '800', fontSize: '18px', color: 'var(--text-primary)' }}>Perfect Reconciliation</div>
                                 <div style={{ fontWeight: '500', marginTop: '4px' }}>No outstanding accounts found. All payments are fully settled.</div>
                             </div>
                         ) : (
@@ -303,7 +303,7 @@ const BillingManagement = () => {
                                     <thead>
                                     <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
                                         {['Invoice', 'Customer', 'Total', 'Balance Due', 'Status', 'Due Date', 'Action'].map(h => (
-                                            <th key={h} style={{ padding: '16px', color: '#64748b', fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', textAlign: 'left', letterSpacing: '0.5px' }}>{h}</th>
+                                            <th key={h} style={{ padding: '16px', color: 'var(--text-secondary)', fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', textAlign: 'left', letterSpacing: '0.5px' }}>{h}</th>
                                         ))}
                                     </tr>
                                     </thead>
@@ -312,12 +312,12 @@ const BillingManagement = () => {
                                         const isOverdue = inv.dueDate && new Date(inv.dueDate) < new Date();
                                         return (
                                             <tr key={inv._id} style={{ borderBottom: '1px solid #f8fafc', background: isOverdue ? '#fff1f280' : 'transparent', transition: 'background 0.2s' }} onMouseOver={e => !isOverdue && (e.currentTarget.style.background = '#fcfdfe')} onMouseOut={e => !isOverdue && (e.currentTarget.style.background = 'transparent')}>
-                                                <td style={{ padding: '16px', fontWeight: '900', color: '#0f172a' }}>
+                                                <td style={{ padding: '16px', fontWeight: '900', color: 'var(--text-primary)' }}>
                                                     #{inv.invoiceNumber}
                                                     {isOverdue && <span style={{ marginLeft: '8px', fontSize: '9px', color: '#ef4444', fontWeight: '900', background: '#fee2e2', padding: '2px 6px', borderRadius: '4px' }}>OVERDUE</span>}
                                                 </td>
                                                 <td style={{ padding: '16px', fontWeight: '700', color: '#334155', fontSize: '14px' }}>{inv.customerId?.name || 'Guest'}</td>
-                                                <td style={{ padding: '16px', fontWeight: '700', color: '#64748b' }}>LKR {(inv.totalAmount || 0).toLocaleString()}</td>
+                                                <td style={{ padding: '16px', fontWeight: '700', color: 'var(--text-secondary)' }}>LKR {(inv.totalAmount || 0).toLocaleString()}</td>
                                                 <td style={{ padding: '16px', fontWeight: '900', color: '#ef4444' }}>LKR {(inv.balanceDue || 0).toLocaleString()}</td>
                                                 <td style={{ padding: '16px' }}>
                                                         <span style={{
@@ -327,20 +327,20 @@ const BillingManagement = () => {
                                                             {inv.paymentStatus}
                                                         </span>
                                                 </td>
-                                                <td style={{ padding: '16px', fontSize: '12px', color: isOverdue ? '#ef4444' : '#64748b', fontWeight: isOverdue ? '800' : '500' }}>
+                                                <td style={{ padding: '16px', fontSize: '12px', color: isOverdue ? '#f87171' : 'var(--text-secondary)', fontWeight: isOverdue ? '800' : '500' }}>
                                                     {inv.dueDate ? new Date(inv.dueDate).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}
                                                 </td>
                                                 <td style={{ padding: '16px' }}>
                                                     <div style={{ display: 'flex', gap: '8px' }}>
                                                         <button
                                                             onClick={() => setSelectedInvoice(inv)}
-                                                            style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #e2e8f0', background: '#fff', color: '#475569', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}
+                                                            style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--surface-muted-2)', color: 'var(--text-primary)', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}
                                                         >
                                                             View
                                                         </button>
                                                         <button
                                                             onClick={() => setPaymentInvoice(inv)}
-                                                            style={{ padding: '8px 12px', borderRadius: '8px', border: 'none', background: '#1e293b', color: '#fff', fontSize: '11px', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                                                            style={{ padding: '8px 12px', borderRadius: '8px', border: 'none', background: 'var(--text-primary)', color: 'var(--bg-color)', fontSize: '11px', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
                                                         >
                                                             <CreditCard size={14} /> Pay
                                                         </button>

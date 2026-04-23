@@ -100,12 +100,12 @@ const AdminDashboard = () => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
 
     const managementLinks = [
-        { name: 'Orders', path: '/orders', icon: <ClipboardList size={24} /> },
-        { name: 'Scheduling', path: '/schedule', icon: <Calendar size={24} /> },
-        { name: 'Machines', path: '/machines', icon: <Settings size={24} /> },
-        { name: 'Inventory', path: '/inventory', icon: <Package size={24} /> },
-        { name: 'Invoice', path: '/invoices', icon: <CreditCard size={24} /> },
-        { name: 'System Monitor', path: '/system-manager', icon: <Monitor size={24} /> },
+        { name: 'Orders', path: '/orders', icon: <ClipboardList size={24} color="var(--accent-color)" strokeWidth={2.25} /> },
+        { name: 'Scheduling', path: '/schedule', icon: <Calendar size={24} color="var(--accent-color)" strokeWidth={2.25} /> },
+        { name: 'Machines', path: '/machines', icon: <Settings size={24} color="var(--accent-color)" strokeWidth={2.25} /> },
+        { name: 'Inventory', path: '/inventory', icon: <Package size={24} color="var(--accent-color)" strokeWidth={2.25} /> },
+        { name: 'Invoice', path: '/invoices', icon: <CreditCard size={24} color="var(--accent-color)" strokeWidth={2.25} /> },
+        { name: 'System Monitor', path: '/system-manager', icon: <Monitor size={24} color="var(--accent-color)" strokeWidth={2.25} /> },
     ];
 
     // ── Fetch today's attendance ──────────────────────────────────────────────
@@ -409,14 +409,14 @@ const AdminDashboard = () => {
     const tabStyle = (tab) => ({
         padding: '10px 24px',
         borderRadius: '10px',
-        border: 'none',
+        border: activeTab === tab ? 'none' : '1px solid var(--border-color)',
         fontWeight: '800',
         fontSize: '13px',
         cursor: 'pointer',
-        transition: 'all 0.2s',
-        background: activeTab === tab ? 'var(--accent-color)' : '#f3f4f6',
-        color: activeTab === tab ? '#fff' : '#374151',
-        boxShadow: activeTab === tab ? '0 4px 12px rgba(211,47,47,0.25)' : 'none',
+        transition: 'all 0.25s cubic-bezier(0.22, 1, 0.36, 1)',
+        background: activeTab === tab ? 'var(--accent-color)' : 'var(--card-bg)',
+        color: activeTab === tab ? '#fff' : 'var(--text-primary)',
+        boxShadow: activeTab === tab ? '0 4px 20px var(--accent-glow)' : 'none',
     });
 
     const statusBadge = (status) => ({
@@ -431,19 +431,19 @@ const AdminDashboard = () => {
     });
 
     return (
-        <div style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto', fontFamily: "'Inter', sans-serif" }}>
+        <div className="shan-page" style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto', fontFamily: 'var(--font-sans, sans-serif)', color: 'var(--text-primary)' }}>
             {/* Header */}
             <header style={{ marginBottom: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                    <h1 style={{ fontSize: '32px', fontWeight: '900', color: '#111827', letterSpacing: '-1px' }}>SYSTEM CENTRAL</h1>
-                    <p style={{ color: '#6b7280', fontSize: '16px', margin: 0 }}>Overview, staff management & attendance.</p>
+                    <h1 style={{ fontSize: '32px', fontWeight: '900', color: 'var(--text-primary)', letterSpacing: '-1px' }}>SYSTEM CENTRAL</h1>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '16px', margin: 0 }}>Overview, staff management & attendance.</p>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                     <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontWeight: '800', color: '#111827', fontSize: '15px' }}>{user.name}</div>
-                        <div style={{ fontSize: '12px', color: '#6b7280' }}>Administrator</div>
+                        <div style={{ fontWeight: '800', color: 'var(--text-primary)', fontSize: '15px' }}>{user.name}</div>
+                        <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Administrator</div>
                     </div>
-                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '700' }}>A</div>
+                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent-color), #7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', color: '#fff', fontSize: '14px', boxShadow: '0 4px 16px var(--accent-glow)' }}>{user.name?.[0] || 'A'}</div>
                 </div>
             </header>
 
@@ -453,12 +453,15 @@ const AdminDashboard = () => {
                     <div
                         key={link.path}
                         onClick={() => navigate(link.path)}
-                        style={{ background: '#fff', padding: '24px 16px', borderRadius: '16px', textAlign: 'center', cursor: 'pointer', border: '1px solid #e5e7eb', transition: '0.2s' }}
-                        onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.borderColor = 'var(--accent-color)'; }}
-                        onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = '#e5e7eb'; }}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') navigate(link.path); }}
+                        style={{ background: 'var(--card-bg)', padding: '24px 16px', borderRadius: '16px', textAlign: 'center', cursor: 'pointer', border: '1px solid var(--border-color)', transition: 'transform 0.25s, border-color 0.25s, box-shadow 0.25s', boxShadow: 'var(--shadow-sm)' }}
+                        onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.5)'; e.currentTarget.style.boxShadow = 'var(--shadow-md)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.boxShadow = 'var(--shadow-sm)'; }}
                     >
-                        <div style={{ fontSize: '28px', marginBottom: '12px' }}>{link.icon}</div>
-                        <div style={{ fontWeight: '800', color: '#111827', fontSize: '13px' }}>{link.name}</div>
+                        <div style={{ fontSize: '28px', marginBottom: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>{link.icon}</div>
+                        <div style={{ fontWeight: '800', color: 'var(--text-primary)', fontSize: '13px' }}>{link.name}</div>
                     </div>
                 ))}
             </div>
@@ -489,9 +492,9 @@ const AdminDashboard = () => {
             {activeTab === 'register' && (
                 <div style={{ display: 'grid', gridTemplateColumns: newQR ? '1fr 1fr' : '1fr', gap: '32px', maxWidth: newQR ? '900px' : '480px' }}>
                     {/* Form */}
-                    <div style={{ background: '#fff', padding: '40px', borderRadius: '20px', border: '1px solid #e5e7eb', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
-                        <h2 style={{ fontSize: '20px', fontWeight: '900', color: '#111827', marginBottom: '8px' }}>Register Staff Member</h2>
-                        <p style={{ color: '#6b7280', fontSize: '13px', marginBottom: '32px' }}>A unique QR code is generated automatically.</p>
+                    <div style={{ background: 'var(--card-bg)', padding: '40px', borderRadius: '20px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)' }}>
+                        <h2 style={{ fontSize: '20px', fontWeight: '900', color: 'var(--text-primary)', marginBottom: '8px' }}>Register Staff Member</h2>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginBottom: '32px' }}>A unique QR code is generated automatically.</p>
 
                         {message.text && (
                             <div style={{ padding: '12px', borderRadius: '10px', marginBottom: '24px', backgroundColor: message.type === 'success' ? '#ecfdf5' : '#fef2f2', color: message.type === 'success' ? '#059669' : '#dc2626', fontSize: '13px', fontWeight: '600', textAlign: 'center', border: `1px solid ${message.type === 'success' ? '#10b98133' : '#ef444433'}` }}>
@@ -509,7 +512,7 @@ const AdminDashboard = () => {
                                 { label: 'Team Password', name: 'password', type: 'password' },
                             ].map(f => (
                                 <div key={f.name}>
-                                    <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '700', color: '#374151' }}>{f.label}</label>
+                                    <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '700', color: 'var(--text-muted)' }}>{f.label}</label>
                                     <div style={{ position: 'relative' }}>
                                         <input
                                             type={f.name === 'password' && !showPassword ? 'password' : 'text'}
@@ -522,9 +525,9 @@ const AdminDashboard = () => {
                                                 padding: '12px',
                                                 paddingRight: f.name === 'password' ? '40px' : '12px',
                                                 borderRadius: '8px',
-                                                border: '1.5px solid #e5e7eb',
-                                                backgroundColor: '#f9fafb',
-                                                color: '#111827',
+                                                border: '1.5px solid var(--border-color)',
+                                                backgroundColor: 'var(--input-bg)',
+                                                color: 'var(--text-primary)',
                                                 outline: 'none',
                                                 boxSizing: 'border-box'
                                             }}
@@ -542,7 +545,7 @@ const AdminDashboard = () => {
                                                     border: 'none',
                                                     cursor: 'pointer',
                                                     fontSize: '16px',
-                                                    color: '#9ca3af',
+                                                    color: 'var(--text-secondary)',
                                                     display: 'flex',
                                                     alignItems: 'center',
                                                     justifyContent: 'center'
@@ -555,8 +558,8 @@ const AdminDashboard = () => {
                                 </div>
                             ))}
                             <div>
-                                <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '700', color: '#374151' }}>Team Role</label>
-                                <select name="role" value={staffData.role} onChange={handleInputChange} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1.5px solid #e5e7eb', backgroundColor: '#f9fafb', color: '#111827', outline: 'none' }}>
+                                <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '700', color: 'var(--text-muted)' }}>Team Role</label>
+                                <select name="role" value={staffData.role} onChange={handleInputChange} className="shan-input" style={{ width: '100%', padding: '12px', borderRadius: '8px' }}>
                                     <option value="staff_designer">Designer</option>
                                     <option value="staff_operator">Machine Operator</option>
                                     <option value="staff_schedule">Scheduling Manager</option>
@@ -565,7 +568,7 @@ const AdminDashboard = () => {
                                     <option value="staff_system">System Manager</option>
                                 </select>
                             </div>
-                            <button type="submit" disabled={loading} style={{ background: 'var(--accent-color)', color: '#fff', border: 'none', padding: '16px', borderRadius: '12px', fontWeight: '800', cursor: 'pointer', marginTop: '12px', boxShadow: '0 4px 15px rgba(211, 47, 47, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                            <button type="submit" disabled={loading} style={{ background: 'var(--accent-color)', color: '#fff', border: 'none', padding: '16px', borderRadius: '12px', fontWeight: '800', cursor: 'pointer', marginTop: '12px', boxShadow: '0 4px 20px var(--accent-glow)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                                 {loading ? 'Processing...' : <><Check size={20} /> Complete Registration</>}
                             </button>
                         </form>
@@ -573,17 +576,17 @@ const AdminDashboard = () => {
 
                     {/* QR Code Card */}
                     {newQR && (
-                        <div style={{ background: '#fff', padding: '40px', borderRadius: '20px', border: '1px solid #e5e7eb', boxShadow: '0 2px 12px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                        <div style={{ background: 'var(--card-bg)', padding: '40px', borderRadius: '20px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                             <div style={{ fontSize: '24px', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}><Ticket size={24} /> {newQR.merchantCode}</div>
-                            <h3 style={{ fontWeight: '900', color: '#111827', marginBottom: '4px' }}>{newQR.name}</h3>
-                            <p style={{ color: '#6b7280', fontSize: '13px', marginBottom: '4px' }}>{ROLE_LABELS[newQR.role] || newQR.role}</p>
+                            <h3 style={{ fontWeight: '900', color: 'var(--text-primary)', marginBottom: '4px' }}>{newQR.name}</h3>
+                            <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginBottom: '4px' }}>{ROLE_LABELS[newQR.role] || newQR.role}</p>
                             <p style={{ color: 'var(--accent-color)', fontSize: '14px', fontWeight: '800', marginBottom: '24px' }}>Code: {newQR.merchantCode}</p>
-                            <img src={newQR.qrCode} alt="Staff QR Code" style={{ width: '220px', height: '220px', borderRadius: '12px', border: '2px solid #e5e7eb', padding: '12px', background: '#fff' }} />
-                            <p style={{ color: '#6b7280', fontSize: '12px', marginTop: '16px', textAlign: 'center' }}>Scan this QR at the attendance reader to mark presence.</p>
+                            <img src={newQR.qrCode} alt="Staff QR Code" style={{ width: '220px', height: '220px', borderRadius: '12px', border: '2px solid var(--border-color)', padding: '12px', background: '#fafafa' }} />
+                            <p style={{ color: 'var(--text-secondary)', fontSize: '12px', marginTop: '16px', textAlign: 'center' }}>Scan this QR at the attendance reader to mark presence.</p>
                             <a
                                 href={newQR.qrCode}
                                 download={`qr_${newQR.name.replace(/\s/g, '_')}.png`}
-                                style={{ marginTop: '16px', padding: '10px 24px', borderRadius: '10px', background: '#111827', color: '#fff', fontWeight: '700', fontSize: '13px', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}
+                                style={{ marginTop: '16px', padding: '10px 24px', borderRadius: '10px', background: 'var(--text-primary)', color: 'var(--bg-color)', fontWeight: '700', fontSize: '13px', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}
                             >
                                 <Download size={16} /> Download QR
                             </a>
@@ -596,19 +599,19 @@ const AdminDashboard = () => {
             {activeTab === 'attendance' && (
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.6fr', gap: '32px' }}>
                     {/* Scanner Panel */}
-                    <div style={{ background: '#fff', padding: '32px', borderRadius: '20px', border: '1px solid #e5e7eb', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
-                        <h2 style={{ fontSize: '20px', fontWeight: '900', color: '#111827', marginBottom: '8px' }}>QR Attendance Reader</h2>
-                        <p style={{ color: '#6b7280', fontSize: '13px', marginBottom: '24px' }}>Point camera at staff member's QR code to mark them present.</p>
+                    <div style={{ background: 'var(--card-bg)', padding: '32px', borderRadius: '20px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)' }}>
+                        <h2 style={{ fontSize: '20px', fontWeight: '900', color: 'var(--text-primary)', marginBottom: '8px' }}>QR Attendance Reader</h2>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginBottom: '24px' }}>Point camera at staff member's QR code to mark them present.</p>
 
                         {/* Scanner viewport */}
                         <div id="qr-reader" ref={scannerRef} style={{ width: '100%', borderRadius: '12px', overflow: 'hidden', marginBottom: '20px', background: '#000', minHeight: scannerActive ? '250px' : '0' }} />
 
                         {!scannerActive ? (
-                            <button onClick={startScanner} style={{ width: '100%', padding: '14px', borderRadius: '12px', border: 'none', background: 'var(--accent-color)', color: '#fff', fontWeight: '800', cursor: 'pointer', fontSize: '15px', boxShadow: '0 4px 14px rgba(211,47,47,0.3)' }}>
+                            <button onClick={startScanner} style={{ width: '100%', padding: '14px', borderRadius: '12px', border: 'none', background: 'var(--accent-color)', color: '#fff', fontWeight: '800', cursor: 'pointer', fontSize: '15px', boxShadow: '0 4px 20px var(--accent-glow)' }}>
                                 📷 Start Camera Scanner
                             </button>
                         ) : (
-                            <button onClick={stopScanner} style={{ width: '100%', padding: '14px', borderRadius: '12px', border: 'none', background: '#374151', color: '#fff', fontWeight: '800', cursor: 'pointer', fontSize: '15px' }}>
+                            <button type="button" onClick={stopScanner} style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--surface-muted)', color: 'var(--text-primary)', fontWeight: '800', cursor: 'pointer', fontSize: '15px' }}>
                                 ⏹ Stop Scanner
                             </button>
                         )}
@@ -622,16 +625,16 @@ const AdminDashboard = () => {
                     </div>
 
                     {/* Attendance List */}
-                    <div style={{ background: '#fff', padding: '32px', borderRadius: '20px', border: '1px solid #e5e7eb', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
+                    <div style={{ background: 'var(--card-bg)', padding: '32px', borderRadius: '20px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                             <div>
-                                <h2 style={{ fontSize: '20px', fontWeight: '900', color: '#111827', marginBottom: '4px' }}>Today's Attendance</h2>
-                                <p style={{ color: '#6b7280', fontSize: '13px', margin: 0 }}>
+                                <h2 style={{ fontSize: '20px', fontWeight: '900', color: 'var(--text-primary)', marginBottom: '4px' }}>Today's Attendance</h2>
+                                <p style={{ color: 'var(--text-secondary)', fontSize: '13px', margin: 0 }}>
                                     {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                                     &nbsp;· Resets at midnight
                                 </p>
                             </div>
-                            <button onClick={fetchAttendance} style={{ padding: '8px 16px', borderRadius: '8px', border: '1.5px solid #e5e7eb', background: '#f9fafb', fontWeight: '700', fontSize: '12px', cursor: 'pointer' }}>
+                            <button type="button" onClick={fetchAttendance} style={{ padding: '8px 16px', borderRadius: '8px', border: '1.5px solid var(--border-color)', background: 'var(--surface-muted-2)', color: 'var(--text-primary)', fontWeight: '700', fontSize: '12px', cursor: 'pointer' }}>
                                 🔄 Refresh
                             </button>
                         </div>
@@ -650,16 +653,16 @@ const AdminDashboard = () => {
                         </div>
 
                         {attendanceLoading ? (
-                            <div style={{ textAlign: 'center', padding: '40px', color: '#9ca3af' }}>Loading...</div>
+                            <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>Loading...</div>
                         ) : attendanceList.length === 0 ? (
-                            <div style={{ textAlign: 'center', padding: '40px', color: '#9ca3af' }}>No staff found.</div>
+                            <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>No staff found.</div>
                         ) : (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '400px', overflowY: 'auto', paddingRight: '4px' }}>
                                 {attendanceList.map(member => (
-                                    <div key={member.userId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', borderRadius: '12px', border: '1px solid #f3f4f6', background: member.status === 'present' ? '#f0fdf4' : '#fff' }}>
+                                    <div key={member.userId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', borderRadius: '12px', border: '1px solid var(--border-color)', background: member.status === 'present' ? 'rgba(16, 185, 129, 0.12)' : 'var(--surface-muted-2)' }}>
                                         <div>
-                                            <div style={{ fontWeight: '800', color: '#111827', fontSize: '14px' }}>{member.name}</div>
-                                            <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: '600' }}>
+                                            <div style={{ fontWeight: '800', color: 'var(--text-primary)', fontSize: '14px' }}>{member.name}</div>
+                                            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: '600' }}>
                                                 {ROLE_LABELS[member.role] || member.role}
                                             </div>
                                             {member.merchantCode && (
@@ -670,7 +673,7 @@ const AdminDashboard = () => {
                                                 </div>
                                             )}
                                             {member.scannedAt && (
-                                                <div style={{ fontSize: '11px', color: '#9ca3af', marginTop: '2px' }}>
+                                                <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>
                                                     Scanned at {new Date(member.scannedAt).toLocaleTimeString()}
                                                 </div>
                                             )}
@@ -690,10 +693,10 @@ const AdminDashboard = () => {
             {activeTab === 'merchantQR' && (
                 <div style={{ display: 'grid', gridTemplateColumns: merchantQRResult ? '1fr 1fr' : '1fr', gap: '32px', maxWidth: merchantQRResult ? '860px' : '480px' }}>
                     {/* Search Panel */}
-                    <div style={{ background: '#fff', padding: '40px', borderRadius: '20px', border: '1px solid #e5e7eb', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
+                    <div style={{ background: 'var(--card-bg)', padding: '40px', borderRadius: '20px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)' }}>
                         <div style={{ fontSize: '36px', marginBottom: '12px', textAlign: 'center', display: 'flex', justifyContent: 'center' }}><Search size={48} /></div>
-                        <h2 style={{ fontSize: '20px', fontWeight: '900', color: '#111827', marginBottom: '8px', textAlign: 'center' }}>Merchant QR Lookup</h2>
-                        <p style={{ color: '#6b7280', fontSize: '13px', marginBottom: '32px', textAlign: 'center' }}>Enter a staff member's merchant code to retrieve their QR code.</p>
+                        <h2 style={{ fontSize: '20px', fontWeight: '900', color: 'var(--text-primary)', marginBottom: '8px', textAlign: 'center' }}>Merchant QR Lookup</h2>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginBottom: '32px', textAlign: 'center' }}>Enter a staff member's merchant code to retrieve their QR code.</p>
 
                         {merchantQRError && (
                             <div style={{ padding: '12px', borderRadius: '10px', marginBottom: '20px', backgroundColor: '#fef2f2', color: '#dc2626', fontSize: '13px', fontWeight: '600', textAlign: 'center', border: '1px solid #ef444433' }}>
@@ -703,7 +706,7 @@ const AdminDashboard = () => {
 
                         <form onSubmit={handleFindMerchantQR} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                             <div>
-                                <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '700', color: '#374151' }}>Merchant Code</label>
+                                <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '700', color: 'var(--text-muted)' }}>Merchant Code</label>
                                 <input
                                     type="text"
                                     value={merchantCodeInput}
@@ -715,9 +718,9 @@ const AdminDashboard = () => {
                                         width: '100%',
                                         padding: '14px',
                                         borderRadius: '10px',
-                                        border: '1.5px solid #e5e7eb',
-                                        backgroundColor: '#f9fafb',
-                                        color: '#111827',
+                                        border: '1.5px solid var(--border-color)',
+                                        backgroundColor: 'var(--input-bg)',
+                                        color: 'var(--text-primary)',
                                         outline: 'none',
                                         fontSize: '18px',
                                         fontWeight: '800',
@@ -726,12 +729,12 @@ const AdminDashboard = () => {
                                         boxSizing: 'border-box',
                                     }}
                                 />
-                                <p style={{ fontSize: '11px', color: '#9ca3af', marginTop: '4px', textAlign: 'center' }}>Format: 1 letter + 5 digits (e.g. I48293, O12345)</p>
+                                <p style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px', textAlign: 'center' }}>Format: 1 letter + 5 digits (e.g. I48293, O12345)</p>
                             </div>
                             <button
                                 type="submit"
                                 disabled={merchantQRLoading}
-                                style={{ background: 'var(--accent-color)', color: '#fff', border: 'none', padding: '14px', borderRadius: '12px', fontWeight: '800', cursor: 'pointer', fontSize: '14px', boxShadow: '0 4px 15px rgba(211,47,47,0.3)', transition: '0.2s' }}
+                                style={{ background: 'var(--accent-color)', color: '#fff', border: 'none', padding: '14px', borderRadius: '12px', fontWeight: '800', cursor: 'pointer', fontSize: '14px', boxShadow: '0 4px 20px var(--accent-glow)', transition: '0.2s' }}
                             >
                                 {merchantQRLoading ? '⏳ Searching...' : <><Search size={16} /> Find QR Code</>}
                             </button>
@@ -739,7 +742,7 @@ const AdminDashboard = () => {
                                 <button
                                     type="button"
                                     onClick={() => { setMerchantQRResult(null); setMerchantCodeInput(''); setMerchantQRError(''); setShowMerchantDetails(false); }}
-                                    style={{ background: '#f3f4f6', color: '#374151', border: 'none', padding: '10px', borderRadius: '10px', fontWeight: '700', cursor: 'pointer', fontSize: '13px' }}
+                                    style={{ background: 'var(--surface-muted-2)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', padding: '10px', borderRadius: '10px', fontWeight: '700', cursor: 'pointer', fontSize: '13px' }}
                                 >
                                     🔄 Search Again
                                 </button>
@@ -749,32 +752,32 @@ const AdminDashboard = () => {
 
                     {/* QR Result Card */}
                     {merchantQRResult && (
-                        <div style={{ background: '#fff', padding: '32px 40px', borderRadius: '20px', border: '1px solid #e5e7eb', boxShadow: '0 2px 12px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                            <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent-color), #ff6b6b)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', marginBottom: '12px' }}><Ticket size={28} /></div>
-                            <h3 style={{ fontWeight: '900', color: '#111827', marginBottom: '4px', fontSize: '18px' }}>{merchantQRResult.name}</h3>
-                            <p style={{ color: '#6b7280', fontSize: '13px', marginBottom: '4px' }}>{ROLE_LABELS[merchantQRResult.role] || merchantQRResult.role}</p>
+                        <div style={{ background: 'var(--card-bg)', padding: '32px 40px', borderRadius: '20px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                            <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent-color), #8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', marginBottom: '12px', boxShadow: '0 8px 24px var(--accent-glow)' }}><Ticket size={28} /></div>
+                            <h3 style={{ fontWeight: '900', color: 'var(--text-primary)', marginBottom: '4px', fontSize: '18px' }}>{merchantQRResult.name}</h3>
+                            <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginBottom: '4px' }}>{ROLE_LABELS[merchantQRResult.role] || merchantQRResult.role}</p>
                             <div style={{ padding: '6px 16px', background: '#fef2f2', borderRadius: '20px', marginBottom: '20px' }}>
                                 <span style={{ fontWeight: '900', color: 'var(--accent-color)', fontSize: '16px', letterSpacing: '3px' }}>{merchantQRResult.merchantCode}</span>
                             </div>
                             <img
                                 src={merchantQRResult.qrCode}
                                 alt={`QR for ${merchantQRResult.name}`}
-                                style={{ width: '180px', height: '180px', borderRadius: '12px', border: '2px solid #e5e7eb', padding: '10px', background: '#fff' }}
+                                style={{ width: '180px', height: '180px', borderRadius: '12px', border: '2px solid var(--border-color)', padding: '10px', background: '#fafafa' }}
                             />
-                            <p style={{ color: '#6b7280', fontSize: '12px', marginTop: '12px', textAlign: 'center', marginBottom: '16px' }}>Use this QR at the attendance scanner.</p>
+                            <p style={{ color: 'var(--text-secondary)', fontSize: '12px', marginTop: '12px', textAlign: 'center', marginBottom: '16px' }}>Use this QR at the attendance scanner.</p>
 
                             {/* Action Buttons */}
                             <div style={{ display: 'flex', gap: '10px', width: '100%', flexWrap: 'wrap', justifyContent: 'center' }}>
                                 <a
                                     href={merchantQRResult.qrCode}
                                     download={`qr_${merchantQRResult.name.replace(/\s/g, '_')}_${merchantQRResult.merchantCode}.png`}
-                                    style={{ flex: '1', minWidth: '130px', textAlign: 'center', padding: '10px 16px', borderRadius: '10px', background: '#111827', color: '#fff', fontWeight: '700', fontSize: '13px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                                    style={{ flex: '1', minWidth: '130px', textAlign: 'center', padding: '10px 16px', borderRadius: '10px', background: 'var(--text-primary)', color: 'var(--bg-color)', fontWeight: '700', fontSize: '13px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
                                 >
                                     <Download size={16} /> Download QR
                                 </a>
                                 <button
                                     onClick={() => setShowMerchantDetails(!showMerchantDetails)}
-                                    style={{ flex: '1', minWidth: '130px', padding: '10px 16px', borderRadius: '10px', border: '1.5px solid var(--accent-color)', background: showMerchantDetails ? 'var(--accent-color)' : '#fff', color: showMerchantDetails ? '#fff' : 'var(--accent-color)', fontWeight: '700', fontSize: '13px', cursor: 'pointer', transition: '0.2s' }}
+                                    style={{ flex: '1', minWidth: '130px', padding: '10px 16px', borderRadius: '10px', border: '1.5px solid var(--accent-color)', background: showMerchantDetails ? 'var(--accent-color)' : 'var(--card-bg)', color: showMerchantDetails ? '#fff' : 'var(--accent-color)', fontWeight: '700', fontSize: '13px', cursor: 'pointer', transition: '0.2s' }}
                                 >
                                     {showMerchantDetails ? '🔽 Hide Details' : '📄 More Details'}
                                 </button>
@@ -782,8 +785,8 @@ const AdminDashboard = () => {
 
                             {/* Expandable Details Panel */}
                             {showMerchantDetails && (
-                                <div style={{ width: '100%', marginTop: '20px', borderTop: '1px solid #f3f4f6', paddingTop: '20px' }}>
-                                    <h4 style={{ fontSize: '13px', fontWeight: '800', color: '#374151', marginBottom: '14px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Staff Member Details</h4>
+                                <div style={{ width: '100%', marginTop: '20px', borderTop: '1px solid var(--border-color)', paddingTop: '20px' }}>
+                                    <h4 style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text-muted)', marginBottom: '14px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Staff Member Details</h4>
                                     {[
                                         { icon: <Mail size={16} />, label: 'Email', value: merchantQRResult.email || '—' },
                                         { icon: <FileDigit size={16} />, label: 'NIC', value: merchantQRResult.nic || '—' },
@@ -791,11 +794,11 @@ const AdminDashboard = () => {
                                         { icon: <MapPin size={16} />, label: 'Address', value: merchantQRResult.address || '—' },
                                         { icon: <Calendar size={16} />, label: 'Registered', value: merchantQRResult.registeredAt ? new Date(merchantQRResult.registeredAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '—' },
                                     ].map(row => (
-                                        <div key={row.label} style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '10px 0', borderBottom: '1px solid #f9fafb' }}>
+                                        <div key={row.label} style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '10px 0', borderBottom: '1px solid var(--border-color)' }}>
                                             <span style={{ color: 'var(--accent-color)', minWidth: '20px' }}>{row.icon}</span>
                                             <div>
-                                                <div style={{ fontSize: '11px', fontWeight: '700', color: '#9ca3af', textTransform: 'uppercase', marginBottom: '2px' }}>{row.label}</div>
-                                                <div style={{ fontSize: '13px', fontWeight: '700', color: '#111827' }}>{row.value}</div>
+                                                <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '2px' }}>{row.label}</div>
+                                                <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-primary)' }}>{row.value}</div>
                                             </div>
                                         </div>
                                     ))}
@@ -810,15 +813,15 @@ const AdminDashboard = () => {
             {activeTab === 'profileScan' && (
                 <div style={{ display: 'grid', gridTemplateColumns: scannedProfile ? '1fr 1.4fr' : '1fr', gap: '32px', maxWidth: scannedProfile ? '900px' : '480px' }}>
                     {/* Scanner Panel */}
-                    <div style={{ background: '#fff', padding: '32px', borderRadius: '20px', border: '1px solid #e5e7eb', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
-                        <h2 style={{ fontSize: '20px', fontWeight: '900', color: '#111827', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}><User size={20} /> Staff Profile Scanner</h2>
-                        <p style={{ color: '#6b7280', fontSize: '13px', marginBottom: '24px' }}>Scan a staff member's QR code to view their full profile.</p>
+                    <div style={{ background: 'var(--card-bg)', padding: '32px', borderRadius: '20px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)' }}>
+                        <h2 style={{ fontSize: '20px', fontWeight: '900', color: 'var(--text-primary)', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}><User size={20} /> Staff Profile Scanner</h2>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginBottom: '24px' }}>Scan a staff member's QR code to view their full profile.</p>
 
                         {/* Scanner viewport */}
-                        <div id="qr-profile-reader" ref={profileScannerRef} style={{ width: '100%', borderRadius: '12px', overflow: 'hidden', marginBottom: '16px', background: '#f9fafb', minHeight: profileScannerActive ? '250px' : '0', border: profileScannerActive ? '2px solid #e5e7eb' : 'none' }} />
+                        <div id="qr-profile-reader" ref={profileScannerRef} style={{ width: '100%', borderRadius: '12px', overflow: 'hidden', marginBottom: '16px', background: 'var(--input-bg)', minHeight: profileScannerActive ? '250px' : '0', border: profileScannerActive ? '2px solid var(--border-color)' : 'none' }} />
 
                         {profileScanLoading && (
-                            <div style={{ textAlign: 'center', padding: '20px', color: '#6b7280', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                            <div style={{ textAlign: 'center', padding: '20px', color: 'var(--text-secondary)', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                                 <Loader2 size={20} className="animate-spin" /> Loading profile...
                             </div>
                         )}
@@ -830,11 +833,11 @@ const AdminDashboard = () => {
                         )}
 
                         {!profileScannerActive ? (
-                            <button onClick={startProfileScanner} style={{ width: '100%', padding: '14px', borderRadius: '12px', border: 'none', background: 'var(--accent-color)', color: '#fff', fontWeight: '800', cursor: 'pointer', fontSize: '15px', boxShadow: '0 4px 14px rgba(211,47,47,0.3)' }}>
+                            <button onClick={startProfileScanner} style={{ width: '100%', padding: '14px', borderRadius: '12px', border: 'none', background: 'var(--accent-color)', color: '#fff', fontWeight: '800', cursor: 'pointer', fontSize: '15px', boxShadow: '0 4px 20px var(--accent-glow)' }}>
                                 <Camera size={18} /> Start Scanner
                             </button>
                         ) : (
-                            <button onClick={stopProfileScanner} style={{ width: '100%', padding: '14px', borderRadius: '12px', border: 'none', background: '#374151', color: '#fff', fontWeight: '800', cursor: 'pointer', fontSize: '15px' }}>
+                            <button type="button" onClick={stopProfileScanner} style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--surface-muted)', color: 'var(--text-primary)', fontWeight: '800', cursor: 'pointer', fontSize: '15px' }}>
                                 <Square size={18} /> Stop Scanner
                             </button>
                         )}
@@ -842,7 +845,7 @@ const AdminDashboard = () => {
                         {scannedProfile && (
                             <button
                                 onClick={() => { setScannedProfile(null); setProfileScanError(''); }}
-                                style={{ width: '100%', marginTop: '10px', padding: '10px', borderRadius: '10px', border: '1.5px solid #e5e7eb', background: '#f9fafb', color: '#374151', fontWeight: '700', cursor: 'pointer', fontSize: '13px' }}
+                                style={{ width: '100%', marginTop: '10px', padding: '10px', borderRadius: '10px', border: '1.5px solid var(--border-color)', background: 'var(--surface-muted-2)', color: 'var(--text-primary)', fontWeight: '700', cursor: 'pointer', fontSize: '13px' }}
                             >
                                 <RefreshCw size={16} /> Scan Another
                             </button>
@@ -851,15 +854,15 @@ const AdminDashboard = () => {
 
                     {/* Profile Card */}
                     {scannedProfile && (
-                        <div style={{ background: '#fff', borderRadius: '20px', border: '1px solid #e5e7eb', boxShadow: '0 2px 12px rgba(0,0,0,0.04)', overflow: 'hidden' }}>
+                        <div style={{ background: 'var(--card-bg)', borderRadius: '20px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)', overflow: 'hidden' }}>
                             {/* Header strip */}
-                            <div style={{ background: 'linear-gradient(135deg, #111827 0%, #374151 100%)', padding: '28px 32px', display: 'flex', alignItems: 'center', gap: '20px' }}>
+                            <div style={{ background: 'linear-gradient(135deg, var(--surface-muted) 0%, #252b3a 100%)', padding: '28px 32px', display: 'flex', alignItems: 'center', gap: '20px' }}>
                                 <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'var(--accent-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', fontWeight: '900', color: '#fff', flexShrink: 0 }}>
                                     {scannedProfile.name?.charAt(0).toUpperCase()}
                                 </div>
                                 <div>
                                     <div style={{ fontSize: '20px', fontWeight: '900', color: '#fff' }}>{scannedProfile.name}</div>
-                                    <div style={{ fontSize: '13px', color: '#9ca3af', marginTop: '2px' }}>{ROLE_LABELS[scannedProfile.role] || scannedProfile.role}</div>
+                                    <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '2px' }}>{ROLE_LABELS[scannedProfile.role] || scannedProfile.role}</div>
                                     {scannedProfile.merchantCode && (
                                         <div style={{ marginTop: '6px', display: 'inline-block', padding: '3px 12px', background: 'rgba(255,255,255,0.1)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.2)' }}>
                                             <span style={{ fontWeight: '800', color: 'var(--accent-color)', letterSpacing: '2px', fontSize: '13px' }}>{scannedProfile.merchantCode}</span>
@@ -871,13 +874,13 @@ const AdminDashboard = () => {
                             {/* Details */}
                             <div style={{ padding: '24px 32px' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                                    <h4 style={{ margin: 0, fontSize: '12px', fontWeight: '800', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.8px' }}>Member Information</h4>
+                                    <h4 style={{ margin: 0, fontSize: '12px', fontWeight: '800', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.8px' }}>Member Information</h4>
                                     {!editMode ? (
-                                        <button onClick={() => { setEditingProfile(scannedProfile); setEditMode(true); }} style={{ background: '#f3f4f6', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', cursor: 'pointer', color: '#374151', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                        <button type="button" onClick={() => { setEditingProfile(scannedProfile); setEditMode(true); }} style={{ background: 'var(--surface-muted-2)', border: '1px solid var(--border-color)', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', cursor: 'pointer', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                                             <Edit3 size={12} /> Edit Profile
                                         </button>
                                     ) : (
-                                        <button onClick={() => setEditMode(false)} style={{ background: '#fef2f2', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', cursor: 'pointer', color: '#dc2626', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                        <button type="button" onClick={() => setEditMode(false)} style={{ background: 'rgba(220, 38, 38, 0.12)', border: '1px solid rgba(220, 38, 38, 0.3)', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', cursor: 'pointer', color: '#f87171', display: 'flex', alignItems: 'center', gap: '4px' }}>
                                             <X size={12} /> Cancel Edit
                                         </button>
                                     )}
@@ -892,13 +895,13 @@ const AdminDashboard = () => {
                                             { label: 'Address', name: 'address', type: 'text' },
                                         ].map(f => (
                                             <div key={f.name}>
-                                                <label style={{ display: 'block', fontSize: '11px', fontWeight: '800', color: '#6b7280', marginBottom: '4px', textTransform: 'uppercase' }}>{f.label}</label>
-                                                <input required type={f.type} value={editingProfile[f.name] || ''} onChange={e => setEditingProfile({ ...editingProfile, [f.name]: e.target.value })} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #e5e7eb', outline: 'none', fontSize: '14px', boxSizing: 'border-box' }} />
+                                                <label style={{ display: 'block', fontSize: '11px', fontWeight: '800', color: 'var(--text-secondary)', marginBottom: '4px', textTransform: 'uppercase' }}>{f.label}</label>
+                                                <input className="shan-input" required type={f.type} value={editingProfile[f.name] || ''} onChange={e => setEditingProfile({ ...editingProfile, [f.name]: e.target.value })} style={{ width: '100%', padding: '10px', borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box' }} />
                                             </div>
                                         ))}
                                         <div>
-                                            <label style={{ display: 'block', fontSize: '11px', fontWeight: '800', color: '#6b7280', marginBottom: '4px', textTransform: 'uppercase' }}>Role</label>
-                                            <select value={editingProfile.role} onChange={e => setEditingProfile({ ...editingProfile, role: e.target.value })} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #e5e7eb', outline: 'none', fontSize: '14px', boxSizing: 'border-box' }}>
+                                            <label style={{ display: 'block', fontSize: '11px', fontWeight: '800', color: 'var(--text-secondary)', marginBottom: '4px', textTransform: 'uppercase' }}>Role</label>
+                                            <select className="shan-input" value={editingProfile.role} onChange={e => setEditingProfile({ ...editingProfile, role: e.target.value })} style={{ width: '100%', padding: '10px', borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box' }}>
                                                 {Object.entries(ROLE_LABELS).map(([k, v]) => (
                                                     <option key={k} value={k}>{v}</option>
                                                 ))}
@@ -914,7 +917,7 @@ const AdminDashboard = () => {
                                             <button type="submit" disabled={actionLoading} style={{ flex: 1, padding: '12px', background: 'var(--accent-color)', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                                                 {actionLoading ? 'Saving...' : <><Save size={18} /> Save Changes</>}
                                             </button>
-                                            <button type="button" onClick={handleDeleteStaff} disabled={actionLoading} style={{ flex: 1, padding: '12px', background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', borderRadius: '10px', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                                            <button type="button" onClick={handleDeleteStaff} disabled={actionLoading} style={{ flex: 1, padding: '12px', background: 'rgba(220, 38, 38, 0.15)', color: '#f87171', border: '1px solid rgba(220, 38, 38, 0.4)', borderRadius: '10px', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                                                 <Trash2 size={18} /> Delete Staff
                                             </button>
                                         </div>
@@ -930,11 +933,11 @@ const AdminDashboard = () => {
                                             { icon: <Check size={18} />, label: 'Status', value: scannedProfile.isActive ? 'Active' : 'Inactive' },
                                             { icon: <Calendar size={18} />, label: 'Registered On', value: scannedProfile.registeredAt ? new Date(scannedProfile.registeredAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '—' },
                                         ].map(row => (
-                                            <div key={row.label} style={{ display: 'flex', alignItems: 'flex-start', gap: '14px', padding: '12px 0', borderBottom: '1px solid #f3f4f6' }}>
+                                            <div key={row.label} style={{ display: 'flex', alignItems: 'flex-start', gap: '14px', padding: '12px 0', borderBottom: '1px solid var(--border-color)' }}>
                                                 <span style={{ color: 'var(--accent-color)', minWidth: '22px' }}>{row.icon}</span>
                                                 <div>
-                                                    <div style={{ fontSize: '11px', fontWeight: '700', color: '#9ca3af', textTransform: 'uppercase', marginBottom: '3px' }}>{row.label}</div>
-                                                    <div style={{ fontSize: '14px', fontWeight: '700', color: row.label === 'Status' ? (scannedProfile.isActive ? '#16a34a' : '#dc2626') : '#111827' }}>{row.value}</div>
+                                                    <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '3px' }}>{row.label}</div>
+                                                    <div style={{ fontSize: '14px', fontWeight: '700', color: row.label === 'Status' ? (scannedProfile.isActive ? '#16a34a' : '#dc2626') : 'var(--text-primary)' }}>{row.value}</div>
                                                 </div>
                                             </div>
                                         ))}
@@ -944,9 +947,9 @@ const AdminDashboard = () => {
                                 {/* Mini QR */}
                                 {scannedProfile.qrCode && (
                                     <div style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
-                                        <div style={{ fontSize: '12px', fontWeight: '700', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.5px' }}>QR Code</div>
-                                        <img src={scannedProfile.qrCode} alt="staff qr" style={{ width: '100px', height: '100px', borderRadius: '8px', border: '1.5px solid #e5e7eb', padding: '6px' }} />
-                                        <a href={scannedProfile.qrCode} download={`qr_${scannedProfile.name?.replace(/\\s/g,'_')}.png`} style={{ padding: '8px 20px', borderRadius: '8px', background: '#111827', color: '#fff', fontWeight: '700', fontSize: '12px', textDecoration: 'none' }}>⬇️ Download QR</a>
+                                        <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>QR Code</div>
+                                        <img src={scannedProfile.qrCode} alt="staff qr" style={{ width: '100px', height: '100px', borderRadius: '8px', border: '1.5px solid var(--border-color)', padding: '6px', background: '#fafafa' }} />
+                                        <a href={scannedProfile.qrCode} download={`qr_${scannedProfile.name?.replace(/\\s/g,'_')}.png`} style={{ padding: '8px 20px', borderRadius: '8px', background: 'var(--text-primary)', color: 'var(--bg-color)', fontWeight: '700', fontSize: '12px', textDecoration: 'none' }}>⬇️ Download QR</a>
                                     </div>
                                 )}
                             </div>
@@ -956,33 +959,33 @@ const AdminDashboard = () => {
             )}
             {/* ── Customers List Tab ── */}
             {activeTab === 'customers' && (
-                <div style={{ background: '#fff', padding: '32px', borderRadius: '20px', border: '1px solid #e5e7eb', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
+                <div style={{ background: 'var(--card-bg)', padding: '32px', borderRadius: '20px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                         <div>
-                            <h2 style={{ fontSize: '20px', fontWeight: '900', color: '#111827', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}><Users size={20} /> Customers List</h2>
-                            <p style={{ color: '#6b7280', fontSize: '13px', margin: 0 }}>View all registered customers in the system.</p>
+                            <h2 style={{ fontSize: '20px', fontWeight: '900', color: 'var(--text-primary)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}><Users size={20} /> Customers List</h2>
+                            <p style={{ color: 'var(--text-secondary)', fontSize: '13px', margin: 0 }}>View all registered customers in the system.</p>
                         </div>
-                        <button onClick={fetchCustomers} style={{ padding: '8px 16px', borderRadius: '8px', border: '1.5px solid #e5e7eb', background: '#f9fafb', fontWeight: '700', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <button type="button" onClick={fetchCustomers} style={{ padding: '8px 16px', borderRadius: '8px', border: '1.5px solid var(--border-color)', background: 'var(--surface-muted-2)', color: 'var(--text-primary)', fontWeight: '700', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
                             <RefreshCw size={14} /> Refresh
                         </button>
                     </div>
 
                     {customersLoading ? (
-                        <div style={{ textAlign: 'center', padding: '40px', color: '#9ca3af' }}>Loading customers...</div>
+                        <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>Loading customers...</div>
                     ) : customers.length === 0 ? (
-                        <div style={{ textAlign: 'center', padding: '40px', color: '#9ca3af' }}>No customers found.</div>
+                        <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>No customers found.</div>
                     ) : (
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
                             {customers.map(c => (
-                                <div key={c._id} style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: '20px', borderRadius: '16px', border: '1px solid #e5e7eb', background: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+                                <div key={c._id} style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: '20px', borderRadius: '16px', border: '1px solid var(--border-color)', background: 'var(--surface-muted-2)', boxShadow: 'var(--shadow-sm)' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                                        <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'linear-gradient(135deg, #111827, #374151)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '20px', flexShrink: 0 }}>
+                                        <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--surface-muted), #252b3a)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '20px', flexShrink: 0, border: '1px solid var(--border-color)' }}>
                                             {c.name?.charAt(0).toUpperCase() || 'C'}
                                         </div>
                                         <div>
-                                            <div style={{ fontWeight: '900', color: '#111827', fontSize: '15px' }}>{c.name}</div>
-                                            <div style={{ fontSize: '13px', color: '#6b7280', marginTop: '2px', wordBreak: 'break-all' }}>{c.email}</div>
-                                            {c.phone && <div style={{ fontSize: '12px', color: '#9ca3af', marginTop: '2px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }}><Smartphone size={12} /> {c.phone}</div>}
+                                            <div style={{ fontWeight: '900', color: 'var(--text-primary)', fontSize: '15px' }}>{c.name}</div>
+                                            <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '2px', wordBreak: 'break-all' }}>{c.email}</div>
+                                            {c.phone && <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }}><Smartphone size={12} /> {c.phone}</div>}
                                         </div>
                                     </div>
                                 </div>
@@ -994,41 +997,41 @@ const AdminDashboard = () => {
 
             {/* ── Staff List Tab ── */}
             {activeTab === 'staffList' && (
-                <div style={{ background: '#fff', padding: '32px', borderRadius: '20px', border: '1px solid #e5e7eb', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
+                <div style={{ background: 'var(--card-bg)', padding: '32px', borderRadius: '20px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                         <div>
-                            <h2 style={{ fontSize: '20px', fontWeight: '900', color: '#111827', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}><Users size={20} /> Staff List</h2>
-                            <p style={{ color: '#6b7280', fontSize: '13px', margin: 0 }}>View all fully registered staff members in the system.</p>
+                            <h2 style={{ fontSize: '20px', fontWeight: '900', color: 'var(--text-primary)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}><Users size={20} /> Staff List</h2>
+                            <p style={{ color: 'var(--text-secondary)', fontSize: '13px', margin: 0 }}>View all fully registered staff members in the system.</p>
                         </div>
-                        <button onClick={fetchStaffList} style={{ padding: '8px 16px', borderRadius: '8px', border: '1.5px solid #e5e7eb', background: '#f9fafb', fontWeight: '700', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <button type="button" onClick={fetchStaffList} style={{ padding: '8px 16px', borderRadius: '8px', border: '1.5px solid var(--border-color)', background: 'var(--surface-muted-2)', color: 'var(--text-primary)', fontWeight: '700', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
                             <RefreshCw size={14} /> Refresh
                         </button>
                     </div>
 
                     {staffListLoading ? (
-                        <div style={{ textAlign: 'center', padding: '40px', color: '#9ca3af' }}>Loading staff members...</div>
+                        <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>Loading staff members...</div>
                     ) : staffList.length === 0 ? (
-                        <div style={{ textAlign: 'center', padding: '40px', color: '#9ca3af' }}>No staff members found.</div>
+                        <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>No staff members found.</div>
                     ) : (
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '16px' }}>
                             {staffList.map(s => (
-                                <div key={s._id} style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: '20px', borderRadius: '16px', border: '1px solid #e5e7eb', background: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+                                <div key={s._id} style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: '20px', borderRadius: '16px', border: '1px solid var(--border-color)', background: 'var(--surface-muted-2)', boxShadow: 'var(--shadow-sm)' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1 }}>
-                                        <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent-color), #ff6b6b)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '20px', flexShrink: 0 }}>
+                                        <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent-color), #8b5cf6)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '20px', flexShrink: 0, boxShadow: '0 4px 14px var(--accent-glow)' }}>
                                             {s.name?.charAt(0).toUpperCase() || 'S'}
                                         </div>
                                         <div style={{ minWidth: 0, flex: 1 }}>
-                                            <div style={{ fontWeight: '900', color: '#111827', fontSize: '15px' }}>{s.name}</div>
-                                            <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '2px', fontWeight: '700' }}>{ROLE_LABELS[s.role] || s.role}</div>
-                                            <div style={{ fontSize: '12px', color: '#9ca3af', marginTop: '4px', display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+                                            <div style={{ fontWeight: '900', color: 'var(--text-primary)', fontSize: '15px' }}>{s.name}</div>
+                                            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px', fontWeight: '700' }}>{ROLE_LABELS[s.role] || s.role}</div>
+                                            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px', display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
                                                 <Smartphone size={12} /> {s.phone || '—'}
                                             </div>
                                             {s.merchantCode && (
                                                 <div style={{ marginTop: '8px' }}>
-                                                    <span style={{ padding: '2px 8px', background: '#fef2f2', color: 'var(--accent-color)', borderRadius: '6px', fontSize: '11px', fontWeight: '800', border: '1px solid #fecaca' }}>
+                                                    <span style={{ padding: '2px 8px', background: 'rgba(99, 102, 241, 0.12)', color: 'var(--accent-color)', borderRadius: '6px', fontSize: '11px', fontWeight: '800', border: '1px solid rgba(99, 102, 241, 0.35)' }}>
                                                         {s.merchantCode}
                                                     </span>
-                                                    <span style={{ padding: '2px 8px', marginLeft: '6px', background: s.isActive === false ? '#fef2f2' : '#ecfdf5', color: s.isActive === false ? '#dc2626' : '#16a34a', borderRadius: '6px', fontSize: '11px', fontWeight: '800' }}>
+                                                    <span style={{ padding: '2px 8px', marginLeft: '6px', background: s.isActive === false ? 'rgba(220, 38, 38, 0.12)' : 'rgba(16, 185, 129, 0.12)', color: s.isActive === false ? '#f87171' : '#4ade80', border: `1px solid ${s.isActive === false ? 'rgba(220, 38, 38, 0.3)' : 'rgba(16, 185, 129, 0.35)'}`, borderRadius: '6px', fontSize: '11px', fontWeight: '800' }}>
                                                         {s.isActive === false ? 'Inactive' : 'Active'}
                                                     </span>
                                                 </div>
@@ -1036,11 +1039,12 @@ const AdminDashboard = () => {
                                         </div>
                                     </div>
                                     <button
+                                        type="button"
                                         onClick={() => {
                                             setScannedProfile(s);
                                             setActiveTab('profileScan');
                                         }}
-                                        style={{ background: '#f3f4f6', color: '#374151', padding: '8px 12px', borderRadius: '8px', border: 'none', fontWeight: '700', fontSize: '12px', cursor: 'pointer', flexShrink: 0 }}
+                                        style={{ background: 'var(--surface-muted)', color: 'var(--text-primary)', padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', fontWeight: '700', fontSize: '12px', cursor: 'pointer', flexShrink: 0 }}
                                     >
                                         Edit
                                     </button>

@@ -9,7 +9,7 @@ const Sidebar = () => {
     return (
         <div className="sidebar" style={{ 
             width: 260, 
-            backgroundColor: '#1a1a1b', 
+            backgroundColor: 'var(--sidebar-bg)', 
             display: 'flex', 
             flexDirection: 'column', 
             height: '100vh', 
@@ -25,7 +25,7 @@ const Sidebar = () => {
                     />
                     <div>
                         <div style={{ color: '#fff', fontWeight: '900', fontSize: '20px', letterSpacing: '-0.5px', lineHeight: 1 }}>SHAN</div>
-                        <div style={{ color: '#ffffff', fontWeight: '700', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '1px' }}>Art Advertising</div>
+                        <div style={{ color: 'var(--text-secondary)', fontWeight: '700', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '1px' }}>Art Advertising</div>
                     </div>
                 </div>
             </div>
@@ -99,8 +99,9 @@ const SidebarLink = ({ to, icon, label }) => (
             color: isActive ? '#fff' : 'rgba(255,255,255,0.6)',
             fontWeight: '600',
             fontSize: '14px',
-            transition: 'all 0.2s',
-            borderLeft: isActive ? '4px solid #fff' : '4px solid transparent'
+            transition: 'all 0.25s cubic-bezier(0.22, 1, 0.36, 1)',
+            borderLeft: isActive ? '4px solid rgba(255,255,255,0.9)' : '4px solid transparent',
+            boxShadow: isActive ? 'inset 0 0 0 1px rgba(99, 102, 241, 0.35)' : 'none'
         })}
     >
         <span style={{ fontSize: '18px' }}>{icon}</span>

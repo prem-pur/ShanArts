@@ -88,24 +88,24 @@ const StaffLogin = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: '#f3f4f6',
+            backgroundColor: 'var(--bg-color)',
             padding: '20px',
-            fontFamily: "'Inter', sans-serif"
+            fontFamily: 'var(--font-sans, "Outfit", sans-serif)'
         }}>
             <div style={{
                 width: '100%',
                 maxWidth: '440px',
-                backgroundColor: '#ffffff',
+                backgroundColor: 'var(--card-bg)',
                 borderRadius: '24px',
                 padding: '40px',
-                boxShadow: '0 10px 40px rgba(0,0,0,0.05)',
-                border: '1px solid #e5e7eb'
+                boxShadow: '0 20px 50px rgba(0,0,0,0.45)',
+                border: '1px solid var(--border-color)'
             }}>
                 <div style={{ textAlign: 'center', marginBottom: '32px' }}>
                     <div style={{
                         width: '64px',
                         height: '64px',
-                        backgroundColor: '#1e1e1e',
+                        background: 'linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)',
                         borderRadius: '16px',
                         display: 'flex',
                         alignItems: 'center',
@@ -113,14 +113,15 @@ const StaffLogin = () => {
                         margin: '0 auto 20px',
                         color: '#fff',
                         fontSize: '28px',
-                        fontWeight: '900'
+                        fontWeight: '900',
+                        boxShadow: '0 8px 28px var(--accent-glow)'
                     }}>
                         SP
                     </div>
-                    <h2 style={{ fontSize: '28px', fontWeight: '900', color: '#111827', marginBottom: '8px' }}>
+                    <h2 style={{ fontSize: '28px', fontWeight: '900', color: 'var(--text-primary)', marginBottom: '8px' }}>
                         {isForgotMode ? 'Identity Verification' : 'Staff Portal'}
                     </h2>
-                    <p style={{ color: '#6b7280', fontSize: '15px' }}>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '15px' }}>
                         {isForgotMode 
                           ? 'Verify your identity to reset your password'
                           : 'Sign in to access your professional workspace'
@@ -163,7 +164,7 @@ const StaffLogin = () => {
                 {!isForgotMode ? (
                     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
                         <div>
-                            <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '700', color: '#374151' }}>Work Email</label>
+                            <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '700', color: 'var(--text-muted)' }}>Work Email</label>
                             <input
                                 type="email"
                                 name="email"
@@ -174,9 +175,9 @@ const StaffLogin = () => {
                                     width: '100%',
                                     padding: '12px 16px',
                                     borderRadius: '10px',
-                                    border: '1.5px solid #e5e7eb',
-                                    backgroundColor: '#f9fafb',
-                                    color: '#111827',
+                                    border: '1.5px solid var(--border-color)',
+                                    backgroundColor: 'var(--input-bg)',
+                                    color: 'var(--text-primary)',
                                     fontSize: '15px',
                                     outline: 'none',
                                     boxSizing: 'border-box'
@@ -186,7 +187,7 @@ const StaffLogin = () => {
                         </div>
                         <div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                                <label style={{ fontSize: '13px', fontWeight: '700', color: '#374151' }}>Password</label>
+                                <label style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-muted)' }}>Password</label>
                                 <button 
                                     type="button"
                                     onClick={() => {
@@ -217,9 +218,9 @@ const StaffLogin = () => {
                                     width: '100%',
                                     padding: '12px 16px',
                                     borderRadius: '10px',
-                                    border: '1.5px solid #e5e7eb',
-                                    backgroundColor: '#f9fafb',
-                                    color: '#111827',
+                                    border: '1.5px solid var(--border-color)',
+                                    backgroundColor: 'var(--input-bg)',
+                                    color: 'var(--text-primary)',
                                     fontSize: '15px',
                                     outline: 'none',
                                     boxSizing: 'border-box'
@@ -242,7 +243,7 @@ const StaffLogin = () => {
                                 cursor: loading ? 'not-allowed' : 'pointer',
                                 marginTop: '8px',
                                 transition: 'all 0.2s',
-                                boxShadow: '0 4px 15px rgba(211, 47, 47, 0.4)'
+                                boxShadow: '0 4px 20px var(--accent-glow)'
                             }}
                         >
                             {loading ? 'Authenticating...' : 'Sign In to Portal'}
@@ -251,52 +252,52 @@ const StaffLogin = () => {
                 ) : (
                     <form onSubmit={handleForgotSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                         <div>
-                            <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '700', color: '#374151' }}>Work Email</label>
+                            <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '700', color: 'var(--text-muted)' }}>Work Email</label>
                             <input
                                 type="email"
                                 name="email"
                                 value={forgotData.email}
                                 onChange={handleForgotInputChange}
                                 required
-                                style={{ width: '100%', padding: '12px 16px', borderRadius: '10px', border: '1.5px solid #e5e7eb', backgroundColor: '#f9fafb', color: '#111827', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
+                                style={{ width: '100%', padding: '12px 16px', borderRadius: '10px', border: '1.5px solid var(--border-color)', backgroundColor: 'var(--input-bg)', color: 'var(--text-primary)', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
                                 placeholder="staff@shanart.com"
                             />
                         </div>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                             <div>
-                                <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '700', color: '#374151' }}>NIC Number</label>
+                                <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '700', color: 'var(--text-muted)' }}>NIC Number</label>
                                 <input
                                     type="text"
                                     name="nic"
                                     value={forgotData.nic}
                                     onChange={handleForgotInputChange}
                                     required
-                                    style={{ width: '100%', padding: '12px 16px', borderRadius: '10px', border: '1.5px solid #e5e7eb', backgroundColor: '#f9fafb', color: '#111827', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
+                                    style={{ width: '100%', padding: '12px 16px', borderRadius: '10px', border: '1.5px solid var(--border-color)', backgroundColor: 'var(--input-bg)', color: 'var(--text-primary)', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
                                     placeholder="10 characters"
                                 />
                             </div>
                             <div>
-                                <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '700', color: '#374151' }}>Phone Number</label>
+                                <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '700', color: 'var(--text-muted)' }}>Phone Number</label>
                                 <input
                                     type="text"
                                     name="phone"
                                     value={forgotData.phone}
                                     onChange={handleForgotInputChange}
                                     required
-                                    style={{ width: '100%', padding: '12px 16px', borderRadius: '10px', border: '1.5px solid #e5e7eb', backgroundColor: '#f9fafb', color: '#111827', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
+                                    style={{ width: '100%', padding: '12px 16px', borderRadius: '10px', border: '1.5px solid var(--border-color)', backgroundColor: 'var(--input-bg)', color: 'var(--text-primary)', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
                                     placeholder="10 digits"
                                 />
                             </div>
                         </div>
                         <div>
-                            <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '700', color: '#374151' }}>New Password</label>
+                            <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '700', color: 'var(--text-muted)' }}>New Password</label>
                             <input
                                 type="password"
                                 name="newPassword"
                                 value={forgotData.newPassword}
                                 onChange={handleForgotInputChange}
                                 required
-                                style={{ width: '100%', padding: '12px 16px', borderRadius: '10px', border: '1.5px solid #e5e7eb', backgroundColor: '#f9fafb', color: '#111827', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
+                                style={{ width: '100%', padding: '12px 16px', borderRadius: '10px', border: '1.5px solid var(--border-color)', backgroundColor: 'var(--input-bg)', color: 'var(--text-primary)', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
                                 placeholder="Min 8 characters"
                             />
                         </div>
@@ -315,7 +316,7 @@ const StaffLogin = () => {
                                 cursor: loading ? 'not-allowed' : 'pointer',
                                 transition: 'all 0.2s',
                                 marginTop: '4px',
-                                boxShadow: '0 4px 15px rgba(211, 47, 47, 0.4)'
+                                boxShadow: '0 4px 20px var(--accent-glow)'
                             }}
                         >
                             {loading ? 'Verifying...' : 'Set New Password'}
@@ -327,7 +328,7 @@ const StaffLogin = () => {
                                 setError('');
                                 setSuccessMessage('');
                             }}
-                            style={{ width: '100%', background: 'transparent', border: 'none', color: '#6b7280', fontSize: '13px', cursor: 'pointer', fontWeight: '600' }}
+                            style={{ width: '100%', background: 'transparent', border: 'none', color: 'var(--text-secondary)', fontSize: '13px', cursor: 'pointer', fontWeight: '600' }}
                         >
                             Back to Login
                         </button>
@@ -337,7 +338,7 @@ const StaffLogin = () => {
                 <div style={{ textAlign: 'center', marginTop: '24px' }}>
                     <button
                         onClick={() => navigate('/')}
-                        style={{ background: 'transparent', border: 'none', color: '#9ca3af', fontSize: '13px', cursor: 'pointer', fontWeight: '600' }}
+                        style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', fontSize: '13px', cursor: 'pointer', fontWeight: '600' }}
                     >
                         ← Back to Site
                     </button>

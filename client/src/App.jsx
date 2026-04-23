@@ -21,6 +21,7 @@ import FeedbackPage from "./pages/FeedbackNotificationManagement/FeedbackPage";
 import NotificationsPage from "./pages/FeedbackNotificationManagement/NotificationPage";
 import MachineManagement from "./pages/InventoryManagement/MachineManagement";
 import GlobalNotifications from "./components/GlobalNotifications";
+import AppGlobalFooter from "./components/AppGlobalFooter";
 import "./App.css";
 
 function AppContent() {
@@ -34,27 +35,29 @@ function AppContent() {
 // These pages get a clean full-screen layout
     if (isHomePage || isCustomerHome || isCustomerDashboard || isStaffLogin) {
         return (
-            <div className="App" style={{ height: '100vh', overflow: 'auto' }}>
+            <div className="App shan-app" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
                 <GlobalNotifications />
-                <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/customer-home" element={<CustomerHome />} />
-                    <Route path="/customer-dashboard" element={<CustomerDashboard />} />
-                    <Route path="/staff-login" element={<StaffLogin />} />
-                </Routes>
-                {isHomePage && <footer className="app-footer">shan art advertising | 2026</footer>}
+                <div style={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
+                    <Routes>
+                        <Route path="/" element={<Home />} />
+                        <Route path="/customer-home" element={<CustomerHome />} />
+                        <Route path="/customer-dashboard" element={<CustomerDashboard />} />
+                        <Route path="/staff-login" element={<StaffLogin />} />
+                    </Routes>
+                </div>
+                <AppGlobalFooter />
             </div>
         );
     }
 
     // Staff/Internal Management Pages
     return (
-        <div className="App" style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+        <div className="App shan-app" style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
             <Sidebar />
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                 <GlobalNotifications />
 
-                <main style={{ flex: 1, overflow: 'auto', backgroundColor: 'var(--bg-color)' }}>
+                <main className="app-main-canvas" style={{ flex: 1, overflow: 'auto' }}>
                     <Routes>
                         <Route path="/admin-dashboard" element={<AdminDashboard />} />
                         <Route path="/orders" element={<OrderList />} />
@@ -74,7 +77,7 @@ function AppContent() {
                         <Route path="/notifications" element={<NotificationsPage />} />
                     </Routes>
                 </main>
-                <footer className="app-footer">shan art advertising | 2026</footer>
+                <AppGlobalFooter />
             </div>
         </div>
     );

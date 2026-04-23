@@ -1,18 +1,17 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import {
     Bell,
     Search,
     Image as ImageIcon,
     Palette,
     Clock,
-    User,
-    Wrench,
     ChevronRight,
     Layout
 } from 'lucide-react';
 import { API_BASE_URL } from '../../apiBase';
+import DesignWorkspaceTools from '../../components/DesignWorkspaceTools';
 
 const STATUS_MAP = {
     'draft':              { label: 'Draft',               color: '#64748b', bg: '#f1f5f9', border: '#e2e8f0' },
@@ -104,42 +103,55 @@ const DesignWorkspaceCardView = () => {
         });
     }, [orders, filterStatus, searchTerm]);
 
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (user.role !== 'admin' && user.role !== 'staff_designer') {
+        if (user.role === 'customer') {
+            return <Navigate to="/customer-home" replace />;
+        }
+        if (!user.role) {
+            return <Navigate to="/" replace />;
+        }
+        return <Navigate to="/admin-dashboard" replace />;
+    }
+
     if (loading) return (
-        <div style={{ padding: '40px', textAlign: 'center', color: '#64748b' }}>Loading workspace...</div>
+        <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)' }}>Loading workspace...</div>
     );
 
     return (
-        <div style={{ backgroundColor: '#f3f4f6', minHeight: '100vh', fontFamily: "'Inter', sans-serif", padding: '28px 36px' }}>
+        <div className="shan-page" style={{ backgroundColor: 'var(--bg-color)', minHeight: '100vh', fontFamily: 'var(--font-sans, sans-serif)', padding: '28px 36px', color: 'var(--text-primary)' }}>
             {/* Banner */}
             {newOrdersCount > 0 && (
-                <div style={{ background: '#fef2f2', borderRadius: '14px', border: '1px solid #fecaca', padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: '#dc2626' }}>
+                <div style={{ background: 'rgba(99, 102, 241, 0.12)', borderRadius: '14px', border: '1px solid rgba(99, 102, 241, 0.35)', padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--accent-color)' }}>
                         <Bell size={20} />
                         <span style={{ fontWeight: '800', fontSize: '15px' }}>{newOrdersCount} New Orders to Design</span>
                     </div>
                     <button
                         onClick={() => setFilterStatus('Draft')}
-                        style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '8px', fontWeight: '800', cursor: 'pointer', fontSize: '13px' }}>
+                        style={{ background: 'var(--accent-color)', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '8px', fontWeight: '800', cursor: 'pointer', fontSize: '13px' }}>
                         View New Orders
                     </button>
                 </div>
             )}
 
+            <DesignWorkspaceTools />
+
             {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
-                <h1 style={{ fontSize: '26px', fontWeight: '800', color: '#0f172a', margin: 0, letterSpacing: '-0.5px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <Layout size={28} color="#ef4444" /> Design Workspace
+                <h1 style={{ fontSize: '26px', fontWeight: '800', color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.5px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <Layout size={28} color="var(--accent-color)" /> Design Workspace
                 </h1>
 
                 <div style={{ position: 'relative' }}>
-                    <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', display: 'flex' }}>
+                    <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)', display: 'flex' }}>
                         <Search size={18} />
                     </span>
                     <input
                         placeholder="Search orders..."
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
-                        style={{ padding: '10px 16px 10px 40px', borderRadius: '10px', border: '1px solid #e2e8f0', width: '280px', outline: 'none', background: '#fff', fontSize: '14px', fontWeight: '500' }}
+                        style={{ padding: '10px 16px 10px 40px', borderRadius: '10px', border: '1px solid var(--border-color)', width: '280px', outline: 'none', background: 'var(--input-bg)', color: 'var(--text-primary)', fontSize: '14px', fontWeight: '500' }}
                     />
                 </div>
             </div>
@@ -152,10 +164,10 @@ const DesignWorkspaceCardView = () => {
                         onClick={() => setFilterStatus(tab)}
                         style={{
                             padding: '8px 16px', borderRadius: '10px', fontSize: '14px', fontWeight: '700', cursor: 'pointer',
-                            border: filterStatus === tab ? 'none' : '1px solid #e2e8f0',
-                            background: filterStatus === tab ? '#ef4444' : '#fff',
-                            color: filterStatus === tab ? '#fff' : '#64748b',
-                            boxShadow: filterStatus === tab ? '0 4px 12px rgba(239, 68, 68, 0.2)' : 'none',
+                            border: filterStatus === tab ? 'none' : '1px solid var(--border-color)',
+                            background: filterStatus === tab ? 'var(--accent-color)' : 'var(--card-bg)',
+                            color: filterStatus === tab ? '#fff' : 'var(--text-secondary)',
+                            boxShadow: filterStatus === tab ? '0 4px 16px var(--accent-glow)' : 'none',
                             transition: 'all 0.2s'
                         }}
                     >
@@ -167,17 +179,17 @@ const DesignWorkspaceCardView = () => {
             {/* Grid */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
                 {filteredOrders.length === 0 ? (
-                    <div style={{ color: '#94a3b8', padding: '40px 0', fontWeight: '600' }}>No projects match your criteria.</div>
+                    <div style={{ color: 'var(--text-secondary)', padding: '40px 0', fontWeight: '600' }}>No projects match your criteria.</div>
                 ) : (
                     filteredOrders.map(order => {
                         const statusConf = getStatusConf(order.status);
                         const sizeText = order.printSpecs?.size ? `${order.printSpecs.size.width}x${order.printSpecs.size.height}${order.printSpecs.size.unit||'mm'}` : '';
 
                         return (
-                            <div key={order._id} style={{ background: '#fff', borderRadius: '16px', padding: '24px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '20px', boxShadow: '0 2px 8px rgba(0,0,0,0.02)', position: 'relative' }}>
+                            <div key={order._id} style={{ background: 'var(--card-bg)', borderRadius: '16px', padding: '24px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '20px', boxShadow: 'var(--shadow-sm)', position: 'relative' }}>
 
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                    <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
+                                    <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'var(--surface-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>
                                         <ImageIcon size={20} />
                                     </div>
                                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', justifyContent: 'flex-end', flex: 1 }}>
@@ -193,27 +205,27 @@ const DesignWorkspaceCardView = () => {
                                 </div>
 
                                 <div>
-                                    <h3 style={{ margin: '0 0 6px 0', fontSize: '17px', fontWeight: '800', color: '#0f172a' }}>
+                                    <h3 style={{ margin: '0 0 6px 0', fontSize: '17px', fontWeight: '800', color: 'var(--text-primary)' }}>
                                         {order.customerName || `Order #${order.orderId || order._id.slice(-6).toUpperCase()}`}
                                     </h3>
-                                    <p style={{ margin: 0, fontSize: '13px', color: '#64748b', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px' }}>
                                         <Palette size={14} strokeWidth={2.5} /> {order.printSpecs?.designType} {sizeText ? `• ${sizeText}` : ''}
                                     </p>
                                 </div>
 
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
-                                    <span style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                    <span style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }}>
                                         <Clock size={12} /> {new Date(order.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
                                     </span>
                                     <button
                                         onClick={() => navigate('/design-editor', { state: { selectedOrderId: order._id } })}
                                         style={{
-                                            background: '#fff', color: '#ef4444', border: '1.5px solid #ef4444',
+                                            background: 'var(--card-bg)', color: 'var(--accent-color)', border: '1.5px solid var(--accent-color)',
                                             padding: '6px 14px', borderRadius: '8px', fontWeight: '800', fontSize: '13px',
                                             cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.15s'
                                         }}
-                                        onMouseEnter={e => { e.currentTarget.style.background = '#ef4444'; e.currentTarget.style.color = '#fff'; }}
-                                        onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#ef4444'; }}
+                                        onMouseEnter={e => { e.currentTarget.style.background = 'var(--accent-color)'; e.currentTarget.style.color = '#fff'; }}
+                                        onMouseLeave={e => { e.currentTarget.style.background = 'var(--card-bg)'; e.currentTarget.style.color = 'var(--accent-color)'; }}
                                     >
                                         Studio <ChevronRight size={14} strokeWidth={3} />
                                     </button>

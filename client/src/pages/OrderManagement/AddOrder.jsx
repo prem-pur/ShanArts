@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Store, Truck, Car, Sparkles, Download } from 'lucide-react';
+import { Store, Truck, Car } from 'lucide-react';
 import { API_BASE_URL } from '../../apiBase';
 
 const AddOrder = ({ onOrderCreated, onCancel }) => {
@@ -21,8 +21,6 @@ const AddOrder = ({ onOrderCreated, onCancel }) => {
     });
 
     const [samplePhoto, setSamplePhoto] = useState(null);
-    const [aiLoading, setAiLoading] = useState(false);
-    const [aiDocumentUrl, setAiDocumentUrl] = useState(null);
 
     const productTemplates = {
         poster: {
@@ -141,43 +139,6 @@ const AddOrder = ({ onOrderCreated, onCancel }) => {
     const handleFileChange = (e) => {
         if (e.target.name === 'samplePhoto') {
             setSamplePhoto(e.target.files[0] || null);
-            setAiDocumentUrl(null);
-        }
-    };
-
-    const handleProcessWithAI = async () => {
-        if (!samplePhoto) {
-            setError('Please choose a reference image first.');
-            return;
-        }
-        if (!samplePhoto.type.startsWith('image/')) {
-            setError('AI processing requires an image file (PNG, JPG, etc.).');
-            return;
-        }
-        setError('');
-        setAiLoading(true);
-        setAiDocumentUrl(null);
-        const data = new FormData();
-        data.append('image', samplePhoto);
-        try {
-            const token = localStorage.getItem('token');
-            const res = await axios.post(`${API_BASE_URL}/api/shop-orders/convert-ai`, data, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
-            const text = (res.data?.extractedText || '').trim();
-            setAiDocumentUrl(res.data?.documentUrl || null);
-            // Fill "Order description" (primary). Special instructions stay for manual color/font notes.
-            setFormData((prev) => {
-                if (!text) return prev;
-                return { ...prev, description: text.slice(0, 5000) };
-            });
-        } catch (err) {
-            setError(err.response?.data?.message || err.message || 'AI processing failed');
-        } finally {
-            setAiLoading(false);
         }
     };
 
@@ -249,7 +210,7 @@ const AddOrder = ({ onOrderCreated, onCancel }) => {
         width: '100%',
         padding: '14px',
         borderRadius: '10px',
-        backgroundColor: '#f9fafb',
+        backgroundColor: 'var(--bg-color)',
         border: '1px solid #e5e7eb',
         color: '#111827',
         fontSize: '15px',
@@ -260,7 +221,7 @@ const AddOrder = ({ onOrderCreated, onCancel }) => {
     const labelStyle = { display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '700', color: '#374151' };
 
     return (
-        <div style={{ backgroundColor: '#fff', borderRadius: '16px', border: '1px solid #e5e7eb', boxShadow: 'var(--shadow-sm)', overflow: 'hidden' }}>
+        <div style={{ backgroundColor: 'var(--card-bg)', borderRadius: '16px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)', overflow: 'hidden' }}>
             <div style={{ padding: '24px 32px', borderBottom: '1px solid #f0f0f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f9fafb' }}>
                 <h2 style={{ fontSize: '20px', fontWeight: '900', color: '#111827' }}>Place New Order</h2>
                 <div style={{ fontSize: '14px', color: '#6b7280', fontWeight: '600' }}>Step {step} of 2</div>
@@ -348,13 +309,13 @@ const AddOrder = ({ onOrderCreated, onCancel }) => {
                             <div>
                                 <label style={labelStyle}>Delivery Method</label>
                                 <div style={{ display: 'flex', gap: '12px' }}>
-                                    <label style={{ flex: 1, padding: '16px', borderRadius: '12px', border: `2px solid ${formData.deliveryMethod === 'pickup' ? 'var(--accent-color)' : '#e5e7eb'}`, cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s', background: formData.deliveryMethod === 'pickup' ? '#fff5f5' : '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                                    <label style={{ flex: 1, padding: '16px', borderRadius: '12px', border: `2px solid ${formData.deliveryMethod === 'pickup' ? 'var(--accent-color)' : 'var(--border-color)'}`, cursor: 'pointer', textAlign: 'center', transition: 'all 0.25s cubic-bezier(0.22,1,0.36,1)', background: formData.deliveryMethod === 'pickup' ? 'rgba(99, 102, 241, 0.1)' : 'var(--input-bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
                                         <input type="radio" name="deliveryMethod" value="pickup" checked={formData.deliveryMethod === 'pickup'} onChange={handleInputChange} style={{ display: 'none' }} />
                                         <Store size={24} color={formData.deliveryMethod === 'pickup' ? 'var(--accent-color)' : '#94a3b8'} />
                                         <div style={{ fontWeight: '700', fontSize: '14px', color: formData.deliveryMethod === 'pickup' ? 'var(--accent-color)' : '#374151' }}>Pickup</div>
                                     </label>
 
-                                    <label style={{ flex: 1, padding: '16px', borderRadius: '12px', border: `2px solid ${formData.deliveryMethod === 'delivery' ? 'var(--accent-color)' : '#e5e7eb'}`, cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s', background: formData.deliveryMethod === 'delivery' ? '#fff5f5' : '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                                    <label style={{ flex: 1, padding: '16px', borderRadius: '12px', border: `2px solid ${formData.deliveryMethod === 'delivery' ? 'var(--accent-color)' : 'var(--border-color)'}`, cursor: 'pointer', textAlign: 'center', transition: 'all 0.25s cubic-bezier(0.22,1,0.36,1)', background: formData.deliveryMethod === 'delivery' ? 'rgba(99, 102, 241, 0.1)' : 'var(--input-bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
                                         <input type="radio" name="deliveryMethod" value="delivery" checked={formData.deliveryMethod === 'delivery'} onChange={handleInputChange} style={{ display: 'none' }} />
                                         <Truck size={24} color={formData.deliveryMethod === 'delivery' ? 'var(--accent-color)' : '#94a3b8'} />
                                         <div style={{ fontWeight: '700', fontSize: '14px', color: formData.deliveryMethod === 'delivery' ? 'var(--accent-color)' : '#374151' }}>
@@ -363,7 +324,7 @@ const AddOrder = ({ onOrderCreated, onCancel }) => {
                                         </div>
                                     </label>
 
-                                    <label style={{ flex: 1, padding: '16px', borderRadius: '12px', border: `2px solid ${formData.deliveryMethod === 'pickme' ? 'var(--accent-color)' : '#e5e7eb'}`, cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s', background: formData.deliveryMethod === 'pickme' ? '#fff5f5' : '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                                    <label style={{ flex: 1, padding: '16px', borderRadius: '12px', border: `2px solid ${formData.deliveryMethod === 'pickme' ? 'var(--accent-color)' : 'var(--border-color)'}`, cursor: 'pointer', textAlign: 'center', transition: 'all 0.25s cubic-bezier(0.22,1,0.36,1)', background: formData.deliveryMethod === 'pickme' ? 'rgba(99, 102, 241, 0.1)' : 'var(--input-bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
                                         <input type="radio" name="deliveryMethod" value="pickme" checked={formData.deliveryMethod === 'pickme'} onChange={handleInputChange} style={{ display: 'none' }} />
                                         <Car size={24} color={formData.deliveryMethod === 'pickme' ? 'var(--accent-color)' : '#94a3b8'} />
                                         <div style={{ fontWeight: '700', fontSize: '14px', color: formData.deliveryMethod === 'pickme' ? 'var(--accent-color)' : '#374151' }}>
@@ -390,7 +351,7 @@ const AddOrder = ({ onOrderCreated, onCancel }) => {
                                 </div>
                             )}
 
-                            <button type="button" onClick={checkDistance} style={{ width: '100%', background: 'var(--accent-color)', color: '#fff', border: 'none', padding: '16px', borderRadius: '12px', fontWeight: '800', cursor: 'pointer', fontSize: '16px', boxShadow: '0 4px 15px rgba(211, 47, 47, 0.3)' }}>
+                            <button type="button" onClick={checkDistance} style={{ width: '100%', background: 'var(--accent-color)', color: '#fff', border: 'none', padding: '16px', borderRadius: '12px', fontWeight: '800', cursor: 'pointer', fontSize: '16px', boxShadow: '0 4px 20px var(--accent-glow)' }}>
                                 Next
                             </button>
                         </div>
@@ -399,69 +360,23 @@ const AddOrder = ({ onOrderCreated, onCancel }) => {
                     {step === 2 && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                             <div>
-                                <label style={labelStyle}>Reference / Sample Photo</label>
+                                <label style={labelStyle}>Reference / Sample Photo (optional)</label>
                                 <div style={{
                                     border: '1px dashed #e5e7eb',
                                     padding: '16px',
                                     borderRadius: '10px',
                                     background: '#f9fafb',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    gap: '12px',
                                 }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-                                        <input
-                                            type="file"
-                                            name="samplePhoto"
-                                            accept="image/*,.pdf"
-                                            onChange={handleFileChange}
-                                            style={{ fontSize: '13px', flex: 1, minWidth: 0 }}
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={handleProcessWithAI}
-                                            disabled={aiLoading || !samplePhoto}
-                                            style={{
-                                                display: 'inline-flex',
-                                                alignItems: 'center',
-                                                gap: '8px',
-                                                padding: '10px 16px',
-                                                borderRadius: '10px',
-                                                border: '1px solid #c7d2fe',
-                                                background: aiLoading || !samplePhoto ? '#f3f4f6' : '#eef2ff',
-                                                color: aiLoading || !samplePhoto ? '#9ca3af' : '#4338ca',
-                                                fontSize: '14px',
-                                                fontWeight: 700,
-                                                cursor: aiLoading || !samplePhoto ? 'not-allowed' : 'pointer',
-                                                whiteSpace: 'nowrap',
-                                            }}
-                                        >
-                                            <Sparkles size={16} />
-                                            {aiLoading ? 'Processing…' : 'Process with AI'}
-                                        </button>
-                                    </div>
-                                    {aiDocumentUrl && (
-                                        <a
-                                            href={`${API_BASE_URL}${aiDocumentUrl}`}
-                                            download
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            style={{
-                                                display: 'inline-flex',
-                                                alignItems: 'center',
-                                                gap: '8px',
-                                                fontSize: '14px',
-                                                fontWeight: 700,
-                                                color: 'var(--accent-color)',
-                                            }}
-                                        >
-                                            <Download size={16} />
-                                            Download Word document
-                                        </a>
-                                    )}
+                                    <input
+                                        type="file"
+                                        name="samplePhoto"
+                                        accept="image/*,.pdf"
+                                        onChange={handleFileChange}
+                                        style={{ fontSize: '13px', width: '100%' }}
+                                    />
                                 </div>
                                 <div style={{ marginTop: '4px', fontSize: '11px', color: '#6b7280' }}>
-                                    Upload a photo of your design for reference. Use "Process with AI" to extract text and build a .docx (images only).
+                                    Upload a photo or PDF to show what you have in mind. Our design team can open it in the Design Workspace; AI drafting tools are for staff only.
                                 </div>
                             </div>
 
@@ -501,7 +416,7 @@ const AddOrder = ({ onOrderCreated, onCancel }) => {
                                     value={formData.description}
                                     onChange={handleInputChange}
                                     style={{ ...inputStyle, minHeight: '80px', resize: 'vertical' }}
-                                    placeholder="Short summary of the job. 'Process with AI' can fill this from your reference image."
+                                    placeholder="Short summary of the job (e.g. event name, what to print, quantity notes)."
                                 />
                             </div>
 
@@ -515,8 +430,8 @@ const AddOrder = ({ onOrderCreated, onCancel }) => {
                             </div>
 
                             <div style={{ display: 'flex', gap: '16px' }}>
-                                <button type="button" onClick={() => setStep(1)} style={{ flex: 1, background: '#f3f4f6', color: '#374151', border: 'none', padding: '16px', borderRadius: '12px', fontWeight: '700', cursor: 'pointer' }}>Back</button>
-                                <button type="submit" disabled={loading} style={{ flex: 2, background: 'var(--accent-color)', color: '#fff', border: 'none', padding: '16px', borderRadius: '12px', fontWeight: '800', cursor: loading ? 'not-allowed' : 'pointer', boxShadow: '0 4px 15px rgba(211, 47, 47, 0.3)' }}>
+                                <button type="button" onClick={() => setStep(1)} style={{ flex: 1, background: 'var(--surface-muted-2)', color: 'var(--text-primary)', border: 'none', padding: '16px', borderRadius: '12px', fontWeight: '700', cursor: 'pointer' }}>Back</button>
+                                <button type="submit" disabled={loading} style={{ flex: 2, background: 'var(--accent-color)', color: '#fff', border: 'none', padding: '16px', borderRadius: '12px', fontWeight: '800', cursor: loading ? 'not-allowed' : 'pointer', boxShadow: '0 4px 20px var(--accent-glow)' }}>
                                     {loading ? 'Submitting...' : 'Confirm Order'}
                                 </button>
                             </div>

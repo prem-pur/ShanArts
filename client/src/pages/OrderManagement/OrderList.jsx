@@ -84,12 +84,12 @@ const PriorityBadge = ({ priority }) => {
     return isUrgent ? (
         <span style={{
             padding: '2px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: '900',
-            background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', textTransform: 'uppercase'
+            background: 'rgba(248, 113, 113, 0.15)', color: '#f87171', border: '1px solid rgba(248, 113, 113, 0.4)', textTransform: 'uppercase'
         }}>Urgent</span>
     ) : (
         <span style={{
             padding: '2px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: '800',
-            background: '#f8fafc', color: '#94a3b8', border: '1px solid #e2e8f0', textTransform: 'uppercase'
+            background: 'var(--surface-muted)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)', textTransform: 'uppercase'
         }}>Normal</span>
     );
 };
@@ -135,37 +135,31 @@ const OrderList = () => {
     }, {});
 
     if (loading) return (
-        <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f3f4f6', color: '#64748b', fontWeight: '600', gap: '12px' }}>
-            <div style={{ width: '20px', height: '20px', border: '3px solid #e5e7eb', borderTopColor: '#ef4444', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+        <div className="shan-fade-in" style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-color)', color: 'var(--text-secondary)', fontWeight: '600', gap: '14px' }}>
+            <div className="shan-spin" />
             Loading Orders...
-            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         </div>
     );
 
     return (
-        <div style={{ backgroundColor: '#f3f4f6', minHeight: '100vh', fontFamily: "'Inter', sans-serif", padding: '28px 36px' }}>
-            <style>{`
-                @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-                @keyframes spin { to { transform: rotate(360deg); } }
-                .order-row:hover { background: #f8fafc !important; transform: translateX(2px); }
-            `}</style>
-
+        <div className="shan-page" style={{ backgroundColor: 'var(--bg-color)', minHeight: '100vh', fontFamily: 'var(--font-sans, sans-serif)', padding: '28px 36px', color: 'var(--text-primary)' }}>
 
             {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
-                <h1 style={{ fontSize: '26px', fontWeight: '800', color: '#0f172a', margin: 0, letterSpacing: '-0.5px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <Layout size={28} color="#ef4444" /> Order Management
+                <h1 style={{ fontSize: '26px', fontWeight: '800', color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.5px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <Layout size={28} color="var(--accent-color)" /> Order Management
                 </h1>
 
                 <div style={{ position: 'relative' }}>
-                    <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', display: 'flex' }}>
+                    <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)', display: 'flex' }}>
                         <Search size={18} />
                     </span>
                     <input
                         placeholder="Search by customer or product…"
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
-                        style={{ padding: '10px 16px 10px 40px', borderRadius: '12px', border: '1px solid #e2e8f0', width: '300px', outline: 'none', background: '#fff', fontSize: '14px', fontWeight: '500', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}
+                        className="shan-input"
+                        style={{ padding: '10px 16px 10px 40px', width: '300px', fontSize: '14px', fontWeight: '500' }}
                     />
                 </div>
             </div>
@@ -182,14 +176,14 @@ const OrderList = () => {
                             fontSize: '14px',
                             fontWeight: '700',
                             cursor: 'pointer',
-                            transition: 'all 0.2s',
-                            border: filterTab === tab.key ? 'none' : '1px solid #e2e8f0',
-                            background: filterTab === tab.key ? '#ef4444' : '#fff',
-                            color: filterTab === tab.key ? '#fff' : '#64748b',
+                            transition: 'all 0.25s cubic-bezier(0.22, 1, 0.36, 1)',
+                            border: filterTab === tab.key ? 'none' : '1px solid var(--border-color)',
+                            background: filterTab === tab.key ? 'var(--accent-color)' : 'var(--card-bg)',
+                            color: filterTab === tab.key ? '#fff' : 'var(--text-secondary)',
                             display: 'flex',
                             alignItems: 'center',
                             gap: '10px',
-                            boxShadow: filterTab === tab.key ? '0 4px 12px rgba(239, 68, 68, 0.2)' : '0 2px 4px rgba(0,0,0,0.02)'
+                            boxShadow: filterTab === tab.key ? '0 4px 20px var(--accent-glow)' : 'none'
                         }}
                     >
                         {tab.label}
@@ -197,8 +191,8 @@ const OrderList = () => {
                             display: 'inline-flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            background: filterTab === tab.key ? 'rgba(255,255,255,0.2)' : '#f1f5f9',
-                            color: filterTab === tab.key ? '#fff' : '#64748b',
+                            background: filterTab === tab.key ? 'rgba(255,255,255,0.2)' : 'var(--surface-muted)',
+                            color: filterTab === tab.key ? '#fff' : 'var(--text-secondary)',
                             padding: '2px 8px',
                             borderRadius: '6px',
                             fontSize: '11px',
@@ -211,16 +205,16 @@ const OrderList = () => {
             </div>
 
             {/* Orders Table */}
-            <div style={{ background: '#fff', borderRadius: '18px', border: '1px solid #e2e8f0', overflow: 'hidden', boxShadow: '0 4px 24px rgba(0,0,0,0.04)', animation: 'fadeIn 0.3s ease-out' }}>
+            <div className="shan-fade-in" style={{ background: 'var(--card-bg)', borderRadius: '18px', border: '1px solid var(--border-color)', overflow: 'hidden', boxShadow: 'var(--shadow-md)' }}>
                 {/* Table Header */}
-                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1.2fr 1.2fr 1.2fr 1fr 80px', padding: '12px 24px', borderBottom: '1px solid #f1f5f9', background: '#f8fafc' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1.2fr 1.2fr 1.2fr 1fr 80px', padding: '12px 24px', borderBottom: '1px solid var(--border-color)', background: 'var(--surface-muted)' }}>
                     {['Customer', 'Product', 'Status', 'Needed By', 'Priority', ''].map((h, i) => (
-                        <div key={i} style={{ fontSize: '11px', fontWeight: '900', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.8px' }}>{h}</div>
+                        <div key={i} style={{ fontSize: '11px', fontWeight: '900', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.8px' }}>{h}</div>
                     ))}
                 </div>
 
                 {filteredOrders.length === 0 ? (
-                    <div style={{ padding: '60px', textAlign: 'center', color: '#94a3b8' }}>
+                    <div style={{ padding: '60px', textAlign: 'center', color: 'var(--text-secondary)' }}>
                         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px' }}>
                             <ClipboardList size={40} />
                         </div>
@@ -242,27 +236,27 @@ const OrderList = () => {
                                 onClick={() => navigate(`/orders/${order._id}`)}
                                 style={{
                                     display: 'grid', gridTemplateColumns: '2fr 1.2fr 1.2fr 1.2fr 1fr 80px',
-                                    padding: '16px 24px', borderBottom: idx < filteredOrders.length - 1 ? '1px solid #f8fafc' : 'none',
-                                    cursor: 'pointer', transition: 'all 0.15s', alignItems: 'center',
-                                    background: '#fff'
+                                    padding: '16px 24px', borderBottom: idx < filteredOrders.length - 1 ? '1px solid var(--border-color)' : 'none',
+                                    cursor: 'pointer', alignItems: 'center',
+                                    background: 'var(--card-bg)'
                                 }}
                             >
                                 {/* Customer */}
                                 <div>
-                                    <div style={{ fontWeight: '800', fontSize: '14px', color: '#0f172a' }}>
+                                    <div style={{ fontWeight: '800', fontSize: '14px', color: 'var(--text-primary)' }}>
                                         {order.customerName || 'Unnamed Customer'}
                                     </div>
-                                    <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '2px', fontWeight: '500' }}>
+                                    <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px', fontWeight: '500' }}>
                                         #{order._id.slice(-6).toUpperCase()}
                                     </div>
                                 </div>
 
                                 {/* Product */}
                                 <div>
-                                    <div style={{ fontSize: '13px', fontWeight: '700', color: '#374151' }}>
+                                    <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-primary)' }}>
                                         {order.printSpecs?.designType || 'General'}
                                     </div>
-                                    <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>
+                                    <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>
                                         {order.printSpecs?.size
                                             ? `${order.printSpecs.size.width}×${order.printSpecs.size.height}${order.printSpecs.size.unit || 'mm'}`
                                             : order.printSpecs?.quantity ? `Qty: ${order.printSpecs.quantity}` : '—'}
@@ -275,12 +269,12 @@ const OrderList = () => {
                                 {/* Needed By */}
                                 <div>
                                     {deadline ? (
-                                        <span style={{ fontSize: '13px', fontWeight: '700', color: isOverdue ? '#dc2626' : '#374151', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                        <span style={{ fontSize: '13px', fontWeight: '700', color: isOverdue ? '#f87171' : 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                                             {isOverdue && <AlertCircle size={14} />}
                                             {new Date(deadline).toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' })}
                                         </span>
                                     ) : (
-                                        <span style={{ fontSize: '13px', color: '#cbd5e1', fontWeight: '600' }}>—</span>
+                                        <span style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>—</span>
                                     )}
                                 </div>
 
@@ -288,7 +282,7 @@ const OrderList = () => {
                                 <div><PriorityBadge priority={priority} /></div>
 
                                 {/* Arrow */}
-                                <div style={{ display: 'flex', justifyContent: 'flex-end', color: '#cbd5e1' }}>
+                                <div style={{ display: 'flex', justifyContent: 'flex-end', color: 'var(--text-secondary)' }}>
                                     <ChevronRight size={18} />
                                 </div>
                             </div>
@@ -298,7 +292,9 @@ const OrderList = () => {
             </div>
 
             {filteredOrders.length > 0 && (
-                <div style={{ textAlign: 'center', marginTop: '16px', fontSize: '12px', color: '#94a3b8', fontWeight: '600' }}>
+                <div style={{ textAlign: 'center', marginTop: '16px', fontSize: '12px', color: 'var(--text-secondary)', fontWeight: '600' }}
+                    className="shan-fade-in"
+                >
                     Showing {filteredOrders.length} of {orders.length} orders
                 </div>
             )}
