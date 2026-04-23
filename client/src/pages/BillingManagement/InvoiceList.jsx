@@ -33,8 +33,8 @@ const InvoiceList = ({ onSelectInvoice, refreshKey }) => {
         }
     };
 
-    const statusColor = { paid: '#64748b', partial: '#111827', unpaid: '#ef4444' };
-    const statusBg = { paid: '#f8fafc', partial: '#f1f5f9', unpaid: '#fef2f2' };
+    const statusColor = { paid: '#10b981', partial: '#f59e0b', pending_approval: '#7c3aed', unpaid: '#ef4444' };
+    const statusBg = { paid: '#d1fae5', partial: '#fef3c7', pending_approval: '#ede9fe', unpaid: '#fee2e2' };
 
     const filtered = invoices.filter(inv => {
         const term = search.toLowerCase();
@@ -66,10 +66,10 @@ const InvoiceList = ({ onSelectInvoice, refreshKey }) => {
                             boxSizing: 'border-box'
                         }}
                     />
-                </div>
+                        </div>
                 {user.role !== 'customer' && (
                     <div style={{ display: 'flex', background: '#f3f4f6', borderRadius: '10px', padding: '4px', gap: '2px' }}>
-                        {['all', 'unpaid', 'partial', 'paid'].map(f => (
+                        {['all', 'unpaid', 'partial', 'pending_approval', 'paid'].map(f => (
                             <button
                                 key={f}
                                 onClick={() => setFilter(f)}
@@ -87,7 +87,7 @@ const InvoiceList = ({ onSelectInvoice, refreshKey }) => {
                                     transition: 'all 0.2s'
                                 }}
                             >
-                                {f === 'all' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1)}
+                                {f === 'all' ? 'All' : f.replace(/_/g, ' ').replace(/^\w/, c => c.toUpperCase())}
                             </button>
                         ))}
                     </div>
@@ -155,7 +155,7 @@ const InvoiceList = ({ onSelectInvoice, refreshKey }) => {
                                             background: statusBg[inv.paymentStatus],
                                             border: `1px solid ${statusColor[inv.paymentStatus]}30`
                                         }}>
-                                            {inv.paymentStatus === 'paid' ? '● Paid' : inv.paymentStatus === 'partial' ? '◐ Partial' : '○ Unpaid'}
+                                            {String(inv.paymentStatus || '').replace(/_/g, ' ')}
                                         </span>
                                 </td>
                                 <td style={{ padding: '14px 16px', fontSize: '12px', color: '#6b7280', whiteSpace: 'nowrap' }}>
