@@ -25,6 +25,7 @@ exports.getBillingSummary = async (req, res, next) => {
         const countPaid = invoices.filter(i => i.paymentStatus === 'paid').length;
         const countPartial = invoices.filter(i => i.paymentStatus === 'partial').length;
         const countUnpaid = invoices.filter(i => i.paymentStatus === 'unpaid').length;
+        const countPendingApproval = invoices.filter(i => i.paymentStatus === 'pending_approval').length;
 
         // Monthly breakdown
         const monthlyMap = {};
@@ -43,7 +44,7 @@ exports.getBillingSummary = async (req, res, next) => {
                 totalCollected: parseFloat(totalCollected.toFixed(2)),
                 totalOutstanding: parseFloat(totalOutstanding.toFixed(2)),
                 invoiceCount: invoices.length,
-                statusBreakdown: { paid: countPaid, partial: countPartial, unpaid: countUnpaid },
+                statusBreakdown: { paid: countPaid, partial: countPartial, unpaid: countUnpaid, pendingApproval: countPendingApproval },
                 monthly,
                 recentInvoices: invoices.slice(0, 10),
             }
