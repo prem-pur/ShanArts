@@ -97,14 +97,15 @@ const ReportsDashboard = () => {
 
             {/* KPI Cards */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
-                <StatCard label="Total Revenue" value={`LKR ${(totalRevenue || 0).toLocaleString()}`} icon={<DollarSign size={24} />} color="#111827" sub={`${invoiceCount} invoice(s)`} />
-                <StatCard label="Collected" value={`LKR ${(totalCollected || 0).toLocaleString()}`} icon={<CheckCircle size={24} />} color="#111827" sub={`${collectionRate}% collection rate`} />
-                <StatCard label="Outstanding" value={`LKR ${(totalOutstanding || 0).toLocaleString()}`} icon={<Clock size={24} />} color="#ef4444" sub="Unpaid + Partial" />
-                <StatCard label="Status Breakdown" icon={<FileText size={24} />} color="#111827"
+                <StatCard label="Total Revenue" value={`LKR ${(totalRevenue || 0).toLocaleString()}`} icon="💰" color="#111827" sub={`${invoiceCount} invoice(s)`} />
+                <StatCard label="Collected" value={`LKR ${(totalCollected || 0).toLocaleString()}`} icon="✅" color="#10b981" sub={`${collectionRate}% collection rate`} />
+                <StatCard label="Outstanding" value={`LKR ${(totalOutstanding || 0).toLocaleString()}`} icon="⏳" color="#ef4444" sub="Unpaid + Partial + Pending" />
+                <StatCard label="Status Breakdown" icon="📋"
                           value={
                               <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '4px' }}>
                                   {[{ label: 'Paid', val: statusBreakdown?.paid, color: '#64748b' },
                                       { label: 'Partial', val: statusBreakdown?.partial, color: '#111827' },
+                                      { label: 'Pending', val: statusBreakdown?.pendingApproval, color: '#7c3aed' },
                                       { label: 'Unpaid', val: statusBreakdown?.unpaid, color: '#ef4444' }].map(s => (
                                       <div key={s.label} style={{ textAlign: 'center' }}>
                                           <div style={{ fontSize: '22px', fontWeight: '900', color: s.color }}>{s.val || 0}</div>
@@ -165,7 +166,7 @@ const ReportsDashboard = () => {
                             </thead>
                             <tbody>
                             {recentInvoices.map(inv => {
-                                const sColor = { paid: '#64748b', partial: '#111827', unpaid: '#ef4444' };
+                                const sColor = { paid: '#10b981', partial: '#f59e0b', pending_approval: '#7c3aed', unpaid: '#ef4444' };
                                 return (
                                     <tr key={inv._id} style={{ borderBottom: '1px solid #f9fafb' }}>
                                         <td style={{ padding: '12px', fontWeight: '800', color: '#111827', fontSize: '13px' }}>#{inv.invoiceNumber}</td>
@@ -173,7 +174,7 @@ const ReportsDashboard = () => {
                                         <td style={{ padding: '12px', fontWeight: '800', color: '#111827', fontSize: '13px' }}>LKR {(inv.totalAmount || 0).toLocaleString()}</td>
                                         <td style={{ padding: '12px' }}>
                                                 <span style={{ padding: '3px 10px', borderRadius: '16px', fontSize: '10px', fontWeight: '800', textTransform: 'uppercase', color: sColor[inv.paymentStatus], background: `${sColor[inv.paymentStatus]}18` }}>
-                                                    {inv.paymentStatus}
+                                                    {String(inv.paymentStatus || '').replace(/_/g, ' ')}
                                                 </span>
                                         </td>
                                         <td style={{ padding: '12px', fontSize: '12px', color: '#9ca3af' }}>{new Date(inv.createdAt).toLocaleDateString('en-GB')}</td>

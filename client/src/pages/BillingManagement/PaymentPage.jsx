@@ -153,13 +153,14 @@ const PaymentPage = ({ invoice, onClose, onSuccess }) => {
                         {/* Reference */}
                         <div>
                             <label style={{ display: 'block', fontSize: '12px', fontWeight: '800', color: '#374151', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                Reference / Receipt # <span style={{ fontWeight: '400', color: '#9ca3af' }}>(optional)</span>
+                                Reference / Receipt # <span style={{ fontWeight: '400', color: '#9ca3af' }}>(required for card and online)</span>
                             </label>
                             <input
                                 type="text"
                                 value={paymentData.reference}
                                 onChange={e => setPaymentData({ ...paymentData, reference: e.target.value })}
                                 placeholder="e.g. TXN-001234"
+                                required={['card', 'online'].includes(paymentData.method)}
                                 style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1.5px solid #e5e7eb', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
                             />
                         </div>

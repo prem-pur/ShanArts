@@ -3,6 +3,7 @@ const Payment = require("./Payment");
 const ShopOrder = require('../OrderManagement/ShopOrder');
 const ApiError = require('../../utils/apiError');
 const generateInvoiceNumber = require('../../utils/generateInvoiceNumber');
+const Notification = require('../FeedbackNotificationManagement/Notification');
 
 // Generate invoice for order
 exports.generateInvoice = async (req, res, next) => {
@@ -187,7 +188,7 @@ exports.updateInvoice = async (req, res, next) => {
         if (invoice.paymentStatus !== 'unpaid') {
             return next(
                 new ApiError(
-                    'Cannot update invoice that has been partially or fully paid',
+                    'Cannot update invoice that is not unpaid',
                     400
                 )
             );
@@ -221,9 +222,15 @@ exports.recordPayment = async (req, res, next) => {
     try {
         const { amount, method, reference } = req.body;
         const invoiceId = req.params.id;
+        const paymentAmount = Number(amount);
+        const isBankTransfer = method === 'bank_transfer';
 
-        if (!amount || amount <= 0) {
+        if (!Number.isFinite(paymentAmount) || paymentAmount <= 0) {
             return next(new ApiError('Amount must be greater than 0', 400));
+        }
+
+        if ((method === 'card' || method === 'online') && (!reference || !String(reference).trim())) {
+            return next(new ApiError('Reference is required for card and online payments', 400));
         }
 
         const invoice = await Invoice.findById(invoiceId);
@@ -237,7 +244,7 @@ exports.recordPayment = async (req, res, next) => {
         }
 
         // Check if payment exceeds balance
-        if (amount > invoice.balanceDue) {
+        if (paymentAmount > invoice.balanceDue) {
             return next(
                 new ApiError(
                     `Payment amount exceeds balance. Balance due: LKR ${invoice.balanceDue.toFixed(2)}`,
@@ -246,20 +253,52 @@ exports.recordPayment = async (req, res, next) => {
             );
         }
 
+        const slipFile = req.file;
+        if (isBankTransfer && !slipFile) {
+            return next(new ApiError('Bank transfer slip is required', 400));
+        }
+
         // Create payment record
         const payment = new Payment({
             invoiceId,
-            amount: parseFloat(amount.toFixed(2)),
+            amount: parseFloat(paymentAmount.toFixed(2)),
             method,
             reference,
             recordedBy: req.user._id,
+            status: isBankTransfer ? 'pending_approval' : 'approved',
+            slipPath: slipFile ? `/uploads/${slipFile.filename}` : undefined,
+            slipName: slipFile ? slipFile.originalname : undefined,
+            paidAt: isBankTransfer ? undefined : new Date(),
         });
 
         await payment.save();
 
+        if (isBankTransfer) {
+            invoice.paymentStatus = 'pending_approval';
+            await invoice.save();
+
+            await Notification.create({
+                recipientId: invoice.customerId,
+                type: 'order_update',
+                title: 'Bank Transfer Submitted',
+                message: `We received your bank transfer slip for Invoice #${invoice.invoiceNumber}. It is now waiting for admin approval.`,
+                relatedEntityId: invoice._id,
+                relatedEntityType: 'Invoice',
+            });
+
+            return res.status(201).json({
+                success: true,
+                message: 'Bank transfer submitted for admin approval',
+                data: {
+                    payment,
+                    invoice,
+                },
+            });
+        }
+
         // Update invoice
-        invoice.amountPaid = parseFloat((invoice.amountPaid + amount).toFixed(2));
-        invoice.balanceDue = parseFloat((invoice.balanceDue - amount).toFixed(2));
+        invoice.amountPaid = parseFloat((invoice.amountPaid + paymentAmount).toFixed(2));
+        invoice.balanceDue = parseFloat((invoice.balanceDue - paymentAmount).toFixed(2));
 
         if (invoice.balanceDue === 0) {
             invoice.paymentStatus = 'paid';
@@ -270,14 +309,13 @@ exports.recordPayment = async (req, res, next) => {
         await invoice.save();
 
         // Notify customer of payment
-        const Notification = require('../FeedbackNotificationManagement/Notification');
         await Notification.create({
             recipientId: invoice.customerId,
             type: 'order_update',
             title: invoice.balanceDue <= 0 ? 'Full Payment Received' : 'Partial Payment Received',
             message: invoice.balanceDue <= 0
-                ? `Thank you! We've received full payment of LKR ${amount.toLocaleString()} for Invoice #${invoice.invoiceNumber}.`
-                : `We've received a payment of LKR ${amount.toLocaleString()} for Invoice #${invoice.invoiceNumber}. Remaining balance: LKR ${invoice.balanceDue.toLocaleString()}`,
+                ? `Thank you! We've received full payment of LKR ${paymentAmount.toLocaleString()} for Invoice #${invoice.invoiceNumber}.`
+                : `We've received a payment of LKR ${paymentAmount.toLocaleString()} for Invoice #${invoice.invoiceNumber}. Remaining balance: LKR ${invoice.balanceDue.toLocaleString()}`,
             relatedEntityId: invoice._id,
             relatedEntityType: 'Invoice',
         });
@@ -286,6 +324,62 @@ exports.recordPayment = async (req, res, next) => {
             success: true,
             message: 'Payment recorded successfully',
             data: payment,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// Approve a pending bank transfer payment
+exports.approvePayment = async (req, res, next) => {
+    try {
+        const { id, paymentId } = req.params;
+
+        const invoice = await Invoice.findById(id);
+        if (!invoice) {
+            return next(new ApiError('Invoice not found', 404));
+        }
+
+        const payment = await Payment.findOne({ _id: paymentId, invoiceId: id });
+        if (!payment) {
+            return next(new ApiError('Payment not found', 404));
+        }
+
+        if (payment.method !== 'bank_transfer' || payment.status !== 'pending_approval') {
+            return next(new ApiError('Only pending bank transfer payments can be approved', 400));
+        }
+
+        if (payment.amount > invoice.balanceDue) {
+            return next(new ApiError('Approved payment exceeds the remaining balance', 400));
+        }
+
+        payment.status = 'approved';
+        payment.approvedBy = req.user._id;
+        payment.approvedAt = new Date();
+        payment.paidAt = new Date();
+        await payment.save();
+
+        invoice.amountPaid = parseFloat((invoice.amountPaid + payment.amount).toFixed(2));
+        invoice.balanceDue = parseFloat((invoice.balanceDue - payment.amount).toFixed(2));
+        invoice.paymentStatus = invoice.balanceDue <= 0 ? 'paid' : 'partial';
+        await invoice.save();
+
+        await Notification.create({
+            recipientId: invoice.customerId,
+            type: 'order_update',
+            title: 'Bank Transfer Approved',
+            message: `Your bank transfer for Invoice #${invoice.invoiceNumber} has been approved and marked as paid.`,
+            relatedEntityId: invoice._id,
+            relatedEntityType: 'Invoice',
+        });
+
+        res.status(200).json({
+            success: true,
+            message: 'Payment approved successfully',
+            data: {
+                invoice,
+                payment,
+            },
         });
     } catch (error) {
         next(error);
@@ -305,6 +399,7 @@ exports.getPaymentHistory = async (req, res, next) => {
 
         const payments = await Payment.find({ invoiceId: id })
             .populate('recordedBy', 'name email')
+            .populate('approvedBy', 'name email')
             .sort({ createdAt: -1 });
 
         res.status(200).json({
@@ -321,7 +416,7 @@ exports.getPaymentHistory = async (req, res, next) => {
 exports.getOutstandingInvoices = async (req, res, next) => {
     try {
         const invoices = await Invoice.find({
-            paymentStatus: { $in: ['unpaid', 'partial'] },
+            paymentStatus: { $in: ['unpaid', 'partial', 'pending_approval'] },
         })
             .populate('orderId', 'orderNumber')
             .populate('customerId', 'name email')

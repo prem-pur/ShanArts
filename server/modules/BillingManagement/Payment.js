@@ -16,12 +16,25 @@ const paymentSchema = new mongoose.Schema(
             enum: ['cash', 'bank_transfer', 'card', 'online'],
             required: true,
         },
+        status: {
+            type: String,
+            enum: ['pending_approval', 'approved', 'rejected'],
+            default: 'approved',
+        },
         reference: String,
+        slipPath: String,
+        slipName: String,
         recordedBy: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
             required: false,
         },
+        approvedBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+            required: false,
+        },
+        approvedAt: Date,
         paidAt: Date,
     },
     {

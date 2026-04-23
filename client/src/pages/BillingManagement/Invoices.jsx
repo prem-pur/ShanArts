@@ -50,8 +50,8 @@ const OutstandingStrip = ({ data }) => {
                 <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.8)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Total Outstanding Balance</div>
                 <div style={{ fontSize: '32px', fontWeight: '900', color: '#fff', lineHeight: 1 }}>LKR {(data.totalOutstanding || 0).toLocaleString()}</div>
             </div>
-            <div style={{ color: '#fff', background: 'rgba(255,255,255,0.15)', padding: '10px 20px', borderRadius: '12px', fontSize: '14px', fontWeight: '800', backdropFilter: 'blur(4px)' }}>
-                {data.count} Pending / Partial Invoices
+            <div style={{ color: '#fff', opacity: 0.9, fontSize: '14px', fontWeight: '700' }}>
+                {data.count} invoice{data.count !== 1 ? 's' : ''} unpaid / partial / pending approval
             </div>
         </div>
     );
@@ -126,8 +126,14 @@ const BillingManagement = () => {
         setPaymentInvoice(invoice);
     };
 
-    const statusColor = { paid: '#64748b', partial: '#111827', unpaid: '#ef4444' };
-    const statusBg = { paid: '#f8fafc', partial: '#f1f5f9', unpaid: '#fef2f2' };
+    const handleInvoiceUpdated = () => {
+        setSelectedInvoice(null);
+        refresh();
+    };
+
+    // ─── Status colors ────────────────────────────────────────────────────────
+    const statusColor = { paid: '#10b981', partial: '#f59e0b', pending_approval: '#7c3aed', unpaid: '#ef4444' };
+    const statusBg = { paid: '#d1fae5', partial: '#fef3c7', pending_approval: '#ede9fe', unpaid: '#fee2e2' };
 
     return (
         <div style={{ padding: '28px 36px', maxWidth: '1400px', margin: '0 auto', fontFamily: "'Inter', sans-serif", backgroundColor: '#f3f4f6', minHeight: '100vh' }}>
@@ -361,6 +367,7 @@ const BillingManagement = () => {
                     invoice={selectedInvoice}
                     onClose={() => setSelectedInvoice(null)}
                     onPaymentRecorded={handlePaymentFromDetails}
+                    onPaymentApproved={handleInvoiceUpdated}
                 />
             )}
 
