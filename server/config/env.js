@@ -53,6 +53,12 @@ module.exports = {
     OLLAMA_API_AUTH: (process.env.OLLAMA_API_AUTH || 'bearer').trim().toLowerCase(),
     /** Vision model id on the server (e.g. llava, or a cloud model name from your host’s catalog) */
     OLLAMA_VISION_MODEL: (process.env.OLLAMA_VISION_MODEL || 'llava').trim(),
+    /**
+     * Text model for public “AI Copywriting Assistant” (no images). Must exist on this Ollama host
+     * (list: GET {OLLAMA_BASE_URL}/api/tags). ollama.com often has no `llama3` — use e.g. gemini-3-flash-preview or gpt-oss:20b.
+     * Local Ollama: ollama pull llama3 then set OLLAMA_TEXT_MODEL=llama3
+     */
+    OLLAMA_TEXT_MODEL: (process.env.OLLAMA_TEXT_MODEL || 'gemini-3-flash-preview').trim(),
     AI_SERVICE_URL: process.env.AI_SERVICE_URL || 'http://localhost:8000',
     FILE_UPLOAD_PATH: process.env.FILE_UPLOAD_PATH || './public/uploads',
     NODE_ENV: process.env.NODE_ENV || 'development',

@@ -577,3 +577,5 @@ const aiService = {
 };
 
 module.exports = aiService;
+/** Shared for other services (e.g. public copywriting) that call Ollama with the same auth headers. */
+module.exports.getOllamaRequestHeaders = getOllamaRequestHeaders;

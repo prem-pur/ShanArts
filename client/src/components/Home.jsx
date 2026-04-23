@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Phone, Mail, Clock } from 'lucide-react';
+import { MapPin, Phone, Clock } from 'lucide-react';
+import AiCopywritingAssistant from './AiCopywritingAssistant';
 
 const Home = () => {
     const navigate = useNavigate();
@@ -22,6 +23,9 @@ const Home = () => {
                     SHAN ART&nbsp;ADVERTISING
                 </div>
                 <div className="landing-nav-links">
+                    <button className="landing-nav-btn" onClick={() => scrollToSection('ai-copywriting')}>
+                        AI Copy
+                    </button>
                     <button className="landing-nav-btn" onClick={() => scrollToSection('about')}>About</button>
                     <button className="landing-nav-btn" onClick={() => navigate('/staff-login')}>Staff Portal</button>
                 </div>
@@ -71,6 +75,8 @@ const Home = () => {
                     <div className="particle"></div>
                 </div>
             </section>
+
+            <AiCopywritingAssistant />
 
             <section className="landing-section about-section" id="about">
                 <div className="section-head">

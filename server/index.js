@@ -34,6 +34,7 @@ const scheduleRoutes = require('./modules/ScheduleManagement/routes');
 const feedbackRoutes = require('./modules/FeedbackNotificationManagement/routes');
 const notificationRoutes = require('./modules/FeedbackNotificationManagement/notifications');
 const attendanceRoutes = require('./modules/UserManagement/attendanceRoutes');
+const aiPublicRoutes = require('./modules/ai/aiRoutes');
 
 app.use("/api/orders", orderRoutes);
 app.use("/api/requests", requestRoutes);
@@ -50,6 +51,7 @@ app.use('/api/schedule', scheduleRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/attendance', attendanceRoutes);
+app.use('/api/ai', aiPublicRoutes);
 
 // Global error handler middleware
 app.use((err, req, res, next) => {
@@ -90,6 +92,9 @@ const cfg = require('./config/env');
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
+    if (cfg.OLLAMA_TEXT_MODEL) {
+        console.log('✅ Public AI Copywriting uses Ollama text model: %s at %s', cfg.OLLAMA_TEXT_MODEL, cfg.OLLAMA_BASE_URL);
+    }
     if ((cfg.AI_VISION_PROVIDER || 'gemini') === 'ollama') {
         console.log(
             '✅ Process with AI uses Ollama (local) at %s, model: %s (no Google API key).',

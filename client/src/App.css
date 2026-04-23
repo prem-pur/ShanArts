@@ -1296,3 +1296,229 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* —— Public: AI Copywriting Assistant (Home) —— */
+.ai-copy-section {
+  padding: 48px 24px 56px;
+  background: linear-gradient(180deg, #0d0d0e 0%, #141416 50%, #0d0d0e 100%);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.ai-copy-card {
+  max-width: 900px;
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 28px 28px 32px;
+  backdrop-filter: blur(12px);
+}
+
+.ai-copy-header {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.ai-copy-icon-wrap {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(211, 47, 47, 0.35), rgba(211, 47, 47, 0.1));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(211, 47, 47, 0.35);
+}
+
+.ai-copy-icon {
+  color: #ff8a8a;
+}
+
+.ai-copy-title {
+  margin: 0 0 8px 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #fff;
+}
+
+.ai-copy-sub {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.65);
+  max-width: 52ch;
+}
+
+.ai-copy-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 8px;
+}
+
+.ai-copy-textarea,
+.ai-copy-select {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.35);
+  color: #f3f4f6;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  padding: 12px 14px;
+  outline: none;
+  transition: border-color 0.2s;
+  font-family: inherit;
+}
+
+.ai-copy-textarea:focus,
+.ai-copy-select:focus {
+  border-color: rgba(211, 47, 47, 0.55);
+}
+
+.ai-copy-textarea::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.ai-copy-form-row {
+  margin-bottom: 18px;
+}
+
+.ai-copy-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 640px) {
+  .ai-copy-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ai-copy-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(220, 38, 38, 0.12);
+  border: 1px solid rgba(248, 113, 113, 0.35);
+  color: #fecaca;
+  font-size: 0.9rem;
+  margin-bottom: 16px;
+}
+
+.ai-copy-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.ai-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: transform 0.15s, box-shadow 0.2s;
+  font-family: inherit;
+}
+
+.ai-copy-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.ai-copy-btn.primary {
+  background: linear-gradient(135deg, #d32f2f, #b71c1c);
+  color: #fff;
+  box-shadow: 0 8px 24px rgba(211, 47, 47, 0.35);
+}
+
+.ai-copy-btn.primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.ai-copy-btn.secondary {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.ai-copy-btn.secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.ai-copy-btn.ghost {
+  padding: 8px 14px;
+  font-size: 0.85rem;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.ai-copy-btn.ghost:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.ai-copy-output-block {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ai-copy-output-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.ai-copy-out-label {
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.ai-copy-output {
+  margin: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: #e5e7eb;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 16px 18px;
+  max-height: 360px;
+  overflow-y: auto;
+  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+@keyframes ai-copy-spin {
+  to { transform: rotate(360deg); }
+}
+
+.ai-copy-spin {
+  animation: ai-copy-spin 0.8s linear infinite;
+}
