@@ -1,5 +1,18 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import axios from 'axios';
+import { 
+    Bell, 
+    RefreshCcw, 
+    CheckCircle2, 
+    Trash2, 
+    Clock, 
+    AlertTriangle, 
+    Info, 
+    AlertCircle,
+    X,
+    ShieldCheck,
+    Cpu
+} from 'lucide-react';
 import { API_BASE_URL } from '../../apiBase';
 
 const NotificationsPage = () => {
@@ -26,7 +39,7 @@ const NotificationsPage = () => {
             setError('');
         } catch (err) {
             console.error('Failed to load notifications:', err);
-            setError('Failed to load notifications. Please try again.');
+            setError('Neural link failed. Unable to synchronize alerts.');
         } finally {
             setLoading(false);
         }
@@ -77,6 +90,7 @@ const NotificationsPage = () => {
     };
 
     const clearAllNotifications = async () => {
+        if (!window.confirm('Wipe all notifications? This action is permanent.')) return;
         try {
             await axios.delete(`${API_BASE_URL}/api/notifications/clear-all`, {
                 headers: { Authorization: `Bearer ${token}` },
@@ -128,122 +142,145 @@ const NotificationsPage = () => {
             closeVerifyModal();
         } catch (err) {
             console.error('Failed to submit prediction verification:', err);
-            alert(err.response?.data?.message || 'Failed to submit verification. Please try again.');
+            alert(err.response?.data?.message || 'Verification relay failed.');
         } finally {
             setSubmittingVerification(false);
         }
     };
 
     const getRiskLevel = (title) => {
-        if (title.includes('HIGH') || title.includes('Out of Order') || title.includes('Delay')) return 'HIGH';
-        if (title.includes('MEDIUM') || title.includes('Maintenance')) return 'MEDIUM';
-        if (title.includes('LOW') || title.includes('Low Stock')) return 'LOW';
+        const t = title.toUpperCase();
+        if (t.includes('HIGH') || t.includes('OUT OF ORDER') || t.includes('DELAY')) return 'CRITICAL';
+        if (t.includes('MEDIUM') || t.includes('MAINTENANCE')) return 'MEDIUM';
+        if (t.includes('LOW') || t.includes('STOCKED')) return 'LOW';
         return 'INFO';
     };
 
-    const getRiskColor = (level) => {
+    const getColors = (level) => {
         switch (level) {
-            case 'HIGH':
-                return '#fca5a5';
-            case 'MEDIUM':
-                return '#fcd34d';
-            case 'LOW':
-                return '#86efac';
-            default:
-                return '#d1d5db';
-        }
-    };
-
-    const getRiskBgColor = (level) => {
-        switch (level) {
-            case 'HIGH':
-                return '#fff5f5';
-            case 'MEDIUM':
-                return '#fffbeb';
-            case 'LOW':
-                return '#f0fdf4';
-            default:
-                return '#f9fafb';
+            case 'CRITICAL': return { border: '#ef4444', bg: '#fef2f2', text: '#ef4444', icon: AlertTriangle };
+            case 'MEDIUM': return { border: '#111827', bg: '#f1f5f9', text: '#111827', icon: AlertCircle };
+            case 'LOW': return { border: '#64748b', bg: '#f8fafc', text: '#64748b', icon: ShieldCheck };
+            default: return { border: '#e2e8f0', bg: '#fff', text: '#64748b', icon: Info };
         }
     };
 
     return (
-        <div style={{ padding: '40px', maxWidth: '1200px' }}>
-            <div style={{ marginBottom: '40px' }}>
-                <h1 style={{ fontSize: '32px', fontWeight: '900', marginBottom: '12px' }}>Notifications</h1>
-                <p style={{ color: '#6b7280', fontSize: '16px' }}>AI-powered risk alerts and delay predictions</p>
-            </div>
+        <div style={{ padding: '28px 36px', maxWidth: '1400px', margin: '0 auto', fontFamily: "'Inter', sans-serif", backgroundColor: '#f3f4f6', minHeight: '100vh' }}>
+            <style>{`
+                @keyframes pulse-slow { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+                @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+                .notification-card:hover { transform: translateX(4px); box-shadow: 0 4px 15px rgba(0,0,0,0.05) !important; }
+            `}</style>
 
-            {error && (
-                <div style={{ padding: '16px', backgroundColor: '#fef2f2', color: '#dc2626', borderRadius: '12px', marginBottom: '24px', border: '1px solid #fee2e2' }}>
-                    {error}
-                </div>
-            )}
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
-                <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-                    <div style={{ padding: '8px 16px', backgroundColor: '#f3f4f6', borderRadius: '99px', fontSize: '14px', fontWeight: '700' }}>
-                        {notifications.length} Total
-                    </div>
-                    {unreadCount > 0 && (
-                        <div style={{ padding: '8px 16px', backgroundColor: '#fef2f2', color: '#dc2626', borderRadius: '99px', fontSize: '14px', fontWeight: '700', border: '1px solid #fee2e2' }}>
-                            {unreadCount} Unread
-                        </div>
-                    )}
+            {/* Header */}
+            <div style={{ marginBottom: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h1 style={{ fontSize: '26px', fontWeight: '800', color: '#0f172a', margin: 0, letterSpacing: '-0.5px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <Bell size={28} color="#ef4444" /> Notifications
+                  </h1>
+                  <p style={{ color: '#64748b', fontSize: '14px', marginTop: '6px', fontWeight: '500' }}>
+                      AI Powered Risk Alerts and Delay Predictions
+                  </p>
                 </div>
                 <div style={{ display: 'flex', gap: '12px' }}>
-                    <button onClick={fetchNotifications} disabled={loading} style={{ padding: '10px 20px', borderRadius: '8px', border: '1px solid #d1d5db', background: '#ffffff', fontWeight: '600', cursor: loading ? 'not-allowed' : 'pointer', fontSize: '14px' }}>
-                        Refresh
+                    <button onClick={fetchNotifications} style={{ padding: '10px 20px', borderRadius: '12px', border: '1.5px solid #e2e8f0', background: '#fff', color: '#475569', fontWeight: '700', cursor: 'pointer', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <RefreshCcw size={16} /> Refresh
                     </button>
-                    <button onClick={markAllAsRead} disabled={unreadCount === 0 || loading} style={{ padding: '10px 20px', borderRadius: '8px', border: 'none', background: '#111827', color: '#ffffff', fontWeight: '600', cursor: unreadCount === 0 ? 'not-allowed' : 'pointer', fontSize: '14px', opacity: unreadCount === 0 ? 0.5 : 1 }}>
-                        Mark All as Read
+                    <button onClick={markAllAsRead} disabled={unreadCount === 0} style={{ padding: '10px 20px', borderRadius: '12px', border: 'none', background: '#1e293b', color: '#fff', fontWeight: '700', cursor: unreadCount === 0 ? 'default' : 'pointer', fontSize: '13px', opacity: unreadCount === 0 ? 0.5 : 1 }}>
+                        Mark All Read
                     </button>
-                    <button onClick={clearAllNotifications} disabled={notifications.length === 0 || loading} style={{ padding: '10px 20px', borderRadius: '8px', border: '1px solid #fecaca', background: '#fff1f2', color: '#be123c', fontWeight: '600', cursor: notifications.length === 0 ? 'not-allowed' : 'pointer', fontSize: '14px', opacity: notifications.length === 0 ? 0.5 : 1 }}>
-                        Clear All
-                    </button>
+                    {isAdmin && (
+                        <button onClick={clearAllNotifications} disabled={notifications.length === 0} style={{ padding: '10px 20px', borderRadius: '12px', border: '1.5px solid #fee2e2', background: '#fff', color: '#ef4444', fontWeight: '700', cursor: 'pointer', fontSize: '13px' }}>
+                            Clear Matrix
+                        </button>
+                    )}
                 </div>
             </div>
 
-            {loading && <div style={{ textAlign: 'center', padding: '60px', color: '#9ca3af', fontSize: '16px' }}>Loading notifications...</div>}
-            {!loading && notifications.length === 0 && <div style={{ textAlign: 'center', padding: '60px', color: '#9ca3af', fontSize: '16px' }}>No notifications yet. All clear!</div>}
+            {/* Stats */}
+            <div style={{ display: 'flex', gap: '16px', marginBottom: '32px' }}>
+                <div style={{ background: '#fff', padding: '12px 24px', borderRadius: '99px', border: '1px solid #e2e8f0', fontSize: '13px', fontWeight: '800', color: '#0f172a', boxShadow: '0 2px 10px rgba(0,0,0,0.02)' }}>
+                    {notifications.length} Total Alerts
+                </div>
+                {unreadCount > 0 && (
+                    <div style={{ background: '#ef4444', padding: '12px 24px', borderRadius: '99px', fontSize: '13px', fontWeight: '800', color: '#fff', boxShadow: '0 4px 12px rgba(239, 68, 68, 0.2)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <AlertCircle size={14} /> {unreadCount} Priority Unread
+                    </div>
+                )}
+            </div>
 
-            {!loading && notifications.length > 0 && (
+            {loading ? (
+                <div style={{ textAlign: 'center', padding: '100px', color: '#64748b', fontWeight: '600' }}>Synchronizing notifications...</div>
+            ) : notifications.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '120px 40px', background: '#fff', borderRadius: '32px', border: '1px dashed #cbd5e1' }}>
+                    <div style={{ fontSize: '48px', marginBottom: '20px' }}><CheckCircle2 size={64} color="#10b981" style={{ margin: '0 auto' }} /></div>
+                    <div style={{ fontWeight: '900', fontSize: '20px', color: '#0f172a' }}>All Systems Optimized</div>
+                    <div style={{ color: '#64748b', marginTop: '8px', fontWeight: '500' }}>No active risks or delays detected in the system.</div>
+                </div>
+            ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    {notifications.map((notification) => {
-                        const riskLevel = getRiskLevel(notification.title);
-                        const riskColor = getRiskColor(riskLevel);
-                        const riskBgColor = getRiskBgColor(riskLevel);
+                    {notifications.map((notif, idx) => {
+                        const level = getRiskLevel(notif.title);
+                        const colors = getColors(level);
+                        const StatusIcon = colors.icon;
 
                         return (
-                            <div key={notification._id} onClick={() => !notification.isRead && markOneAsRead(notification._id)} style={{ width: '100%', textAlign: 'left', border: `1.5px solid ${riskColor}`, borderRadius: '16px', background: riskBgColor, padding: '24px', cursor: 'pointer', transition: 'all 0.2s', opacity: notification.isRead ? 0.7 : 1, display: 'block' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px' }}>
+                            <div 
+                                key={notif._id} 
+                                className="notification-card"
+                                onClick={() => !notif.isRead && markOneAsRead(notif._id)} 
+                                style={{ 
+                                    background: colors.bg, 
+                                    borderRadius: '24px', 
+                                    padding: '24px 32px', 
+                                    border: `1.5px solid ${colors.border}`, 
+                                    boxShadow: '0 4px 15px rgba(0,0,0,0.02)', 
+                                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', 
+                                    cursor: notif.isRead ? 'default' : 'pointer', 
+                                    animation: `slideIn 0.4s ease-out ${idx * 0.05}s forwards`,
+                                    opacity: 0,
+                                    position: 'relative'
+                                }}
+                            >
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '24px' }}>
                                     <div style={{ flex: 1 }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-                                            <span style={{ padding: '4px 12px', borderRadius: '6px', backgroundColor: riskColor, color: '#ffffff', fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                                {riskLevel} {riskLevel === 'INFO' ? 'INFO' : 'RISK'}
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
+                                            <span style={{ padding: '4px 10px', borderRadius: '6px', background: colors.text, color: '#fff', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                <StatusIcon size={12} /> {level}
                                             </span>
-                                            <span style={{ fontSize: '12px', color: '#6b7280' }}>⏱ {new Date(notification.createdAt).toLocaleString()}</span>
-                                            {!notification.isRead && <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#d32f2f', marginLeft: 'auto' }} />}
+                                            <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                <Clock size={12} /> {new Date(notif.createdAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                            </span>
+                                            {!notif.isRead && (
+                                                <div style={{ fontSize: '10px', background: '#ef4444', color: '#fff', padding: '2px 8px', borderRadius: '4px', fontWeight: '900', animation: 'pulse-slow 2s infinite' }}>PENDING ACTION</div>
+                                            )}
                                         </div>
-                                        <h3 style={{ fontSize: '18px', fontWeight: '800', margin: '0 0 8px 0', color: '#111827' }}>{notification.title}</h3>
-                                        <p style={{ margin: '0', color: '#4b5563', fontSize: '14px', lineHeight: '1.6' }}>{notification.message}</p>
-                                        {notification.predictionVerification?.status === 'verified' && (
-                                            <div style={{ marginTop: '12px', fontSize: '12px', fontWeight: '700', color: '#166534' }}>
-                                                Verified: {notification.predictionVerification.isAccurate ? 'Accurate' : 'Inaccurate'}
+                                        <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: '900', color: '#0f172a' }}>{notif.title}</h3>
+                                        <p style={{ margin: 0, fontSize: '14px', color: '#334155', fontWeight: '500', lineHeight: 1.6 }}>{notif.message}</p>
+                                        
+                                        {notif.predictionVerification?.status === 'verified' && (
+                                            <div style={{ marginTop: '16px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: '800', color: notif.predictionVerification.isAccurate ? '#10b981' : '#f59e0b' }}>
+                                                <ShieldCheck size={14} /> 
+                                                Prediction Validated: {notif.predictionVerification.isAccurate ? 'Model Accurate' : 'Heuristic Adjustment Required'}
                                             </div>
                                         )}
                                     </div>
-                                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                                        {canVerify(notification) && (
-                                            <button onClick={(e) => { e.stopPropagation(); openVerifyModal(notification); }} style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', background: '#ef4444', color: '#ffffff', fontWeight: '700', cursor: 'pointer', fontSize: '12px', whiteSpace: 'nowrap' }}>
-                                                Verify
+
+                                    <div style={{ display: 'flex', gap: '10px' }}>
+                                        {canVerify(notif) && (
+                                            <button 
+                                                onClick={(e) => { e.stopPropagation(); openVerifyModal(notif); }} 
+                                                style={{ padding: '8px 16px', borderRadius: '10px', border: 'none', background: '#ef4444', color: '#fff', fontWeight: '800', cursor: 'pointer', fontSize: '12px' }}
+                                            >
+                                                Verify Logic
                                             </button>
                                         )}
-                                        <button onClick={(e) => { e.stopPropagation(); if (!notification.isRead) markOneAsRead(notification._id); }} style={{ padding: '8px 16px', borderRadius: '8px', border: `1px solid ${riskColor}`, background: '#ffffff', color: riskColor, fontWeight: '600', cursor: 'pointer', fontSize: '12px', whiteSpace: 'nowrap' }}>
-                                            {notification.isRead ? '✓ Read' : 'Mark Read'}
-                                        </button>
-                                        <button onClick={(e) => { e.stopPropagation(); deleteNotification(notification._id); }} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid #fecaca', background: '#fff1f2', color: '#be123c', fontWeight: '700', cursor: 'pointer', fontSize: '12px', whiteSpace: 'nowrap' }}>
-                                            Delete
+                                        <button 
+                                            onClick={(e) => { e.stopPropagation(); deleteNotification(notif._id); }} 
+                                            style={{ padding: '8px', borderRadius: '10px', border: 'none', background: 'rgba(0,0,0,0.03)', color: '#ef4444', cursor: 'pointer' }}
+                                        >
+                                            <Trash2 size={16} />
                                         </button>
                                     </div>
                                 </div>
@@ -253,46 +290,57 @@ const NotificationsPage = () => {
                 </div>
             )}
 
+            {/* Verification Modal */}
             {selectedForVerification && (
-                <div style={{ position: 'fixed', inset: 0, background: 'rgba(17, 24, 39, 0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1200 }}>
-                    <div style={{ width: '100%', maxWidth: '560px', background: '#fff', borderRadius: '12px', padding: '30px', boxShadow: '0 16px 48px rgba(0,0,0,0.2)' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '10px' }}>
-                            <div>
-                                <h2 style={{ margin: 0, fontSize: '24px', color: '#ef4444', lineHeight: 1 }}>⚠</h2>
-                                <h3 style={{ margin: '4px 0 0 0', fontSize: '22px', fontWeight: '800', color: '#111827' }}>Staff Feedback - Ground Truth</h3>
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.7)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, padding: '20px' }}>
+                    <div style={{ width: '100%', maxWidth: '520px', background: '#fff', borderRadius: '32px', padding: '40px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', animation: 'slideIn 0.3s ease-out' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#fef2f2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <Cpu size={24} color="#ef4444" />
+                                </div>
+                                <h3 style={{ fontSize: '20px', fontWeight: '900', color: '#0f172a', margin: 0 }}>Ground Truth Feedback</h3>
                             </div>
-                            <button onClick={closeVerifyModal} disabled={submittingVerification} style={{ border: 'none', background: 'transparent', fontSize: '26px', color: '#6b7280', cursor: 'pointer' }}>×</button>
+                            <button onClick={closeVerifyModal} style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: '#94a3b8' }}><X size={24} /></button>
                         </div>
 
-                        <p style={{ margin: '10px 0 20px 0', fontSize: '16px', fontWeight: '500', color: '#374151' }}>
-                            Was the AI risk prediction accurate for <strong>{selectedForVerification.metadata?.orderNumber ? `Order #${selectedForVerification.metadata.orderNumber}` : selectedForVerification.title}</strong>?
+                        <p style={{ fontSize: '15px', color: '#475569', fontWeight: '500', lineHeight: 1.6, marginBottom: '24px' }}>
+                            Help us train the AI by verifying the accuracy of the prediction for {selectedForVerification.metadata?.orderNumber ? <strong>Order #{selectedForVerification.metadata.orderNumber}</strong> : 'this event'}.
                         </p>
 
-                        <div style={{ background: '#f3f4f6', borderRadius: '10px', padding: '16px', marginBottom: '22px' }}>
-                            <div style={{ fontSize: '13px', color: '#6b7280', marginBottom: '8px', fontWeight: '600' }}>AI Prediction</div>
-                            <div style={{ fontSize: '15px', color: '#111827', fontWeight: '600', lineHeight: 1.5 }}>
+                        <div style={{ background: '#f8fafc', padding: '20px', borderRadius: '20px', border: '1px solid #e2e8f0', marginBottom: '32px' }}>
+                            <div style={{ fontSize: '11px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', marginBottom: '8px' }}>AI Model Output</div>
+                            <div style={{ fontSize: '14px', color: '#0f172a', fontWeight: '600', lineHeight: 1.5 }}>
                                 {selectedForVerification.metadata?.modelMessage || selectedForVerification.message}
-                                {selectedForVerification.metadata?.riskProbabilityPercent !== null && selectedForVerification.metadata?.riskProbabilityPercent !== undefined && (
-                                    <span> ({selectedForVerification.metadata.riskProbabilityPercent}% delay probability)</span>
-                                )}
                             </div>
                         </div>
 
-                        <div style={{ fontSize: '18px', fontWeight: '700', marginBottom: '12px', color: '#111827' }}>Was this prediction accurate?</div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px' }}>
-                            <button onClick={() => setVerificationChoice(true)} style={{ padding: '12px', borderRadius: '10px', border: verificationChoice === true ? '2px solid #10b981' : '1px solid #d1d5db', background: verificationChoice === true ? '#ecfdf5' : '#fff', color: '#374151', fontWeight: '700', cursor: 'pointer', fontSize: '14px' }}>
-                                ✓ Yes, Accurate
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '32px' }}>
+                            <button 
+                                onClick={() => setVerificationChoice(true)} 
+                                style={{ padding: '16px', borderRadius: '16px', border: verificationChoice === true ? '2.5px solid #10b981' : '1.5px solid #e2e8f0', background: verificationChoice === true ? '#f0fdf4' : '#fff', color: '#0f172a', fontWeight: '800', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', transition: 'all 0.2s' }}
+                            >
+                                <CheckCircle2 size={24} color={verificationChoice === true ? '#10b981' : '#cbd5e1'} />
+                                Precise Prediction
                             </button>
-                            <button onClick={() => setVerificationChoice(false)} style={{ padding: '12px', borderRadius: '10px', border: verificationChoice === false ? '2px solid #ef4444' : '1px solid #d1d5db', background: verificationChoice === false ? '#fef2f2' : '#fff', color: '#374151', fontWeight: '700', cursor: 'pointer', fontSize: '14px' }}>
-                                ✕ No, Inaccurate
+                            <button 
+                                onClick={() => setVerificationChoice(false)} 
+                                style={{ padding: '16px', borderRadius: '16px', border: verificationChoice === false ? '2.5px solid #ef4444' : '1.5px solid #e2e8f0', background: verificationChoice === false ? '#fef2f2' : '#fff', color: '#0f172a', fontWeight: '800', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', transition: 'all 0.2s' }}
+                            >
+                                <X size={24} color={verificationChoice === false ? '#ef4444' : '#cbd5e1'} />
+                                Model Deviation
                             </button>
                         </div>
 
-                        <label style={{ display: 'block', fontSize: '18px', fontWeight: '700', color: '#111827', marginBottom: '8px' }}>Additional Notes (optional)</label>
-                        <textarea value={verificationNotes} onChange={(e) => setVerificationNotes(e.target.value)} placeholder="E.g., Machine was fixed earlier than expected..." rows={4} style={{ width: '100%', borderRadius: '10px', border: '1px solid #d1d5db', padding: '12px', fontSize: '14px', resize: 'vertical', marginBottom: '18px' }} />
+                        <label style={{ display: 'block', fontSize: '13px', fontWeight: '800', color: '#334155', marginBottom: '10px' }}>Heuristic Observation (Optional)</label>
+                        <textarea value={verificationNotes} onChange={(e) => setVerificationNotes(e.target.value)} placeholder="Explain the real-world discrepancy..." style={{ width: '100%', padding: '16px', borderRadius: '16px', border: '1.5px solid #e2e8f0', outline: 'none', fontSize: '14px', minHeight: '100px', resize: 'none', marginBottom: '32px' }} />
 
-                        <button onClick={submitVerification} disabled={verificationChoice === null || submittingVerification} style={{ width: '100%', padding: '14px', borderRadius: '10px', border: 'none', background: verificationChoice === null ? '#fecaca' : '#ef4444', color: '#fff', fontWeight: '800', fontSize: '17px', cursor: verificationChoice === null ? 'not-allowed' : 'pointer', opacity: submittingVerification ? 0.7 : 1 }}>
-                            {submittingVerification ? 'Submitting...' : 'Submit Feedback'}
+                        <button 
+                            onClick={submitVerification} 
+                            disabled={verificationChoice === null || submittingVerification} 
+                            style={{ width: '100%', padding: '16px', borderRadius: '16px', border: 'none', background: '#ef4444', color: '#fff', fontWeight: '900', fontSize: '16px', cursor: (verificationChoice === null || submittingVerification) ? 'not-allowed' : 'pointer', boxShadow: '0 10px 20px rgba(239, 68, 68, 0.2)', opacity: submittingVerification ? 0.7 : 1 }}
+                        >
+                            {submittingVerification ? 'Syncing...' : 'Seal Verification'}
                         </button>
                     </div>
                 </div>
@@ -302,4 +350,3 @@ const NotificationsPage = () => {
 };
 
 export default NotificationsPage;
-

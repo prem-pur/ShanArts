@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 
 const STATUS_CONFIG = {
-    scheduled: { label: 'Awaiting', color: '#f59e0b', bg: '#fffbeb' },
-    confirmed: { label: 'Assigned', color: '#3b82f6', bg: '#eff6ff' },
-    in_progress: { label: 'Printing', color: '#8b5cf6', bg: '#f5f3ff' },
-    completed: { label: 'Completed', color: '#10b981', bg: '#ecfdf5' },
+    scheduled: { label: 'Awaiting', color: '#111827', bg: '#f1f5f9' },
+    confirmed: { label: 'Assigned', color: '#111827', bg: '#f1f5f9' },
+    in_progress: { label: 'Printing', color: '#ef4444', bg: '#fef2f2' },
+    completed: { label: 'Completed', color: '#64748b', bg: '#f8fafc' },
 };
 
 
@@ -141,7 +141,7 @@ const OperatorsDashboard = ({ operators, orders, machineStats, onBack }) => {
                                         color: '#64748b',
                                         border: '1px solid #f1f5f9'
                                     }}>
-                                        <span style={{ fontSize: '24px' }}>👷</span>
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                                     </div>
                                     <div>
                                         <div style={{ fontWeight: '900', fontSize: '18px', color: '#111827' }}>{op.name}</div>
@@ -151,8 +151,8 @@ const OperatorsDashboard = ({ operators, orders, machineStats, onBack }) => {
                                     </div>
                                 </div>
                                 <div style={{
-                                    background: op.tasks.length > 0 ? '#eff6ff' : '#f9fafb',
-                                    color: op.tasks.length > 0 ? '#3b82f6' : '#9ca3af',
+                                    background: op.tasks.length > 0 ? '#111827' : '#f9fafb',
+                                    color: op.tasks.length > 0 ? '#fff' : '#9ca3af',
                                     padding: '6px 12px',
                                     borderRadius: '10px',
                                     fontSize: '11px',

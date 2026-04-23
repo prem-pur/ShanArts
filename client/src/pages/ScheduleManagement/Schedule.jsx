@@ -96,9 +96,9 @@ const Schedule = () => {
 
     const getStatusColor = (status) => {
         switch (status) {
-            case 'Approved': return '#10b981';
-            case 'Completed': return '#059669';
-            case 'In Progress': return '#f59e0b';
+            case 'Approved': return '#64748b'; // Grey
+            case 'Completed': return '#111827'; // Black
+            case 'In Progress': return '#ef4444'; // Red
             default: return '#6b7280';
         }
     };
@@ -326,7 +326,7 @@ const Schedule = () => {
                                                 padding: '10px 16px',
                                                 borderRadius: '8px',
                                                 border: 'none',
-                                                background: '#3b82f6',
+                                                background: '#111827',
                                                 color: '#fff',
                                                 fontWeight: '600',
                                                 cursor: 'pointer',
@@ -442,7 +442,7 @@ const Schedule = () => {
                                     padding: '14px',
                                     borderRadius: '12px',
                                     border: 'none',
-                                    background: '#3b82f6',
+                                    background: '#111827',
                                     color: '#fff',
                                     fontWeight: '800',
                                     cursor: 'pointer'

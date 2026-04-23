@@ -183,7 +183,7 @@ const CustomerHome = () => {
             });
 
             if (response.data.message) {
-                alert(`Design ${action}d successfully!`);
+                alert(`Design ${action}ed successfully!`);
                 await fetchData();
                 setShowApprovalModal(false);
                 setSelectedOrder(null);

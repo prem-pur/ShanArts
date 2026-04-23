@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { Bell, Package, DollarSign, Zap, MessageSquare } from 'lucide-react';
 import { API_BASE_URL } from '../../apiBase';
 
 const SystemManagerDashboard = () => {
@@ -75,15 +76,15 @@ const SystemManagerDashboard = () => {
             </header>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px', marginBottom: '40px' }}>
-                <StatCard title="Total Orders" value={stats.totalOrders} icon="📦" color="#111827" />
-                <StatCard title="Total Revenue" value={`LKR ${stats.totalRevenue.toLocaleString()}`} icon="💰" color="#10b981" />
-                <StatCard title="Active Jobs" value={stats.pendingTasks} icon="⚡" color="var(--accent-color)" />
+                <StatCard title="Total Orders" value={stats.totalOrders} icon={<Package size={28} />} color="#111827" />
+                <StatCard title="Total Revenue" value={`LKR ${stats.totalRevenue.toLocaleString()}`} icon={<DollarSign size={28} />} color="#111827" />
+                <StatCard title="Active Jobs" value={stats.pendingTasks} icon={<Zap size={28} />} color="#ef4444" />
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
                 <div style={{ background: '#fff', borderRadius: '24px', padding: '32px', border: '1px solid #f0f0f0', boxShadow: '0 4px 25px rgba(0,0,0,0.03)' }}>
                     <h2 style={{ fontSize: '20px', fontWeight: '900', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <span>🔔</span> Recent Notifications
+                        <Bell size={20} color="var(--accent-color)" /> Recent Notifications
                     </h2>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '500px', overflowY: 'auto' }}>
                         {notifications.length > 0 ? notifications.map(n => (
@@ -102,7 +103,7 @@ const SystemManagerDashboard = () => {
 
                 <div style={{ background: '#fff', borderRadius: '24px', padding: '32px', border: '1px solid #f0f0f0', boxShadow: '0 4px 25px rgba(0,0,0,0.03)' }}>
                     <h2 style={{ fontSize: '20px', fontWeight: '900', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <span>💬</span> Customer Feedback
+                        <MessageSquare size={20} color="#111827" /> Customer Feedback
                     </h2>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -110,7 +111,7 @@ const SystemManagerDashboard = () => {
                             <div key={f._id} style={{ background: '#f9fafb', padding: '20px', borderRadius: '16px', border: '1px solid #f3f4f6' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                                     <div style={{ fontWeight: '800', fontSize: '14px' }}>{f.customerId?.name || 'Anonymous Customer'}</div>
-                                    <div style={{ color: '#fbbf24', fontSize: '14px' }}>
+                                    <div style={{ color: '#111827', fontSize: '14px' }}>
                                         {'★'.repeat(f.rating || 0)}{'☆'.repeat(5 - (f.rating || 0))}
                                     </div>
                                 </div>

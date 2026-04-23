@@ -13,5 +13,6 @@ router.get('/me', auth, authController.getMe);
 router.put('/profile', auth, authController.updateMe);
 router.put('/staff/:id', auth, authController.updateStaff);
 router.delete('/staff/:id', auth, authController.deleteStaff);
+router.post('/forgot-password', authController.forgotPassword);
 router.get('/customers', auth, authController.getCustomers);
 module.exports = router;

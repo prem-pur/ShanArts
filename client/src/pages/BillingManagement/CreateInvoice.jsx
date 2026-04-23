@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { CheckCircle2, Clock, FileText, AlertCircle } from 'lucide-react';
 import { API_BASE_URL } from '../../apiBase';
 
 const CreateInvoice = ({ orders, onClose, onCreated }) => {
@@ -53,8 +54,8 @@ const CreateInvoice = ({ orders, onClose, onCreated }) => {
 
                 <div style={{ padding: '24px 28px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
                     {error && (
-                        <div style={{ background: '#fee2e2', border: '1px solid #fca5a5', color: '#dc2626', padding: '12px 16px', borderRadius: '10px', fontSize: '13px', fontWeight: '600' }}>
-                            ⚠️ {error}
+                        <div style={{ background: '#fef2f2', border: '1px solid #fee2e2', color: '#ef4444', padding: '12px 16px', borderRadius: '10px', fontSize: '13px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <AlertCircle size={16} /> {error}
                         </div>
                     )}
 
@@ -65,8 +66,9 @@ const CreateInvoice = ({ orders, onClose, onCreated }) => {
                         </label>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '260px', overflowY: 'auto' }}>
                             {orders.length === 0 ? (
-                                <div style={{ textAlign: 'center', padding: '32px', color: '#9ca3af', background: '#f9fafb', borderRadius: '12px', fontSize: '13px' }}>
-                                    ✅ All completed orders have been invoiced.
+                                <div style={{ textAlign: 'center', padding: '32px', color: '#9ca3af', background: '#f9fafb', borderRadius: '12px', fontSize: '13px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                                    <CheckCircle2 size={24} color="#64748b" />
+                                    <span>All completed orders have been invoiced.</span>
                                 </div>
                             ) : orders.map(order => (
                                 <div
@@ -87,7 +89,7 @@ const CreateInvoice = ({ orders, onClose, onCreated }) => {
                                     <div>
                                         <div style={{ fontWeight: '800', color: '#111827', fontSize: '14px' }}>
                                             {order.orderNumber}
-                                            {selectedOrder?._id === order._id && <span style={{ marginLeft: '8px', fontSize: '12px', color: '#10b981' }}>✓ Selected</span>}
+                                            {selectedOrder?._id === order._id && <span style={{ marginLeft: '8px', fontSize: '12px', color: '#111827' }}>✓ Selected</span>}
                                         </div>
                                         <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '2px' }}>
                                             {order.customerId?.name} • {order.jobType?.toUpperCase()} • {order.deliveryMethod?.toUpperCase()}
@@ -146,7 +148,7 @@ const CreateInvoice = ({ orders, onClose, onCreated }) => {
                                 ].map(({ label, val }) => (
                                     <div key={label} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#6b7280', marginBottom: '6px' }}>
                                         <span>{label}</span>
-                                        <span style={{ fontWeight: '700', color: val < 0 ? '#10b981' : '#374151' }}>
+                                        <span style={{ fontWeight: '700', color: val < 0 ? '#111827' : '#374151' }}>
                                             {val < 0 ? `- LKR ${Math.abs(val).toLocaleString()}` : `LKR ${val.toLocaleString()}`}
                                         </span>
                                     </div>
@@ -165,9 +167,10 @@ const CreateInvoice = ({ orders, onClose, onCreated }) => {
                         <button
                             onClick={handleCreate}
                             disabled={!selectedOrder || loading}
-                            style={{ flex: 2, padding: '14px', borderRadius: '12px', border: 'none', background: !selectedOrder || loading ? '#9ca3af' : '#111827', color: '#fff', fontWeight: '900', cursor: !selectedOrder || loading ? 'not-allowed' : 'pointer', fontSize: '14px', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}
+                            style={{ flex: 2, padding: '14px', borderRadius: '12px', border: 'none', background: !selectedOrder || loading ? '#9ca3af' : '#111827', color: '#fff', fontWeight: '900', cursor: !selectedOrder || loading ? 'not-allowed' : 'pointer', fontSize: '14px', boxShadow: '0 4px 12px rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
                         >
-                            {loading ? '⏳ Generating...' : '🧾 GENERATE INVOICE'}
+                            {loading ? <Clock size={18} /> : <FileText size={18} />}
+                            {loading ? 'GENERATING...' : 'GENERATE INVOICE'}
                         </button>
                     </div>
                 </div>

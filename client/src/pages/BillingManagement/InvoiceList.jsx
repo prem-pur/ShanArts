@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { API_BASE_URL } from '../../apiBase';
+import { Search, Clock, FileText } from 'lucide-react';
 
 const InvoiceList = ({ onSelectInvoice, refreshKey }) => {
     const [invoices, setInvoices] = useState([]);
@@ -32,8 +33,8 @@ const InvoiceList = ({ onSelectInvoice, refreshKey }) => {
         }
     };
 
-    const statusColor = { paid: '#10b981', partial: '#f59e0b', unpaid: '#ef4444' };
-    const statusBg = { paid: '#d1fae5', partial: '#fef3c7', unpaid: '#fee2e2' };
+    const statusColor = { paid: '#64748b', partial: '#111827', unpaid: '#ef4444' };
+    const statusBg = { paid: '#f8fafc', partial: '#f1f5f9', unpaid: '#fef2f2' };
 
     const filtered = invoices.filter(inv => {
         const term = search.toLowerCase();
@@ -48,21 +49,24 @@ const InvoiceList = ({ onSelectInvoice, refreshKey }) => {
         <div>
             {/* Search & Filter Bar */}
             <div style={{ display: 'flex', gap: '12px', marginBottom: '20px', flexWrap: 'wrap' }}>
-                <input
-                    type="text"
-                    placeholder="🔍  Search invoice, customer, order..."
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                    style={{
-                        flex: 1,
-                        minWidth: '200px',
-                        padding: '10px 16px',
-                        borderRadius: '10px',
-                        border: '1.5px solid #e5e7eb',
-                        fontSize: '13px',
-                        outline: 'none'
-                    }}
-                />
+                <div style={{ position: 'relative', flex: 1, minWidth: '200px' }}>
+                    <Search size={14} color="#9ca3af" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)' }} />
+                    <input
+                        type="text"
+                        placeholder="Search invoice, customer, order..."
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                        style={{
+                            width: '100%',
+                            padding: '10px 16px 10px 42px',
+                            borderRadius: '10px',
+                            border: '1.5px solid #e5e7eb',
+                            fontSize: '13px',
+                            outline: 'none',
+                            boxSizing: 'border-box'
+                        }}
+                    />
+                </div>
                 {user.role !== 'customer' && (
                     <div style={{ display: 'flex', background: '#f3f4f6', borderRadius: '10px', padding: '4px', gap: '2px' }}>
                         {['all', 'unpaid', 'partial', 'paid'].map(f => (
@@ -92,12 +96,12 @@ const InvoiceList = ({ onSelectInvoice, refreshKey }) => {
 
             {loading ? (
                 <div style={{ textAlign: 'center', padding: '60px', color: '#9ca3af' }}>
-                    <div style={{ fontSize: '32px', marginBottom: '12px' }}>⏳</div>
+                    <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'center' }}><Clock size={32} color="#9ca3af" /></div>
                     Loading invoices...
                 </div>
             ) : filtered.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '60px', color: '#9ca3af' }}>
-                    <div style={{ fontSize: '40px', marginBottom: '12px' }}>🧾</div>
+                    <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'center' }}><FileText size={40} color="#9ca3af" /></div>
                     <div style={{ fontWeight: '600' }}>No invoices found.</div>
                 </div>
             ) : (
@@ -134,10 +138,10 @@ const InvoiceList = ({ onSelectInvoice, refreshKey }) => {
                                 <td style={{ padding: '14px 16px', fontWeight: '800', color: '#111827', whiteSpace: 'nowrap' }}>
                                     LKR {(inv.totalAmount || 0).toLocaleString()}
                                 </td>
-                                <td style={{ padding: '14px 16px', fontWeight: '700', color: '#10b981', whiteSpace: 'nowrap' }}>
+                                <td style={{ padding: '14px 16px', fontWeight: '700', color: '#111827', whiteSpace: 'nowrap' }}>
                                     LKR {(inv.amountPaid || 0).toLocaleString()}
                                 </td>
-                                <td style={{ padding: '14px 16px', fontWeight: '700', color: inv.balanceDue > 0 ? '#dc2626' : '#10b981', whiteSpace: 'nowrap' }}>
+                                <td style={{ padding: '14px 16px', fontWeight: '700', color: inv.balanceDue > 0 ? '#ef4444' : '#64748b', whiteSpace: 'nowrap' }}>
                                     LKR {(inv.balanceDue || 0).toLocaleString()}
                                 </td>
                                 <td style={{ padding: '14px 16px' }}>
@@ -151,7 +155,7 @@ const InvoiceList = ({ onSelectInvoice, refreshKey }) => {
                                             background: statusBg[inv.paymentStatus],
                                             border: `1px solid ${statusColor[inv.paymentStatus]}30`
                                         }}>
-                                            {inv.paymentStatus}
+                                            {inv.paymentStatus === 'paid' ? '● Paid' : inv.paymentStatus === 'partial' ? '◐ Partial' : '○ Unpaid'}
                                         </span>
                                 </td>
                                 <td style={{ padding: '14px 16px', fontSize: '12px', color: '#6b7280', whiteSpace: 'nowrap' }}>

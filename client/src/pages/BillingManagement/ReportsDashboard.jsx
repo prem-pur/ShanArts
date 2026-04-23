@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { API_BASE_URL } from '../../apiBase';
+import { DollarSign, CheckCircle, Clock, FileText, AlertTriangle, BarChart3 } from 'lucide-react';
 
 const StatCard = ({ label, value, sub, color, icon }) => (
     <div style={{
@@ -10,7 +11,7 @@ const StatCard = ({ label, value, sub, color, icon }) => (
     }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ fontSize: '12px', fontWeight: '800', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '1px' }}>{label}</div>
-            <div style={{ fontSize: '24px' }}>{icon}</div>
+            <div style={{ fontSize: '24px', color: color || '#64748b' }}>{icon}</div>
         </div>
         <div style={{ fontSize: '28px', fontWeight: '900', color: color || '#111827' }}>{value}</div>
         {sub && <div style={{ fontSize: '12px', color: '#9ca3af' }}>{sub}</div>}
@@ -50,14 +51,14 @@ const ReportsDashboard = () => {
 
     if (loading) return (
         <div style={{ textAlign: 'center', padding: '80px', color: '#9ca3af' }}>
-            <div style={{ fontSize: '40px', marginBottom: '16px' }}>📊</div>
+            <BarChart3 size={40} color="#64748b" style={{ margin: '0 auto 16px' }} />
             <div style={{ fontWeight: '600' }}>Loading reports...</div>
         </div>
     );
 
     if (error) return (
         <div style={{ textAlign: 'center', padding: '80px', color: '#ef4444' }}>
-            <div style={{ fontSize: '40px', marginBottom: '16px' }}>⚠️</div>
+            <AlertTriangle size={40} color="#ef4444" style={{ margin: '0 auto 16px' }} />
             <div style={{ fontWeight: '600' }}>{error}</div>
         </div>
     );
@@ -96,14 +97,14 @@ const ReportsDashboard = () => {
 
             {/* KPI Cards */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
-                <StatCard label="Total Revenue" value={`LKR ${(totalRevenue || 0).toLocaleString()}`} icon="💰" color="#111827" sub={`${invoiceCount} invoice(s)`} />
-                <StatCard label="Collected" value={`LKR ${(totalCollected || 0).toLocaleString()}`} icon="✅" color="#10b981" sub={`${collectionRate}% collection rate`} />
-                <StatCard label="Outstanding" value={`LKR ${(totalOutstanding || 0).toLocaleString()}`} icon="⏳" color="#ef4444" sub="Unpaid + Partial" />
-                <StatCard label="Status Breakdown" icon="📋"
+                <StatCard label="Total Revenue" value={`LKR ${(totalRevenue || 0).toLocaleString()}`} icon={<DollarSign size={24} />} color="#111827" sub={`${invoiceCount} invoice(s)`} />
+                <StatCard label="Collected" value={`LKR ${(totalCollected || 0).toLocaleString()}`} icon={<CheckCircle size={24} />} color="#111827" sub={`${collectionRate}% collection rate`} />
+                <StatCard label="Outstanding" value={`LKR ${(totalOutstanding || 0).toLocaleString()}`} icon={<Clock size={24} />} color="#ef4444" sub="Unpaid + Partial" />
+                <StatCard label="Status Breakdown" icon={<FileText size={24} />} color="#111827"
                           value={
                               <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '4px' }}>
-                                  {[{ label: 'Paid', val: statusBreakdown?.paid, color: '#10b981' },
-                                      { label: 'Partial', val: statusBreakdown?.partial, color: '#f59e0b' },
+                                  {[{ label: 'Paid', val: statusBreakdown?.paid, color: '#64748b' },
+                                      { label: 'Partial', val: statusBreakdown?.partial, color: '#111827' },
                                       { label: 'Unpaid', val: statusBreakdown?.unpaid, color: '#ef4444' }].map(s => (
                                       <div key={s.label} style={{ textAlign: 'center' }}>
                                           <div style={{ fontSize: '22px', fontWeight: '900', color: s.color }}>{s.val || 0}</div>
@@ -123,12 +124,12 @@ const ReportsDashboard = () => {
                         {monthly.map(m => (
                             <div key={m.month} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', minWidth: '60px', flex: '0 0 auto' }}>
                                 {/* Bars */}
-                                <div style={{ display: 'flex', gap: '3px', alignItems: 'flex-end', height: '130px' }}>
-                                    <div title={`Revenue: LKR ${m.revenue.toLocaleString()}`}
-                                         style={{ width: '20px', background: 'linear-gradient(180deg, #6366f1 0%, #4f46e5 100%)', borderRadius: '4px 4px 0 0', height: `${Math.max(4, (m.revenue / maxMonthlyRevenue) * 120)}px`, transition: 'height 0.6s ease' }} />
-                                    <div title={`Collected: LKR ${m.collected.toLocaleString()}`}
-                                         style={{ width: '20px', background: 'linear-gradient(180deg, #34d399 0%, #10b981 100%)', borderRadius: '4px 4px 0 0', height: `${Math.max(4, (m.collected / maxMonthlyRevenue) * 120)}px`, transition: 'height 0.6s ease' }} />
-                                </div>
+                                    <div style={{ display: 'flex', gap: '3px', alignItems: 'flex-end', height: '130px' }}>
+                                        <div title={`Revenue: LKR ${m.revenue.toLocaleString()}`}
+                                             style={{ width: '20px', background: '#111827', borderRadius: '4px 4px 0 0', height: `${Math.max(4, (m.revenue / maxMonthlyRevenue) * 120)}px`, transition: 'height 0.6s ease' }} />
+                                        <div title={`Collected: LKR ${m.collected.toLocaleString()}`}
+                                             style={{ width: '20px', background: '#e2e8f0', borderRadius: '4px 4px 0 0', height: `${Math.max(4, (m.collected / maxMonthlyRevenue) * 120)}px`, transition: 'height 0.6s ease' }} />
+                                    </div>
                                 <div style={{ fontSize: '10px', color: '#9ca3af', fontWeight: '700', textAlign: 'center', whiteSpace: 'nowrap' }}>
                                     {m.month.slice(5)}
                                     <br />
@@ -139,7 +140,7 @@ const ReportsDashboard = () => {
                     </div>
                     {/* Legend */}
                     <div style={{ display: 'flex', gap: '20px', marginTop: '12px' }}>
-                        {[{ color: '#4f46e5', label: 'Revenue' }, { color: '#10b981', label: 'Collected' }].map(l => (
+                        {[{ color: '#111827', label: 'Revenue' }, { color: '#e2e8f0', label: 'Collected' }].map(l => (
                             <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#6b7280', fontWeight: '700' }}>
                                 <div style={{ width: '12px', height: '12px', background: l.color, borderRadius: '3px' }} />
                                 {l.label}
@@ -164,7 +165,7 @@ const ReportsDashboard = () => {
                             </thead>
                             <tbody>
                             {recentInvoices.map(inv => {
-                                const sColor = { paid: '#10b981', partial: '#f59e0b', unpaid: '#ef4444' };
+                                const sColor = { paid: '#64748b', partial: '#111827', unpaid: '#ef4444' };
                                 return (
                                     <tr key={inv._id} style={{ borderBottom: '1px solid #f9fafb' }}>
                                         <td style={{ padding: '12px', fontWeight: '800', color: '#111827', fontSize: '13px' }}>#{inv.invoiceNumber}</td>
@@ -187,7 +188,7 @@ const ReportsDashboard = () => {
 
             {(!monthly || monthly.length === 0) && (!recentInvoices || recentInvoices.length === 0) && (
                 <div style={{ textAlign: 'center', padding: '60px', color: '#9ca3af', background: '#fff', borderRadius: '18px', border: '1px solid #f0f0f0' }}>
-                    <div style={{ fontSize: '40px', marginBottom: '12px' }}>📈</div>
+                    <BarChart3 size={40} color="#e2e8f0" style={{ margin: '0 auto 12px' }} />
                     <div style={{ fontWeight: '600' }}>No data available for the selected period.</div>
                 </div>
             )}
