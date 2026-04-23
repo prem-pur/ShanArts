@@ -1,10 +1,76 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useLayoutEffect, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Eye, EyeOff, Lightbulb, ArrowLeft } from 'lucide-react';
+import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { API_BASE_URL } from '../../apiBase';
 
-const CustomerDashboard = () => {
+/**
+ * Fills the card width: Google GSI only accepts pixel width, so we measure the row.
+ * use_fedcm_for_button={false} avoids broken / clipped FedCM button in some browsers.
+ */
+const GoogleSignInButton = ({ onSuccess, onError, disabled }) => {
+    const rowRef = useRef(null);
+    const [btnWidth, setBtnWidth] = useState(360);
+
+    useLayoutEffect(() => {
+        const el = rowRef.current;
+        if (!el) return;
+        const measure = () => {
+            const w = el.getBoundingClientRect().width;
+            if (w > 0) {
+                setBtnWidth(Math.max(220, Math.floor(w)));
+            }
+        };
+        measure();
+        const ro = new ResizeObserver(measure);
+        ro.observe(el);
+        window.addEventListener('resize', measure);
+        return () => {
+            ro.disconnect();
+            window.removeEventListener('resize', measure);
+        };
+    }, []);
+
+    return (
+        <div
+            ref={rowRef}
+            style={{
+                width: '100%',
+                maxWidth: '100%',
+                boxSizing: 'border-box',
+                display: 'block',
+                minHeight: 48,
+                opacity: disabled ? 0.65 : 1,
+                pointerEvents: disabled ? 'none' : 'auto',
+            }}
+        >
+            <GoogleLogin
+                onSuccess={onSuccess}
+                onError={onError}
+                text="signin_with"
+                theme="outline"
+                size="large"
+                width={btnWidth}
+                shape="rectangular"
+                use_fedcm_for_button={false}
+                containerProps={{
+                    style: {
+                        width: '100%',
+                        maxWidth: '100%',
+                        minHeight: 48,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        overflow: 'visible',
+                    },
+                }}
+            />
+        </div>
+    );
+};
+
+const CustomerAuthScreen = () => {
     const navigate = useNavigate();
     const [isLogin, setIsLogin] = useState(true);
     const [formData, setFormData] = useState({
@@ -16,8 +82,39 @@ const CustomerDashboard = () => {
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [googleLoading, setGoogleLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+    const envGoogleId = (process.env.REACT_APP_GOOGLE_CLIENT_ID || '').trim();
+    const [googleClientId, setGoogleClientId] = useState(envGoogleId);
+    const [oauthLoading, setOauthLoading] = useState(!envGoogleId);
+
+    useEffect(() => {
+        if (envGoogleId) {
+            return;
+        }
+        let cancelled = false;
+        (async () => {
+            try {
+                const { data } = await axios.get(`${API_BASE_URL}/api/auth/oauth-config`);
+                if (!cancelled) {
+                    setGoogleClientId((data.googleClientId || '').trim());
+                }
+            } catch {
+                if (!cancelled) {
+                    setGoogleClientId('');
+                }
+            } finally {
+                if (!cancelled) {
+                    setOauthLoading(false);
+                }
+            }
+        })();
+        return () => {
+            cancelled = true;
+        };
+    }, [envGoogleId]);
 
     const handleInputChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -65,6 +162,23 @@ const CustomerDashboard = () => {
             setError(err.response?.data?.message || err.message || 'Something went wrong');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleGoogleSuccess = async (credentialResponse) => {
+        setError('');
+        setGoogleLoading(true);
+        try {
+            const response = await axios.post(`${API_BASE_URL}/api/auth/google`, {
+                credential: credentialResponse.credential,
+            });
+            localStorage.setItem('token', response.data.token);
+            localStorage.setItem('user', JSON.stringify(response.data.user));
+            navigate('/customer-home');
+        } catch (err) {
+            setError(err.response?.data?.message || err.message || 'Google sign-in failed');
+        } finally {
+            setGoogleLoading(false);
         }
     };
 
@@ -313,7 +427,7 @@ const CustomerDashboard = () => {
 
                     <button
                         type="submit"
-                        disabled={loading}
+                        disabled={loading || googleLoading}
                         style={{
                             width: '100%',
                             padding: '18px',
@@ -323,33 +437,135 @@ const CustomerDashboard = () => {
                             color: '#fff',
                             fontSize: '18px',
                             fontWeight: '800',
-                            cursor: loading ? 'not-allowed' : 'pointer',
+                            cursor: loading || googleLoading ? 'not-allowed' : 'pointer',
                             marginTop: '12px',
                             transition: 'all 0.2s',
-                            boxShadow: '0 4px 15px rgba(211, 47, 47, 0.4)'
+                            boxShadow: '0 4px 15px rgba(211, 47, 47, 0.4)',
+                            opacity: googleLoading ? 0.6 : 1
                         }}
                     >
                         {loading ? 'Processing...' : (isLogin ? 'Sign In' : 'Create Account')}
                     </button>
+
+                    {isLogin && (
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setIsLogin(false);
+                                setError('');
+                            }}
+                            disabled={loading || googleLoading}
+                            style={{
+                                width: '100%',
+                                padding: '16px',
+                                borderRadius: '12px',
+                                border: '2px solid var(--accent-color)',
+                                backgroundColor: '#fff',
+                                color: 'var(--accent-color)',
+                                fontSize: '17px',
+                                fontWeight: '800',
+                                cursor: loading || googleLoading ? 'not-allowed' : 'pointer',
+                                marginTop: '4px',
+                                transition: 'all 0.2s',
+                                opacity: loading || googleLoading ? 0.6 : 1
+                            }}
+                        >
+                            Sign Up
+                        </button>
+                    )}
                 </form>
 
-                <div style={{ textAlign: 'center', marginTop: '40px', fontSize: '15px', color: '#6b7280' }}>
-                    {isLogin ? "Don't have an account? " : "Already have an account? "}
-                    <span
-                        onClick={() => {
-                            setIsLogin(!isLogin);
-                            setError('');
-                        }}
+                <div
+                    style={{
+                        width: '100%',
+                        maxWidth: '100%',
+                        marginTop: '28px',
+                        boxSizing: 'border-box',
+                    }}
+                >
+                    <div
                         style={{
-                            color: 'var(--accent-color)',
-                            fontWeight: '800',
-                            cursor: 'pointer',
-                            textDecoration: 'underline'
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '16px',
+                            marginBottom: '12px',
                         }}
                     >
-                        {isLogin ? 'Sign Up' : 'Log In'}
-                    </span>
+                        <div style={{ flex: 1, height: '1px', backgroundColor: '#e5e7eb' }} />
+                        <span style={{ color: '#9ca3af', fontSize: '13px', fontWeight: 700, letterSpacing: '0.05em' }}>OR</span>
+                        <div style={{ flex: 1, height: '1px', backgroundColor: '#e5e7eb' }} />
+                    </div>
+                    {oauthLoading ? (
+                        <p
+                            style={{
+                                margin: 0,
+                                minHeight: 48,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: '#9ca3af',
+                                fontSize: '14px',
+                            }}
+                        >
+                            Loading sign-in options…
+                        </p>
+                    ) : googleClientId ? (
+                        <GoogleOAuthProvider clientId={googleClientId}>
+                            <GoogleSignInButton
+                                onSuccess={handleGoogleSuccess}
+                                onError={() => setError('Google sign-in was cancelled or failed.')}
+                                disabled={loading || googleLoading}
+                            />
+                        </GoogleOAuthProvider>
+                    ) : (
+                        <p
+                            style={{
+                                margin: 0,
+                                minHeight: 40,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: '#9ca3af',
+                                fontSize: '13px',
+                                textAlign: 'center',
+                            }}
+                        >
+                            Google sign-in is not configured. Add{' '}
+                            <code
+                                style={{
+                                    fontSize: '12px',
+                                    background: '#f3f4f6',
+                                    padding: '2px 6px',
+                                    borderRadius: '4px',
+                                    color: '#374151',
+                                }}
+                            >
+                                GOOGLE_CLIENT_ID
+                            </code>{' '}
+                            to the server .env file and restart the API.
+                        </p>
+                    )}
                 </div>
+
+                {!isLogin && (
+                    <div style={{ textAlign: 'center', marginTop: '40px', fontSize: '15px', color: '#6b7280' }}>
+                        Already have an account?{' '}
+                        <span
+                            onClick={() => {
+                                setIsLogin(true);
+                                setError('');
+                            }}
+                            style={{
+                                color: 'var(--accent-color)',
+                                fontWeight: '800',
+                                cursor: 'pointer',
+                                textDecoration: 'underline'
+                            }}
+                        >
+                            Log In
+                        </span>
+                    </div>
+                )}
 
                 <div style={{ textAlign: 'center', marginTop: '32px' }}>
                     <button
@@ -370,5 +586,7 @@ const CustomerDashboard = () => {
         </div>
     );
 };
+
+const CustomerDashboard = () => <CustomerAuthScreen />;
 
 export default CustomerDashboard;
