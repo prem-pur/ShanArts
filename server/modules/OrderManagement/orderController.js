@@ -1,3 +1,5 @@
+const fs = require('fs');
+const path = require('path');
 const ShopOrder = require("./ShopOrder");
 const ProductionOrder = require("./ProductionOrder");
 const Schedule = require('../ScheduleManagement/model');
@@ -702,7 +704,76 @@ const orderController = {
         } catch (error) {
             next(error);
         }
-    }
+    },
+
+    /** POST /api/shop-orders/convert-ai — image → vision model (Gemini or Ollama) → .docx */
+    async convertAiOrder(req, res, next) {
+        let tempPath;
+        try {
+            if (!req.file) {
+                return next(new ApiError('No image uploaded. Use field name "image".', 400));
+            }
+
+            const imagePath = req.file.path;
+            tempPath = imagePath;
+            const mimeType = req.file.mimetype;
+
+            const aiResult = await aiService.analyzePrintingItem(imagePath, mimeType);
+
+            ensureAiExportDir();
+            const outName = `ai-doc-${Date.now()}-${Math.round(Math.random() * 1e9)}.docx`;
+            const outputPath = path.join(__dirname, '../../public/uploads/ai-exports', outName);
+            await aiService.generateWordDocument(aiResult, outputPath);
+
+            const relUrl = `/uploads/ai-exports/${outName}`;
+
+            const combinedPreferencesText = [
+                aiResult.extractedText,
+                aiResult.layoutDescription && `Layout: ${aiResult.layoutDescription}`,
+            ]
+                .filter(Boolean)
+                .join('\n\n');
+
+            res.status(200).json({
+                success: true,
+                documentUrl: relUrl,
+                extractedText: combinedPreferencesText || aiResult.extractedText || '',
+                aiResult,
+            });
+        } catch (error) {
+            if (error.status === 503) {
+                return next(
+                    new ApiError(
+                        error.message ||
+                            'AI conversion is not available. For Gemini set GEMINI_API_KEY; for Ollama set AI_VISION_PROVIDER=ollama and run ollama pull <model>.',
+                        503
+                    )
+                );
+            }
+            if (error.status === 429) {
+                return next(new ApiError(
+                    error.message,
+                    429
+                ));
+            }
+            next(error);
+        } finally {
+            if (tempPath) {
+                try {
+                    fs.unlinkSync(tempPath);
+                } catch {
+                    // ignore
+                }
+            }
+        }
+    },
 };
+
+function ensureAiExportDir() {
+    const p = path.join(__dirname, '../../public/uploads/ai-exports');
+    if (!fs.existsSync(p)) {
+        fs.mkdirSync(p, { recursive: true });
+    }
+}
 
 module.exports = orderController;

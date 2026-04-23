@@ -1,0 +1,14 @@
+﻿[dotenv@17.3.1] injecting env (9) from .env -- tip: ≡ƒöÉ prevent committing .env to code: https://dotenvx.com/precommit
+AI_VISION_PROVIDER: ollama
+OLLAMA_BASE_URL: https://ollama.com
+OLLAMA_API_KEY set: true (length 57)
+OLLAMA_VISION_MODEL: llava
+---
+GET /api/tags: OK ΓÇö 37 model(s) visible
+OLLAMA_VISION_MODEL "llava" not in /api/tags sample ΓÇö cloud may use different names; 404 on chat means pick another id.
+First models: devstral-small-2:24b, gemini-3-flash-preview, gemma3:27b, kimi-k2:1t, qwen3-coder:480b, deepseek-v3.2, qwen3-vl:235b-instruct, kimi-k2.6
+POST /api/chat (vision probe): FAIL
+  HTTP 404
+  body: {"error":"model 'llava' not found"}
+  message: Request failed with status code 404
+  Tip: set OLLAMA_VISION_MODEL to a vision model id that exists on this host (see ollama.com / your provider).

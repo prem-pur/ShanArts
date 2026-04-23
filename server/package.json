@@ -7,7 +7,9 @@
     "dev": "nodemon index.js"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.21.0",
     "axios": "^1.13.5",
+    "docx": "^9.0.0",
     "bcryptjs": "^3.0.3",
     "canvas": "^3.2.1",
     "cookie-parser": "~1.4.4",

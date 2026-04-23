@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Store, Truck, Car } from 'lucide-react';
+import { Store, Truck, Car, Sparkles, Download } from 'lucide-react';
 import { API_BASE_URL } from '../../apiBase';
 
 const AddOrder = ({ onOrderCreated, onCancel }) => {
@@ -21,6 +21,8 @@ const AddOrder = ({ onOrderCreated, onCancel }) => {
     });
 
     const [samplePhoto, setSamplePhoto] = useState(null);
+    const [aiLoading, setAiLoading] = useState(false);
+    const [aiDocumentUrl, setAiDocumentUrl] = useState(null);
 
     const productTemplates = {
         poster: {
@@ -138,7 +140,44 @@ const AddOrder = ({ onOrderCreated, onCancel }) => {
 
     const handleFileChange = (e) => {
         if (e.target.name === 'samplePhoto') {
-            setSamplePhoto(e.target.files[0]);
+            setSamplePhoto(e.target.files[0] || null);
+            setAiDocumentUrl(null);
+        }
+    };
+
+    const handleProcessWithAI = async () => {
+        if (!samplePhoto) {
+            setError('Please choose a reference image first.');
+            return;
+        }
+        if (!samplePhoto.type.startsWith('image/')) {
+            setError('AI processing requires an image file (PNG, JPG, etc.).');
+            return;
+        }
+        setError('');
+        setAiLoading(true);
+        setAiDocumentUrl(null);
+        const data = new FormData();
+        data.append('image', samplePhoto);
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.post(`${API_BASE_URL}/api/shop-orders/convert-ai`, data, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            const text = (res.data?.extractedText || '').trim();
+            setAiDocumentUrl(res.data?.documentUrl || null);
+            // Fill "Order description" (primary). Special instructions stay for manual color/font notes.
+            setFormData((prev) => {
+                if (!text) return prev;
+                return { ...prev, description: text.slice(0, 5000) };
+            });
+        } catch (err) {
+            setError(err.response?.data?.message || err.message || 'AI processing failed');
+        } finally {
+            setAiLoading(false);
         }
     };
 
@@ -367,13 +406,62 @@ const AddOrder = ({ onOrderCreated, onCancel }) => {
                                     borderRadius: '10px',
                                     background: '#f9fafb',
                                     display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '12px'
+                                    flexDirection: 'column',
+                                    gap: '12px',
                                 }}>
-                                    <input type="file" name="samplePhoto" onChange={handleFileChange} style={{ fontSize: '13px', width: '100%' }} />
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                                        <input
+                                            type="file"
+                                            name="samplePhoto"
+                                            accept="image/*,.pdf"
+                                            onChange={handleFileChange}
+                                            style={{ fontSize: '13px', flex: 1, minWidth: 0 }}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={handleProcessWithAI}
+                                            disabled={aiLoading || !samplePhoto}
+                                            style={{
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: '8px',
+                                                padding: '10px 16px',
+                                                borderRadius: '10px',
+                                                border: '1px solid #c7d2fe',
+                                                background: aiLoading || !samplePhoto ? '#f3f4f6' : '#eef2ff',
+                                                color: aiLoading || !samplePhoto ? '#9ca3af' : '#4338ca',
+                                                fontSize: '14px',
+                                                fontWeight: 700,
+                                                cursor: aiLoading || !samplePhoto ? 'not-allowed' : 'pointer',
+                                                whiteSpace: 'nowrap',
+                                            }}
+                                        >
+                                            <Sparkles size={16} />
+                                            {aiLoading ? 'Processing…' : 'Process with AI'}
+                                        </button>
+                                    </div>
+                                    {aiDocumentUrl && (
+                                        <a
+                                            href={`${API_BASE_URL}${aiDocumentUrl}`}
+                                            download
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            style={{
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: '8px',
+                                                fontSize: '14px',
+                                                fontWeight: 700,
+                                                color: 'var(--accent-color)',
+                                            }}
+                                        >
+                                            <Download size={16} />
+                                            Download Word document
+                                        </a>
+                                    )}
                                 </div>
                                 <div style={{ marginTop: '4px', fontSize: '11px', color: '#6b7280' }}>
-                                    Upload any inspiration or rough sketches (Optional)
+                                    Upload a photo of your design for reference. Use "Process with AI" to extract text and build a .docx (images only).
                                 </div>
                             </div>
 
@@ -404,6 +492,17 @@ const AddOrder = ({ onOrderCreated, onCancel }) => {
                                     <option value="normal">Non-Urgent</option>
                                     <option value="urgent">Urgent</option>
                                 </select>
+                            </div>
+
+                            <div>
+                                <label style={labelStyle}>Order description</label>
+                                <textarea
+                                    name="description"
+                                    value={formData.description}
+                                    onChange={handleInputChange}
+                                    style={{ ...inputStyle, minHeight: '80px', resize: 'vertical' }}
+                                    placeholder="Short summary of the job. 'Process with AI' can fill this from your reference image."
+                                />
                             </div>
 
                             <div>

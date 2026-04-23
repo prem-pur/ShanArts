@@ -8,6 +8,12 @@ const upload = require('../../middleware/uploadMiddleware');
 
 router.get('/', auth, orderController.getAllOrders);
 router.get('/my', auth, orderController.getMyOrders);
+router.post(
+    '/convert-ai',
+    auth,
+    upload.single('image'),
+    orderController.convertAiOrder
+);
 router.get('/:id', auth, orderController.getOrderById);
 router.post('/', auth, upload.fields([
     { name: 'samplePhoto', maxCount: 1 },
