@@ -11,6 +11,7 @@ router.get('/my', auth, orderController.getMyOrders);
 router.post(
     '/convert-ai',
     auth,
+    roleCheck(['admin', 'staff_designer']),
     upload.single('image'),
     orderController.convertAiOrder
 );

@@ -1,18 +1,17 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import {
     Bell,
     Search,
     Image as ImageIcon,
     Palette,
     Clock,
-    User,
-    Wrench,
     ChevronRight,
     Layout
 } from 'lucide-react';
 import { API_BASE_URL } from '../../apiBase';
+import DesignWorkspaceTools from '../../components/DesignWorkspaceTools';
 
 const STATUS_MAP = {
     'draft':              { label: 'Draft',               color: '#64748b', bg: '#f1f5f9', border: '#e2e8f0' },
@@ -104,6 +103,17 @@ const DesignWorkspaceCardView = () => {
         });
     }, [orders, filterStatus, searchTerm]);
 
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (user.role !== 'admin' && user.role !== 'staff_designer') {
+        if (user.role === 'customer') {
+            return <Navigate to="/customer-home" replace />;
+        }
+        if (!user.role) {
+            return <Navigate to="/" replace />;
+        }
+        return <Navigate to="/admin-dashboard" replace />;
+    }
+
     if (loading) return (
         <div style={{ padding: '40px', textAlign: 'center', color: '#64748b' }}>Loading workspace...</div>
     );
@@ -124,6 +134,8 @@ const DesignWorkspaceCardView = () => {
                     </button>
                 </div>
             )}
+
+            <DesignWorkspaceTools />
 
             {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>

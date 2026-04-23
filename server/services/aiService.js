@@ -83,25 +83,109 @@ async function callGeminiWithRetries(apiKey, modelName, parts) {
     throw err;
 }
 
+/** Pull first complete `{ ... }` from text (valid JSON uses double-quoted strings only). */
+function extractBalancedJsonObject(str) {
+    const s = String(str);
+    const start = s.indexOf('{');
+    if (start === -1) return null;
+    let depth = 0;
+    let inStr = false;
+    let esc = false;
+    for (let i = start; i < s.length; i++) {
+        const c = s[i];
+        if (inStr) {
+            if (esc) {
+                esc = false;
+            } else if (c === '\\') {
+                esc = true;
+            } else if (c === '"') {
+                inStr = false;
+            }
+        } else {
+            if (c === '"') inStr = true;
+            else if (c === '{') depth += 1;
+            else if (c === '}') {
+                depth -= 1;
+                if (depth === 0) {
+                    return s.slice(start, i + 1);
+                }
+            }
+        }
+    }
+    return null;
+}
+
 function parseJsonFromModelText(text) {
     if (!text) return null;
     let s = String(text).trim();
-    const fence = s.match(/```(?:json)?\s*([\s\S]*?)```/);
-    if (fence) {
-        s = fence[1].trim();
+    s = s.replace(/^```(?:json)?\s*/i, '');
+    s = s.replace(/```\s*$/i, '');
+    s = s.trim();
+    const tryParse = (chunk) => {
+        try {
+            return JSON.parse(chunk);
+        } catch {
+            return null;
+        }
+    };
+    let parsed = tryParse(s);
+    if (!parsed) {
+        const balanced = extractBalancedJsonObject(s) || extractBalancedJsonObject(String(text));
+        if (balanced) {
+            parsed = tryParse(balanced);
+        }
     }
-    try {
-        return JSON.parse(s);
-    } catch {
-        return {
-            title: 'Printing item — AI extraction',
-            extractedText: s,
-            layoutDescription: '',
-            colors: [],
-            fontStyles: '',
-            notes: 'Model returned non-JSON; raw text is in extractedText.',
-        };
+    if (parsed && typeof parsed === 'object') {
+        return parsed;
     }
+    return {
+        title: 'Printing item — AI extraction',
+        extractedText: s,
+        layoutDescription: '',
+        colors: [],
+        fontStyles: '',
+        notes: 'Model returned non-JSON; raw text is in extractedText.',
+    };
+}
+
+/**
+ * When JSON failed or the model put literal backslash-n in a string, turn those into real newlines
+ * and tidy spacing for Word.
+ */
+function normalizeMultilineString(val) {
+    if (val == null) return '';
+    let t = String(val);
+    t = t.replace(/\\r\\n/g, '\n');
+    t = t.replace(/\\n/g, '\n');
+    t = t.replace(/\\r/g, '\n');
+    t = t.replace(/\\t/g, '\t');
+    t = t.replace(/\u00a0/g, ' ');
+    return t.replace(/\n{3,}/g, '\n\n').trim();
+}
+
+/**
+ * If extracted body is still a JSON string (double-encoded or pasted object), parse it and merge.
+ */
+function repairNestedJsonStrings(obj) {
+    const o = { ...obj };
+    const ext = o.extractedText;
+    if (typeof ext === 'string' && /^\s*\{/.test(ext) && /"extractedText"\s*:/.test(ext)) {
+        const inner = extractBalancedJsonObject(ext) || (ext.indexOf('{') === 0 ? ext : null);
+        if (inner) {
+            try {
+                const m = JSON.parse(inner);
+                if (m && typeof m === 'object' && m.extractedText) {
+                    o.title = o.title && o.title !== 'Printing item — analysis' ? o.title : m.title;
+                    o.extractedText = m.extractedText;
+                    if (m.layoutDescription) o.layoutDescription = m.layoutDescription;
+                    if (m.sections) o.sections = m.sections;
+                }
+            } catch {
+                // keep original
+            }
+        }
+    }
+    return o;
 }
 
 function buildPrintingItemPrompt() {
@@ -126,20 +210,76 @@ Respond with ONLY valid JSON, no other text, using this exact shape:
 }
 
 function finalizeAnalysisResult(parsed, outText) {
-    const p = parsed || {};
+    let p = { ...(parsed || {}) };
     if (!p.extractedText && typeof outText === 'string') {
         p.extractedText = outText;
+    }
+    p = repairNestedJsonStrings(p);
+    if (typeof p.extractedText === 'string') {
+        p.extractedText = normalizeMultilineString(p.extractedText);
+    }
+    if (typeof p.layoutDescription === 'string') {
+        p.layoutDescription = normalizeMultilineString(p.layoutDescription);
+    }
+    if (typeof p.title === 'string') {
+        p.title = p.title.replace(/^```(?:json)?\s*/i, '').replace(/```$/, '').trim() || p.title;
     }
     if (!p.title) {
         p.title = 'Printing item — analysis';
     }
     if (!Array.isArray(p.sections)) {
         p.sections = [];
+    } else {
+        p.sections = p.sections.map((sec) => ({
+            ...sec,
+            heading: sec.heading != null ? normalizeMultilineString(String(sec.heading)) : '',
+            body: sec.body != null ? normalizeMultilineString(String(sec.body)) : '',
+        }));
     }
     if (!Array.isArray(p.colors)) {
         p.colors = [];
     }
+    if (typeof p.fontStyles === 'string') {
+        p.fontStyles = normalizeMultilineString(p.fontStyles);
+    }
+    if (typeof p.visualNotes === 'string') {
+        p.visualNotes = normalizeMultilineString(p.visualNotes);
+    }
     return p;
+}
+
+/** Word: double newline = new paragraph; single newline = line break within paragraph. */
+function buildParagraphsFromPlainText(text) {
+    const normalized = normalizeMultilineString(String(text || ''));
+    if (!normalized) return [];
+    const blocks = normalized.split(/\n{2,}/);
+    const out = [];
+    for (const block of blocks) {
+        const rawLines = block.split('\n');
+        const cleanLines = rawLines.map((l) => l.replace(/[ \t]+$/g, ''));
+        const nonEmpty = cleanLines.filter((l) => l.length > 0);
+        if (nonEmpty.length === 0) {
+            out.push(new Paragraph({ text: '' }));
+            continue;
+        }
+        if (cleanLines.length === 1) {
+            out.push(
+                new Paragraph({
+                    children: [new TextRun(cleanLines[0])],
+                })
+            );
+            continue;
+        }
+        const children = [];
+        for (let i = 0; i < cleanLines.length; i++) {
+            children.push(new TextRun(cleanLines[i]));
+            if (i < cleanLines.length - 1) {
+                children.push(new TextRun({ break: 1 }));
+            }
+        }
+        out.push(new Paragraph({ children }));
+    }
+    return out;
 }
 
 const OLLAMA_REQUEST_OPTS = { num_predict: 4096, temperature: 0.2 };
@@ -374,7 +514,7 @@ const aiService = {
 
         const children = [];
 
-        const title = aiResult.title || 'Document';
+        const title = normalizeMultilineString(aiResult.title || 'Document');
         children.push(
             new Paragraph({
                 text: title,
@@ -383,34 +523,24 @@ const aiService = {
         );
 
         if (aiResult.extractedText) {
-            for (const line of String(aiResult.extractedText).split(/\n{2,}/)) {
-                const t = line.trim();
-                if (t) {
-                    children.push(
-                        new Paragraph({
-                            children: [new TextRun(t)],
-                        })
-                    );
-                }
-            }
+            children.push(...buildParagraphsFromPlainText(aiResult.extractedText));
         }
 
         if (aiResult.sections && aiResult.sections.length) {
             for (const sec of aiResult.sections) {
                 if (sec.heading) {
-                    children.push(
-                        new Paragraph({
-                            text: String(sec.heading),
-                            heading: HeadingLevel.HEADING_2,
-                        })
-                    );
+                    const h = normalizeMultilineString(String(sec.heading));
+                    if (h) {
+                        children.push(
+                            new Paragraph({
+                                text: h,
+                                heading: HeadingLevel.HEADING_2,
+                            })
+                        );
+                    }
                 }
                 if (sec.body) {
-                    children.push(
-                        new Paragraph({
-                            children: [new TextRun(String(sec.body))],
-                        })
-                    );
+                    children.push(...buildParagraphsFromPlainText(String(sec.body)));
                 }
             }
         }
@@ -418,18 +548,17 @@ const aiService = {
         children.push(
             new Paragraph({ text: 'Layout and style notes', heading: HeadingLevel.HEADING_2 })
         );
-        const layout = aiResult.layoutDescription || '—';
-        const fontStyles = aiResult.fontStyles || '—';
+        const layout = normalizeMultilineString(aiResult.layoutDescription) || '—';
+        const fontStyles = normalizeMultilineString(aiResult.fontStyles) || '—';
         const colorLine = (aiResult.colors && aiResult.colors.length)
             ? aiResult.colors.join(', ')
             : '—';
-        const visual = aiResult.visualNotes || '—';
+        const visual = normalizeMultilineString(aiResult.visualNotes) || '—';
 
         children.push(
-            new Paragraph({ children: [new TextRun(`Layout: ${layout}`)] }),
-            new Paragraph({ children: [new TextRun(`Font / style: ${fontStyles}`)] }),
-            new Paragraph({ children: [new TextRun(`Colors: ${colorLine}`)] }),
-            new Paragraph({ children: [new TextRun(`Visual / graphics: ${visual}`)] })
+            ...buildParagraphsFromPlainText(
+                `Layout: ${layout}\n\nFont / style: ${fontStyles}\n\nColors: ${colorLine}\n\nVisual / graphics: ${visual}`
+            )
         );
 
         const doc = new Document({
