@@ -1,8 +1,21 @@
 const User = require("./User");
 const ApiError = require('../../utils/apiError');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+const { OAuth2Client } = require('google-auth-library');
 const config = require('../../config/env');
 const QRCode = require('qrcode');
+
+let googleClient;
+const getGoogleClient = () => {
+    if (!config.GOOGLE_CLIENT_ID) {
+        return null;
+    }
+    if (!googleClient) {
+        googleClient = new OAuth2Client(config.GOOGLE_CLIENT_ID);
+    }
+    return googleClient;
+};
 
 const ROLE_PREFIXES = {
     staff_designer: 'D',
@@ -166,6 +179,96 @@ exports.login = async (req, res, next) => {
     } catch (error) {
         next(error);
     }
+};
+
+// Customer sign-in with Google (ID token from Google Sign-In)
+exports.googleLogin = async (req, res, next) => {
+    try {
+        const idToken = req.body.credential;
+        if (!idToken) {
+            return next(new ApiError('Missing Google credential', 400));
+        }
+        const client = getGoogleClient();
+        if (!client) {
+            return next(new ApiError('Google sign-in is not configured on the server', 503));
+        }
+
+        const ticket = await client.verifyIdToken({
+            idToken,
+            audience: config.GOOGLE_CLIENT_ID,
+        });
+        const payload = ticket.getPayload();
+        if (!payload?.email) {
+            return next(new ApiError('Google did not return an email address', 400));
+        }
+        if (payload.email_verified === false) {
+            return next(new ApiError('Google email is not verified', 400));
+        }
+
+        const email = String(payload.email).toLowerCase();
+        const sub = payload.sub;
+        const name = payload.name || email.split('@')[0];
+
+        let user = await User.findOne({ googleId: sub });
+        if (!user) {
+            user = await User.findOne({ email });
+        }
+
+        if (user) {
+            if (user.role !== 'customer') {
+                return next(
+                    new ApiError('This account is not a customer account. Please use the staff portal to sign in.', 403)
+                );
+            }
+            if (user.googleId && user.googleId !== sub) {
+                return next(new ApiError('This email is already linked to a different Google account.', 400));
+            }
+            if (!user.googleId) {
+                user.googleId = sub;
+                await user.save();
+            }
+        } else {
+            const randomSecret = crypto.randomBytes(32).toString('hex');
+            user = new User({
+                name,
+                email,
+                passwordHash: randomSecret,
+                role: 'customer',
+                googleId: sub,
+            });
+            await user.save();
+        }
+
+        const token = jwt.sign(
+            { _id: user._id, role: user.role, name: user.name },
+            config.JWT_SECRET,
+            { expiresIn: config.JWT_EXPIRES_IN }
+        );
+
+        res.status(200).json({
+            success: true,
+            token,
+            user: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+            },
+        });
+    } catch (error) {
+        if (error?.message && String(error.message).includes('Token used too late')) {
+            return next(new ApiError('Google sign-in expired. Please try again.', 401));
+        }
+        if (error?.code === 401 || error?.message === 'Invalid token signature') {
+            return next(new ApiError('Invalid Google sign-in. Please try again.', 401));
+        }
+        next(error);
+    }
+};
+
+/** Public: Web OAuth client ID is intended for browser use (GSI / JS origin checks). */
+exports.getOAuthConfig = (req, res) => {
+    res.json({ googleClientId: config.GOOGLE_CLIENT_ID || '' });
 };
 
 // Get staff members

@@ -3,8 +3,10 @@ const router = express.Router();
 const authController = require('./authController');
 const auth = require('../../middleware/auth');
 
+router.get('/oauth-config', authController.getOAuthConfig);
 router.post('/register', authController.register);
 router.post('/login', authController.login);
+router.post('/google', authController.googleLogin);
 router.get('/staff', auth, authController.getStaff);
 router.get('/staff/:id/qr', auth, authController.getStaffQR);
 router.get('/staff/:id/details', auth, authController.getStaffDetails);

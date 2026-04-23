@@ -43,6 +43,11 @@ const userSchema = new mongoose.Schema(
         qrCode: {
             type: String, // base64 data URL of the QR image
         },
+        googleId: {
+            type: String,
+            sparse: true,
+            unique: true,
+        },
     },
     {
         timestamps: true,
