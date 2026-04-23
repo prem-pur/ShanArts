@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapPin, Phone, Clock } from 'lucide-react';
 import AiCopywritingAssistant from './AiCopywritingAssistant';
+import PrintKnowledgeChatbot from './PrintKnowledgeChatbot';
 
 const Home = () => {
     const navigate = useNavigate();
@@ -126,6 +127,8 @@ const Home = () => {
                     </div>
                 </div>
             </section>
+
+            <PrintKnowledgeChatbot />
 
             <footer className="landing-footer">
                 <div className="footer-brand">

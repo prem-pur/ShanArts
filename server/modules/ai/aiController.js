@@ -1,10 +1,13 @@
 const copywritingService = require('../../services/copywritingService');
+const { printKnowledgeReply } = require('../../services/printKnowledgeChatService');
 const ApiError = require('../../utils/apiError');
 
 const CONTENT_TYPES = ['Flyer', 'Business Card', 'Poster', 'Social Media Caption', 'Banner'];
 const TONES = ['Professional', 'Friendly', 'Luxury', 'Modern', 'Promotional'];
 
 const MAX_PROMPT = 5000;
+const MAX_PRINT_CHAT = 2000;
+const MAX_HISTORY_TURNS = 8;
 
 /**
  * POST /api/ai/generate-copy
@@ -53,4 +56,54 @@ async function generateCopy(req, res, next) {
     }
 }
 
-module.exports = { generateCopy, CONTENT_TYPES, TONES };
+/**
+ * POST /api/ai/print-chat
+ * Public. Body: { message: string, history?: { role, content }[] }
+ */
+async function printChat(req, res, next) {
+    try {
+        const message = typeof req.body.message === 'string' ? req.body.message.trim() : '';
+        if (!message) {
+            throw new ApiError('Message cannot be empty.', 400);
+        }
+        if (message.length > MAX_PRINT_CHAT) {
+            throw new ApiError(`Message is too long (max ${MAX_PRINT_CHAT} characters).`, 400);
+        }
+
+        let history = req.body.history;
+        if (history == null) {
+            history = [];
+        } else if (!Array.isArray(history)) {
+            throw new ApiError('history must be an array of { role, content } when provided.', 400);
+        } else {
+            history = history
+                .slice(-MAX_HISTORY_TURNS)
+                .map((h) => {
+                    if (!h || (h.role !== 'user' && h.role !== 'assistant')) {
+                        return null;
+                    }
+                    const c = typeof h.content === 'string' ? h.content : '';
+                    return { role: h.role, content: c };
+                })
+                .filter(Boolean);
+        }
+
+        const reply = await printKnowledgeReply({ userMessage: message, history });
+        const config = require('../../config/env');
+        res.status(200).json({
+            success: true,
+            reply,
+            model: config.OLLAMA_TEXT_MODEL,
+        });
+    } catch (err) {
+        if (err instanceof ApiError) {
+            return res.status(err.status).json({ message: err.message, status: err.status });
+        }
+        if (err.status === 503 || err.status === 502) {
+            return res.status(err.status).json({ message: err.message, status: err.status });
+        }
+        next(err);
+    }
+}
+
+module.exports = { generateCopy, printChat, CONTENT_TYPES, TONES };
