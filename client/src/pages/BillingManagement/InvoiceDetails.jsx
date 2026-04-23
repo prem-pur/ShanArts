@@ -3,9 +3,10 @@ import axios from 'axios';
 import { DollarSign, Wallet, CreditCard, Landmark, Smartphone, Globe, X } from 'lucide-react';
 import { API_BASE_URL } from '../../apiBase';
 
-const InvoiceDetails = ({ invoice, onClose, onPaymentRecorded }) => {
+const InvoiceDetails = ({ invoice, onClose, onPaymentRecorded, onPaymentApproved }) => {
     const [payments, setPayments] = useState([]);
     const [loadingPayments, setLoadingPayments] = useState(true);
+    const [approvingPaymentId, setApprovingPaymentId] = useState('');
 
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     const isFinance = ['admin', 'staff_finance', 'staff_system'].includes(user.role);
@@ -33,8 +34,27 @@ const InvoiceDetails = ({ invoice, onClose, onPaymentRecorded }) => {
         }
     };
 
-    const statusColor = { paid: '#64748b', partial: '#111827', unpaid: '#ef4444' };
-    const statusBg = { paid: '#f8fafc', partial: '#f1f5f9', unpaid: '#fef2f2' };
+    const approvePayment = async (paymentId) => {
+        try {
+            setApprovingPaymentId(paymentId);
+            const token = localStorage.getItem('token');
+            await axios.post(`${API_BASE_URL}/api/invoices/${invoice._id}/payments/${paymentId}/approve`, {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            await fetchPayments();
+            if (onPaymentApproved) {
+                onPaymentApproved();
+            }
+        } catch (err) {
+            console.error('Failed to approve payment:', err);
+            alert(err.response?.data?.message || 'Failed to approve payment');
+        } finally {
+            setApprovingPaymentId('');
+        }
+    };
+
+    const statusColor = { paid: '#10b981', partial: '#f59e0b', pending_approval: '#7c3aed', unpaid: '#ef4444' };
+    const statusBg = { paid: '#d1fae5', partial: '#fef3c7', pending_approval: '#ede9fe', unpaid: '#fee2e2' };
 
     const methodLabel = { 
         cash: <><DollarSign size={14} style={{ marginRight: '6px' }} /> Cash</>, 
@@ -160,19 +180,46 @@ const InvoiceDetails = ({ invoice, onClose, onPaymentRecorded }) => {
                                 <div style={{ color: '#9ca3af', fontSize: '13px', padding: '16px', background: '#f9fafb', borderRadius: '10px', textAlign: 'center' }}>No payments recorded yet.</div>
                             ) : (
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                    {payments.map(p => (
-                                        <div key={p._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', background: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                                    {payments.map(p => {
+                                        const paymentStatus = p.status || 'approved';
+                                        const rowBackground = paymentStatus === 'pending_approval' ? '#f5f3ff' : '#f0fdf4';
+                                        const rowBorder = paymentStatus === 'pending_approval' ? '#ddd6fe' : '#bbf7d0';
+
+                                        return (
+                                        <div key={p._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', padding: '12px 16px', background: rowBackground, borderRadius: '10px', border: `1px solid ${rowBorder}` }}>
                                             <div>
-                                                <div style={{ fontWeight: '700', color: '#111827', fontSize: '13px' }}>{methodLabel[p.method] || p.method}</div>
-                                                <div style={{ fontSize: '11px', color: '#64748b' }}>
+                                                <div style={{ fontWeight: '700', color: paymentStatus === 'pending_approval' ? '#6d28d9' : '#065f46', fontSize: '13px' }}>{methodLabel[p.method] || p.method}</div>
+                                                <div style={{ fontSize: '11px', color: '#6b7280' }}>
                                                     {new Date(p.createdAt).toLocaleDateString('en-GB')} {p.reference && `• Ref: ${p.reference}`}
                                                 </div>
+                                                {p.slipPath && (
+                                                    <a href={`${API_BASE_URL}${p.slipPath}`} target="_blank" rel="noreferrer" style={{ display: 'inline-block', marginTop: '6px', fontSize: '11px', fontWeight: '700', color: '#2563eb', textDecoration: 'none' }}>
+                                                        View slip
+                                                    </a>
+                                                )}
+                                                {paymentStatus === 'pending_approval' && (
+                                                    <div style={{ marginTop: '6px', fontSize: '10px', fontWeight: '800', color: '#7c3aed', textTransform: 'uppercase' }}>Awaiting admin approval</div>
+                                                )}
                                             </div>
-                                            <div style={{ fontWeight: '900', color: '#111827', fontSize: '15px' }}>
-                                                LKR {(p.amount || 0).toLocaleString()}
+                                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
+                                                <div style={{ fontWeight: '900', color: paymentStatus === 'pending_approval' ? '#6d28d9' : '#065f46', fontSize: '15px' }}>
+                                                    LKR {(p.amount || 0).toLocaleString()}
+                                                </div>
+                                                {paymentStatus === 'pending_approval' && isFinance && (
+                                                    <button
+                                                        onClick={() => approvePayment(p._id)}
+                                                        disabled={approvingPaymentId === p._id}
+                                                        style={{ padding: '8px 12px', borderRadius: '8px', border: 'none', background: approvingPaymentId === p._id ? '#a78bfa' : '#7c3aed', color: '#fff', fontSize: '11px', fontWeight: '800', cursor: approvingPaymentId === p._id ? 'not-allowed' : 'pointer' }}
+                                                    >
+                                                        {approvingPaymentId === p._id ? 'Approving...' : 'Approve'}
+                                                    </button>
+                                                )}
+                                                <span style={{ padding: '4px 10px', borderRadius: '999px', fontSize: '10px', fontWeight: '800', textTransform: 'uppercase', color: statusColor[paymentStatus] || '#065f46', background: statusBg[paymentStatus] || '#f0fdf4' }}>
+                                                    {paymentStatus.replace(/_/g, ' ')}
+                                                </span>
                                             </div>
                                         </div>
-                                    ))}
+                                    )})}
                                 </div>
                             )}
                         </div>
