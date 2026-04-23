@@ -1,5 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { 
+    Cpu, 
+    Plus, 
+    Settings, 
+    AlertTriangle, 
+    CheckCircle2, 
+    Clock, 
+    PlayCircle, 
+    Trash2,
+    Wrench,
+    RefreshCw,
+    Info
+} from 'lucide-react';
 import { API_BASE_URL } from '../../apiBase';
 
 const MachineManagement = () => {
@@ -56,22 +69,6 @@ const MachineManagement = () => {
             setProductionSummary(response.data.data);
         } catch (err) {
             console.error('Failed to fetch production summary:', err);
-        }
-    };
-
-    const updateMachineStatus = async (machineId, newStatus) => {
-        try {
-            const token = localStorage.getItem('token');
-            await axios.patch(`${API_BASE_URL}/api/machines/${machineId}/status`, {
-                status: newStatus
-            }, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-
-            fetchMachines();
-            fetchProductionSummary();
-        } catch (err) {
-            console.error('Failed to update machine status:', err);
         }
     };
 
@@ -156,29 +153,29 @@ const MachineManagement = () => {
 
     const getStatusColor = (status) => {
         switch (status) {
-            case 'Available': return '#10b981';
-            case 'In Use': return '#3b82f6';
-            case 'Scheduled': return '#8b5cf6';
-            case 'Under Maintenance': return '#f59e0b';
-            case 'Out of Order': return '#ef4444';
+            case 'Available': return '#64748b'; // Grey
+            case 'In Use': return '#111827'; // Black
+            case 'Scheduled': return '#111827'; // Black
+            case 'Under Maintenance': return '#111827'; // Black
+            case 'Out of Order': return '#ef4444'; // Red
             default: return '#6b7280';
         }
     };
 
-    const getStatusIcon = (status) => {
+    const getStatusIcon = (status, size=16) => {
         switch (status) {
-            case 'Available': return '🟢';
-            case 'In Use': return '🔵';
-            case 'Scheduled': return '🟣';
-            case 'Under Maintenance': return '🟡';
-            case 'Out of Order': return '🔴';
-            default: return '⚫';
+            case 'Available': return <CheckCircle2 size={size} />;
+            case 'In Use': return <PlayCircle size={size} />;
+            case 'Scheduled': return <Clock size={size} />;
+            case 'Under Maintenance': return <Wrench size={size} />;
+            case 'Out of Order': return <AlertTriangle size={size} />;
+            default: return <Info size={size} />;
         }
     };
 
     if (!isScheduleManager) {
         return (
-            <div style={{ padding: '40px', textAlign: 'center' }}>
+            <div style={{ padding: '40px', textAlign: 'center', backgroundColor: '#f3f4f6', height: '100vh' }}>
                 <h2>Access Denied</h2>
                 <p>You don't have permission to access machine management.</p>
             </div>
@@ -186,30 +183,22 @@ const MachineManagement = () => {
     }
 
     return (
-        <div style={{ padding: '40px', fontFamily: "'Inter', sans-serif" }}>
+        <div style={{ padding: '28px 36px', fontFamily: "'Inter', sans-serif", backgroundColor: '#f3f4f6', minHeight: '100vh' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
                 <div>
-                    <h1 style={{
-                        fontSize: '28px',
-                        fontWeight: '900',
-                        color: '#111827',
-                        margin: 0,
-                        letterSpacing: '-1px',
-                        lineHeight: 1,
-                        textTransform: 'uppercase'
-                    }}>
-                        Machine Control
-                    </h1>
-                    <p style={{ color: '#6b7280', fontSize: '16px' }}>
-                        Monitor and manage production equipment status and maintenance
-                    </p>
+                  <h1 style={{ fontSize: '26px', fontWeight: '800', color: '#0f172a', margin: 0, letterSpacing: '-0.5px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <Settings size={28} color="#ef4444" /> Machine Control
+                  </h1>
+                  <p style={{ color: '#64748b', fontSize: '14px', marginTop: '6px', fontWeight: '500' }}>
+                      Monitor and manage production equipment status and maintenance
+                  </p>
                 </div>
                 {isScheduleManager && (
                     <button
                         onClick={() => setShowAddModal(true)}
                         style={{
                             padding: '12px 24px',
-                            backgroundColor: '#D93232',
+                            backgroundColor: '#ef4444',
                             color: 'white',
                             border: 'none',
                             borderRadius: '12px',
@@ -217,34 +206,62 @@ const MachineManagement = () => {
                             cursor: 'pointer',
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '8px'
+                            gap: '8px',
+                            boxShadow: '0 4px 12px rgba(239, 68, 68, 0.2)'
                         }}
                     >
-                        + Add Machine
+                        <Plus size={20} /> Add Machine
                     </button>
                 )}
             </div>
 
-            {/* Production Summary */}
+            {/* Production Summary Cards */}
             {productionSummary && (
                 <div style={{
                     display: 'flex',
                     gap: '20px',
                     marginBottom: '40px',
-                    flexWrap: 'wrap',
-                    alignItems: 'center'
+                    flexWrap: 'wrap'
                 }}>
-                    <div style={{ background: '#fff', padding: '22px 26px', borderRadius: '14px', border: '1px solid #e5e7eb', whiteSpace: 'nowrap', minWidth: '200px' }}>
-                        <div style={{ fontSize: '13px', color: '#6b7280', fontWeight: '700', marginBottom: '8px' }}>📊 Total Machines</div>
-                        <div style={{ fontSize: '28px', fontWeight: '900', color: '#111827' }}>
+                    <div style={{ 
+                        background: '#fff', 
+                        padding: '24px', 
+                        borderRadius: '24px', 
+                        border: '1px solid #e2e8f0', 
+                        flex: 1, 
+                        minWidth: '200px',
+                        boxShadow: '0 4px 20px rgba(15, 23, 42, 0.04)'
+                    }}>
+                        <div style={{ fontSize: '11px', color: '#64748b', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Cpu size={14} /> Total Machines
+                        </div>
+                        <div style={{ fontSize: '28px', fontWeight: '900', color: '#0f172a' }}>
                             {productionSummary.totalMachines}
                         </div>
                     </div>
 
                     {Object.entries(productionSummary.statusCounts).map(([status, count]) => (
-                        <div key={status} style={{ background: '#fff', padding: '22px 26px', borderRadius: '14px', border: '1px solid #e5e7eb', whiteSpace: 'nowrap', minWidth: '190px' }}>
-                            <div style={{ fontSize: '13px', color: '#6b7280', fontWeight: '700', marginBottom: '8px' }}>
-                                {getStatusIcon(status)} {status}
+                        <div key={status} style={{ 
+                            background: '#fff', 
+                            padding: '24px', 
+                            borderRadius: '24px', 
+                            border: '1px solid #e2e8f0', 
+                            flex: 1, 
+                            minWidth: '190px',
+                            boxShadow: '0 4px 20px rgba(15, 23, 42, 0.04)'
+                        }}>
+                            <div style={{ 
+                                fontSize: '11px', 
+                                color: '#64748b', 
+                                fontWeight: '800', 
+                                textTransform: 'uppercase', 
+                                letterSpacing: '0.8px', 
+                                marginBottom: '8px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px'
+                            }}>
+                                <span style={{ color: getStatusColor(status) }}>{getStatusIcon(status, 14)}</span> {status}
                             </div>
                             <div style={{ fontSize: '28px', fontWeight: '900', color: getStatusColor(status) }}>
                                 {count}
@@ -255,187 +272,187 @@ const MachineManagement = () => {
             )}
 
             {/* Status Filter */}
-            <div style={{ marginBottom: '30px' }}>
-                <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>
-                    Filter by Status:
-                </label>
+            <div style={{ marginBottom: '30px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <span style={{ fontSize: '14px', fontWeight: '700', color: '#64748b' }}>Filter By:</span>
                 <select
                     value={selectedStatus}
                     onChange={(e) => setSelectedStatus(e.target.value)}
                     style={{
-                        padding: '12px',
-                        border: '1px solid #d1d5db',
-                        borderRadius: '8px',
-                        fontSize: '16px',
-                        minWidth: '200px'
+                        padding: '10px 16px',
+                        border: '1px solid #e2e8f0',
+                        borderRadius: '10px',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        color: '#1e293b',
+                        background: '#fff',
+                        outline: 'none',
+                        cursor: 'pointer'
                     }}
                 >
                     <option value="all">All Machines</option>
-                    <option value="Available">🟢 Available</option>
-                    <option value="In Use">🔵 In Use</option>
-                    <option value="Scheduled">🟣 Scheduled</option>
-                    <option value="Under Maintenance">🟡 Under Maintenance</option>
+                    <option value="Available">⚪ Available</option>
+                    <option value="In Use">⚪ In Use</option>
+                    <option value="Scheduled">⚪ Scheduled</option>
+                    <option value="Under Maintenance">⚪ Under Maintenance</option>
                 </select>
             </div>
 
-            {/* Machines List */}
-            <div style={{ background: '#fff', borderRadius: '16px', overflow: 'hidden', border: '1px solid #e5e7eb' }}>
-                <div style={{ padding: '24px', borderBottom: '1px solid #e5e7eb' }}>
-                    <h3 style={{ margin: 0, fontSize: '20px', fontWeight: '700', color: '#111827' }}>
-                        Machines ({machines.length})
+            {/* Machines List Container */}
+            <div style={{ background: '#fff', borderRadius: '24px', overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 4px 24px rgba(0,0,0,0.04)' }}>
+                <div style={{ padding: '24px', borderBottom: '1px solid #f1f5f9', background: '#f8fafc' }}>
+                    <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: '#0f172a' }}>
+                        Connected Hardware ({machines.length})
                     </h3>
                 </div>
 
                 {loading ? (
-                    <div style={{ padding: '40px', textAlign: 'center', color: '#6b7280' }}>
-                        Loading machines...
+                    <div style={{ padding: '60px', textAlign: 'center', color: '#64748b', fontWeight: '600' }}>
+                        Loading equipment data...
                     </div>
                 ) : (
                     <div>
                         {machines.map(machine => (
                             <div key={machine._id} style={{
                                 padding: '24px',
-                                borderBottom: '1px solid #f3f4f6',
+                                borderBottom: '1px solid #f1f5f9',
                                 display: 'grid',
-                                gridTemplateColumns: '3fr 1fr 1fr',
+                                gridTemplateColumns: '1fr 200px 180px',
                                 gap: '30px',
                                 alignItems: 'center'
                             }}>
-                                {/* Machine Info & Active Order */}
+                                {/* Machine Info */}
                                 <div>
-                                    <h4 style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: '800', color: '#111827' }}>
+                                    <h4 style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: '800', color: '#0f172a' }}>
                                         {machine.name}
                                     </h4>
-                                    <p style={{ margin: '0 0 8px 0', color: '#64748b', fontSize: '13px', fontWeight: '600' }}>
+                                    <p style={{ margin: '0 0 12px 0', color: '#64748b', fontSize: '13px', fontWeight: '600' }}>
                                         {machine.type}
                                     </p>
+                                    
                                     {(machine.status === 'In Use' || machine.status === 'Scheduled') && machine.currentOrderId && (
                                         <div style={{
                                             fontSize: '13px',
-                                            fontWeight: '800',
-                                            color: '#0f172a',
+                                            fontWeight: '700',
+                                            color: '#1e293b',
                                             display: 'flex',
                                             alignItems: 'center',
-                                            gap: '8px',
-                                            marginBottom: '10px',
-                                            padding: '8px 12px',
-                                            background: '#f1f5f9',
-                                            borderRadius: '8px',
-                                            borderLeft: '4px solid #3b82f6'
+                                            gap: '10px',
+                                            padding: '10px 14px',
+                                            background: '#f8fafc',
+                                            borderRadius: '12px',
+                                            border: '1px solid #e2e8f0'
                                         }}>
-                                            <span style={{ color: '#3b82f6' }}>#{machine.currentOrderId.orderNumber}</span>
-                                            <span style={{ color: '#94a3b8' }}>•</span>
-                                            <span>{machine.operatorId?.name || 'Unassigned'}</span>
+                                            <span style={{ color: '#ef4444', fontWeight: '900' }}>#{machine.currentOrderId.orderNumber}</span>
+                                            <span style={{ color: '#cbd5e1' }}>|</span>
+                                            <span>{machine.operatorId?.name || 'Operator Pending'}</span>
                                             {machine.startTime && (
                                                 <>
-                                                    <span style={{ color: '#94a3b8' }}>•</span>
-                                                    <span style={{ color: '#64748b', fontWeight: '600' }}>
-                                                            🕒 Start date: {new Date(machine.startTime).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                                                        </span>
+                                                    <span style={{ color: '#cbd5e1' }}>|</span>
+                                                    <span style={{ color: '#64748b', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                        <Clock size={12} /> Started {new Date(machine.startTime).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                                    </span>
                                                 </>
                                             )}
                                         </div>
                                     )}
 
                                     {machine.assignedOrders && machine.assignedOrders.length > 0 && (
-                                        <div style={{ marginTop: '12px' }}>
-                                            <div style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.8px', color: '#94a3b8', fontWeight: '900', marginBottom: '6px' }}>
-                                                ⏭️ UP NEXT (ASSIGNED)
+                                        <div style={{ marginTop: '16px' }}>
+                                            <div style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '1px', color: '#94a3b8', fontWeight: '800', marginBottom: '8px' }}>
+                                                Next Operations
                                             </div>
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                                 {machine.assignedOrders.map((order) => (
                                                     <div key={order._id} style={{
-                                                        fontSize: '13px',
-                                                        fontWeight: '800',
-                                                        color: '#0f172a',
+                                                        fontSize: '12px',
+                                                        fontWeight: '600',
+                                                        color: '#475569',
                                                         display: 'flex',
                                                         alignItems: 'center',
                                                         gap: '8px',
                                                         padding: '8px 12px',
-                                                        background: '#f1f5f9',
+                                                        background: '#fff',
                                                         borderRadius: '8px',
-                                                        borderLeft: '4px solid #3b82f6'
+                                                        border: '1px solid #f1f5f9'
                                                     }}>
-                                                        <span style={{ color: '#3b82f6' }}>#{order.orderNumber}</span>
-                                                        <span style={{ color: '#94a3b8' }}>•</span>
-                                                        <span>{order.assignedOperatorId?.name || 'Unassigned Operator'}</span>
-                                                        <span style={{ color: '#94a3b8' }}>•</span>
-                                                        <span style={{ color: '#64748b', fontWeight: '600' }}>{order.jobType} • 🕒 {new Date(order.scheduledStart).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
-                                                        <span style={{
-                                                            marginLeft: 'auto',
-                                                            fontSize: '10px',
-                                                            color: '#3b82f6',
-                                                            textTransform: 'uppercase',
-                                                            background: '#eff6ff',
-                                                            padding: '2px 8px',
-                                                            borderRadius: '4px',
-                                                            border: '1px solid #dbeafe',
-                                                            fontWeight: '900'
-                                                        }}>
-                                                                {order.status}
-                                                            </span>
+                                                        <span style={{ color: '#3b82f6', fontWeight: '800' }}>#{order.orderNumber}</span>
+                                                        <span style={{ color: '#cbd5e1' }}>•</span>
+                                                        <span>{order.assignedOperatorId?.name || 'Unassigned'}</span>
+                                                        <span style={{ marginLeft: 'auto', color: '#94a3b8' }}>{new Date(order.scheduledStart).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                                     </div>
                                                 ))}
                                             </div>
                                         </div>
                                     )}
-
                                 </div>
 
-                                {/* Status */}
+                                {/* Status Badge */}
                                 <div>
                                     <div style={{
                                         display: 'inline-flex',
                                         alignItems: 'center',
+                                        gap: '8px',
                                         padding: '8px 16px',
-                                        borderRadius: '20px',
-                                        fontSize: '14px',
-                                        fontWeight: '700',
-                                        color: 'white',
-                                        backgroundColor: getStatusColor(machine.status)
+                                        borderRadius: '12px',
+                                        fontSize: '13px',
+                                        fontWeight: '800',
+                                        color: getStatusColor(machine.status),
+                                        backgroundColor: `${getStatusColor(machine.status)}15`,
+                                        border: `1px solid ${getStatusColor(machine.status)}30`,
+                                        textTransform: 'uppercase',
+                                        letterSpacing: '0.5px'
                                     }}>
-                                        {getStatusIcon(machine.status)} {machine.status}
+                                        {getStatusIcon(machine.status, 14)} {machine.status}
                                     </div>
                                 </div>
 
-                                <div style={{ display: 'flex', gap: '8px', flexDirection: 'column' }}>
-                                    {/* Manual status dropdown removed as requested. Transitions are now automated. */}
-
+                                {/* Action Buttons */}
+                                <div style={{ display: 'flex', gap: '8px' }}>
                                     <button
                                         onClick={() => machine.status === 'Under Maintenance' ? handleSetAvailable(machine._id) : openMaintenanceModal(machine)}
                                         disabled={!isScheduleManager}
                                         style={{
-                                            padding: '10px',
-                                            border: '1px solid #dfe3ea',
+                                            padding: '10px 14px',
+                                            border: '1px solid #e2e8f0',
                                             borderRadius: '10px',
                                             fontSize: '13px',
-                                            backgroundColor: !isScheduleManager ? '#f3f4f6' : '#eef0f6',
-                                            color: !isScheduleManager ? '#94a3b8' : '#5b4f78',
+                                            backgroundColor: '#fff',
+                                            color: '#475569',
                                             fontWeight: '700',
-                                            cursor: !isScheduleManager ? 'not-allowed' : 'pointer',
-                                            opacity: !isScheduleManager ? 0.7 : 1,
-                                            width: '100%'
+                                            cursor: 'pointer',
+                                            flex: 1,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: '6px',
+                                            transition: 'all 0.2s'
                                         }}
-                                        title={!isScheduleManager ? "Only managers can update machine status" : ""}
+                                        onMouseOver={e => e.currentTarget.style.background = '#f8fafc'}
+                                        onMouseOut={e => e.currentTarget.style.background = '#fff'}
                                     >
-                                        {machine.status === 'Under Maintenance' ? '🔄 Set Available' : '🔧 Maintenance'}
+                                        <Wrench size={14} /> {machine.status === 'Under Maintenance' ? 'Ready' : 'Repair'}
                                     </button>
                                     {isScheduleManager && (
                                         <button
                                             onClick={() => handleDeleteMachine(machine._id)}
                                             style={{
                                                 padding: '10px',
-                                                border: '1px solid #f3c7c9',
+                                                border: '1px solid #fee2e2',
                                                 borderRadius: '10px',
                                                 fontSize: '13px',
-                                                backgroundColor: '#fff7f7',
-                                                color: '#d93232',
+                                                backgroundColor: '#fff',
+                                                color: '#ef4444',
                                                 fontWeight: '700',
                                                 cursor: 'pointer',
-                                                width: '100%'
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                transition: 'all 0.2s'
                                             }}
+                                            onMouseOver={e => e.currentTarget.style.background = '#fef2f2'}
+                                            onMouseOut={e => e.currentTarget.style.background = '#fff'}
                                         >
-                                            🗑️ Remove
+                                            <Trash2 size={16} />
                                         </button>
                                     )}
                                 </div>
@@ -447,25 +464,20 @@ const MachineManagement = () => {
 
             {/* Add Machine Modal */}
             {showAddModal && (
-                <div style={{
-                    position: 'fixed',
-                    inset: 0,
-                    background: 'rgba(0,0,0,0.5)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    zIndex: 1000
-                }}>
-                    <div style={{ background: '#fff', width: '100%', maxWidth: '500px', borderRadius: '16px', padding: '32px' }}>
-                        <h3 style={{ margin: '0 0 24px 0', fontSize: '24px', fontWeight: '700' }}>Add New Machine</h3>
-                        <form onSubmit={handleAddMachine} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+                    <div style={{ background: '#fff', width: '100%', maxWidth: '460px', borderRadius: '24px', padding: '32px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.15)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
+                            <div style={{ padding: '10px', borderRadius: '12px', background: '#fef2f2', color: '#ef4444' }}><Cpu size={24} /></div>
+                            <h3 style={{ margin: 0, fontSize: '20px', fontWeight: '800', color: '#0f172a' }}>Add New Equipment</h3>
+                        </div>
+                        <form onSubmit={handleAddMachine} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                             <div>
-                                <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', marginBottom: '8px' }}>Machine Name</label>
-                                <input type="text" value={newMachineData.name} onChange={(e) => setNewMachineData({ ...newMachineData, name: e.target.value })} style={{ width: '100%', padding: '12px', border: '1px solid #d1d5db', borderRadius: '8px' }} required />
+                                <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: '#475569', marginBottom: '8px' }}>Machine Identifier</label>
+                                <input type="text" value={newMachineData.name} onChange={(e) => setNewMachineData({ ...newMachineData, name: e.target.value })} style={{ width: '100%', padding: '12px', border: '1.5px solid #e2e8f0', borderRadius: '12px', fontSize: '14px', outline: 'none' }} placeholder="e.g. Roland VersaExpress-1" required />
                             </div>
                             <div>
-                                <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', marginBottom: '8px' }}>Machine Type</label>
-                                <select value={newMachineData.type} onChange={(e) => setNewMachineData({ ...newMachineData, type: e.target.value })} style={{ width: '100%', padding: '12px', border: '1px solid #d1d5db', borderRadius: '8px' }} required>
+                                <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: '#475569', marginBottom: '8px' }}>Hardware Type</label>
+                                <select value={newMachineData.type} onChange={(e) => setNewMachineData({ ...newMachineData, type: e.target.value })} style={{ width: '100%', padding: '12px', border: '1.5px solid #e2e8f0', borderRadius: '12px', fontSize: '14px', outline: 'none', background: '#fff' }} required>
                                     <option value="">Select Category...</option>
                                     <option value="Digital Printer">Digital Printer</option>
                                     <option value="Offset Printer">Offset Printer</option>
@@ -477,9 +489,9 @@ const MachineManagement = () => {
                                 </select>
                             </div>
 
-                            <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
-                                <button type="button" onClick={() => setShowAddModal(false)} style={{ flex: 1, padding: '12px', border: '1px solid #d1d5db', borderRadius: '8px', backgroundColor: '#f3f4f6', cursor: 'pointer', fontWeight: '600' }}>Cancel</button>
-                                <button type="submit" style={{ flex: 2, padding: '12px', border: 'none', borderRadius: '8px', backgroundColor: '#D93232', color: 'white', fontWeight: '800', cursor: 'pointer' }}>Add Machine</button>
+                            <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
+                                <button type="button" onClick={() => setShowAddModal(false)} style={{ flex: 1, padding: '14px', border: '1px solid #e2e8f0', borderRadius: '12px', backgroundColor: '#fff', color: '#475569', cursor: 'pointer', fontWeight: '700', fontSize: '14px' }}>Cancel</button>
+                                <button type="submit" style={{ flex: 2, padding: '14px', border: 'none', borderRadius: '12px', backgroundColor: '#ef4444', color: 'white', fontWeight: '800', cursor: 'pointer', fontSize: '14px', boxShadow: '0 4px 12px rgba(239, 68, 68, 0.2)' }}>Register Machine</button>
                             </div>
                         </form>
                     </div>
@@ -488,66 +500,53 @@ const MachineManagement = () => {
 
             {/* Maintenance Modal */}
             {showMaintenanceModal && selectedMachine && (
-                <div style={{
-                    position: 'fixed',
-                    inset: 0,
-                    background: 'rgba(0,0,0,0.5)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    zIndex: 1000
-                }}>
-                    <div style={{
-                        background: '#fff',
-                        width: '100%',
-                        maxWidth: '500px',
-                        borderRadius: '16px',
-                        padding: '32px'
-                    }}>
-                        <h3 style={{ margin: '0 0 24px 0', fontSize: '24px', fontWeight: '700' }}>
-                            🔧 Maintenance: {selectedMachine.name}
-                        </h3>
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+                    <div style={{ background: '#fff', width: '100%', maxWidth: '460px', borderRadius: '24px', padding: '32px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.15)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
+                            <div style={{ padding: '10px', borderRadius: '12px', background: '#f1f5f9', color: '#111827' }}><Wrench size={24} /></div>
+                            <h3 style={{ margin: 0, fontSize: '20px', fontWeight: '800', color: '#0f172a' }}>Log Maintenance</h3>
+                        </div>
 
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                        <div style={{ fontSize: '14px', color: '#475569', marginBottom: '24px', padding: '12px', borderRadius: '12px', background: '#f8fafc', border: '1px solid #e2e8f0' }}>
+                            Hardware: <strong style={{ color: '#0f172a' }}>{selectedMachine.name}</strong>
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                             <div>
-                                <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', marginBottom: '8px' }}>
-                                    Breakdown Date
-                                </label>
+                                <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: '#475569', marginBottom: '8px' }}>Breakdown Date</label>
                                 <input
                                     type="date"
                                     value={maintenanceData.breakdownDate}
                                     onChange={(e) => setMaintenanceData({ ...maintenanceData, breakdownDate: e.target.value })}
-                                    style={{ width: '100%', padding: '12px', border: '1px solid #d1d5db', borderRadius: '8px' }}
+                                    style={{ width: '100%', padding: '12px', border: '1.5px solid #e2e8f0', borderRadius: '12px', fontSize: '14px', outline: 'none' }}
                                 />
                             </div>
 
                             <div>
-                                <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', marginBottom: '8px' }}>
-                                    Maintenance Notes
-                                </label>
+                                <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: '#475569', marginBottom: '8px' }}>Maintenance Notes</label>
                                 <textarea
                                     value={maintenanceData.maintenanceNotes}
                                     onChange={(e) => setMaintenanceData({ ...maintenanceData, maintenanceNotes: e.target.value })}
-                                    style={{ width: '100%', padding: '12px', border: '1px solid #d1d5db', borderRadius: '8px', minHeight: '100px', resize: 'vertical' }}
-                                    placeholder="Enter maintenance details..."
+                                    style={{ width: '100%', padding: '12px', border: '1.5px solid #e2e8f0', borderRadius: '12px', minHeight: '120px', fontSize: '14px', outline: 'none', resize: 'none' }}
+                                    placeholder="Describe the issue or required servicing..."
                                 />
                             </div>
                         </div>
 
-                        <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
+                        <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
                             <button
                                 type="button"
                                 onClick={() => setShowMaintenanceModal(false)}
-                                style={{ flex: 1, padding: '12px', border: '1px solid #d1d5db', borderRadius: '8px', backgroundColor: '#f9fafb', fontWeight: '600' }}
+                                style={{ flex: 1, padding: '14px', border: '1px solid #e2e8f0', borderRadius: '12px', backgroundColor: '#fff', color: '#475569', fontWeight: '700', fontSize: '14px', cursor: 'pointer' }}
                             >
                                 Cancel
                             </button>
                             <button
                                 type="button"
                                 onClick={updateMaintenance}
-                                style={{ flex: 2, padding: '12px', border: 'none', borderRadius: '8px', backgroundColor: '#D93232', color: '#fff', fontWeight: '600' }}
+                                style={{ flex: 2, padding: '14px', border: 'none', borderRadius: '12px', backgroundColor: '#111827', color: '#fff', fontWeight: '800', fontSize: '14px', cursor: 'pointer', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)' }}
                             >
-                                Maintenance
+                                Set Under Repair
                             </button>
                         </div>
                     </div>

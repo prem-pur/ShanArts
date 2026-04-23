@@ -1,5 +1,17 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
+import { 
+    Receipt, 
+    Plus, 
+    CreditCard, 
+    BarChart3, 
+    Clock, 
+    AlertCircle, 
+    RefreshCcw,
+    FileText,
+    Wallet,
+    CheckCircle2
+} from 'lucide-react';
 import { API_BASE_URL } from '../../apiBase';
 import InvoiceList from './InvoiceList';
 import InvoiceDetails from './InvoiceDetails';
@@ -9,13 +21,13 @@ import ReportsDashboard from './ReportsDashboard';
 
 // ─── Tab definitions ────────────────────────────────────────────────────────
 const TABS_FINANCE = [
-    { id: 'invoices', label: 'All Invoices', icon: '🧾' },
-    { id: 'pending', label: 'Pending Billing', icon: '🕐' },
-    { id: 'outstanding', label: 'Outstanding', icon: '⚠️' },
-    { id: 'reports', label: 'Reports', icon: '📊' },
+    { id: 'invoices', label: 'All Invoices', icon: Receipt },
+    { id: 'pending', label: 'Pending Billing', icon: Clock },
+    { id: 'outstanding', label: 'Outstanding', icon: AlertCircle },
+    { id: 'reports', label: 'Reports', icon: BarChart3 },
 ];
 const TABS_CUSTOMER = [
-    { id: 'invoices', label: 'My Invoices', icon: '🧾' },
+    { id: 'invoices', label: 'My Invoices', icon: Receipt },
 ];
 
 // ─── Outstanding Summary Strip ───────────────────────────────────────────────
@@ -23,16 +35,23 @@ const OutstandingStrip = ({ data }) => {
     if (!data) return null;
     return (
         <div style={{
-            background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
-            borderRadius: '14px', padding: '16px 24px', marginBottom: '28px',
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px'
+            background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+            borderRadius: '16px', 
+            padding: '24px', 
+            marginBottom: '32px',
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            flexWrap: 'wrap', 
+            gap: '16px',
+            boxShadow: '0 10px 25px rgba(239, 68, 68, 0.2)'
         }}>
-            <div style={{ color: '#fff' }}>
-                <div style={{ fontSize: '11px', opacity: 0.8, fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px' }}>Outstanding Balance</div>
-                <div style={{ fontSize: '26px', fontWeight: '900' }}>LKR {(data.totalOutstanding || 0).toLocaleString()}</div>
+            <div>
+                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.8)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Total Outstanding Balance</div>
+                <div style={{ fontSize: '32px', fontWeight: '900', color: '#fff', lineHeight: 1 }}>LKR {(data.totalOutstanding || 0).toLocaleString()}</div>
             </div>
-            <div style={{ color: '#fff', opacity: 0.9, fontSize: '14px', fontWeight: '700' }}>
-                {data.count} invoice{data.count !== 1 ? 's' : ''} unpaid / partial
+            <div style={{ color: '#fff', background: 'rgba(255,255,255,0.15)', padding: '10px 20px', borderRadius: '12px', fontSize: '14px', fontWeight: '800', backdropFilter: 'blur(4px)' }}>
+                {data.count} Pending / Partial Invoices
             </div>
         </div>
     );
@@ -48,9 +67,9 @@ const BillingManagement = () => {
     const [refreshKey, setRefreshKey] = useState(0);
 
     // Modals
-    const [selectedInvoice, setSelectedInvoice] = useState(null);   // InvoiceDetails
-    const [paymentInvoice, setPaymentInvoice] = useState(null);     // PaymentPage
-    const [showCreate, setShowCreate] = useState(false);            // CreateInvoice
+    const [selectedInvoice, setSelectedInvoice] = useState(null);
+    const [paymentInvoice, setPaymentInvoice] = useState(null);
+    const [showCreate, setShowCreate] = useState(false);
 
     // Data
     const [pendingOrders, setPendingOrders] = useState([]);
@@ -60,9 +79,8 @@ const BillingManagement = () => {
     const [loadingOutstanding, setLoadingOutstanding] = useState(false);
 
     const token = localStorage.getItem('token');
-    const headers = { Authorization: `Bearer ${token}` };
+    const headers = useMemo(() => ({ Authorization: `Bearer ${token}` }), [token]);
 
-    // Fetch pending orders when tab is active or after invoice created
     const fetchPending = useCallback(async () => {
         setLoadingPending(true);
         try {
@@ -70,10 +88,8 @@ const BillingManagement = () => {
             setPendingOrders(res.data.data || []);
         } catch { /* silently fail */ }
         finally { setLoadingPending(false); }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [headers]);
 
-    // Fetch outstanding invoices
     const fetchOutstanding = useCallback(async () => {
         setLoadingOutstanding(true);
         try {
@@ -82,8 +98,7 @@ const BillingManagement = () => {
             setOutstandingList(res.data.data || []);
         } catch { /* silently fail */ }
         finally { setLoadingOutstanding(false); }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [headers]);
 
     useEffect(() => {
         if (isFinance) {
@@ -111,71 +126,75 @@ const BillingManagement = () => {
         setPaymentInvoice(invoice);
     };
 
-    // ─── Status colors ────────────────────────────────────────────────────────
-    const statusColor = { paid: '#10b981', partial: '#f59e0b', unpaid: '#ef4444' };
-    const statusBg = { paid: '#d1fae5', partial: '#fef3c7', unpaid: '#fee2e2' };
+    const statusColor = { paid: '#64748b', partial: '#111827', unpaid: '#ef4444' };
+    const statusBg = { paid: '#f8fafc', partial: '#f1f5f9', unpaid: '#fef2f2' };
 
     return (
-        <div style={{ padding: '40px', maxWidth: '1400px', margin: '0 auto', fontFamily: "'Inter', system-ui, sans-serif" }}>
-            {/* ── Page Header ── */}
-            <div style={{ marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
+        <div style={{ padding: '28px 36px', maxWidth: '1400px', margin: '0 auto', fontFamily: "'Inter', sans-serif", backgroundColor: '#f3f4f6', minHeight: '100vh' }}>
+            <style>{`
+                @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+            `}</style>
+            
+            {/* Page Header */}
+            <div style={{ marginBottom: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
                 <div>
-                    <h1 style={{ fontSize: '30px', fontWeight: '900', color: '#111827', letterSpacing: '-1px', margin: 0 }}>
-                        💳 Billing Management
-                    </h1>
-                    <p style={{ color: '#6b7280', fontSize: '14px', marginTop: '6px' }}>
-                        {isFinance
-                            ? 'Manage invoices, record payments, and track financial performance.'
-                            : 'View your invoices and settle outstanding balances.'}
-                    </p>
+                  <h1 style={{ fontSize: '26px', fontWeight: '800', color: '#0f172a', margin: 0, letterSpacing: '-0.5px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <Wallet size={28} color="#ef4444" /> Billing Management
+                  </h1>
+                  <p style={{ color: '#64748b', fontSize: '14px', marginTop: '6px', fontWeight: '500' }}>
+                      {isFinance
+                        ? 'Production financial control and revenue tracking center'
+                        : 'Review and settle your account balances'}
+                  </p>
                 </div>
                 {isFinance && (
                     <button
                         onClick={() => { fetchPending(); setShowCreate(true); }}
-                        style={{ padding: '12px 24px', borderRadius: '12px', border: 'none', background: '#111827', color: '#fff', fontWeight: '800', cursor: 'pointer', fontSize: '13px', boxShadow: '0 4px 14px rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', gap: '8px' }}
+                        style={{ padding: '12px 24px', borderRadius: '12px', border: 'none', background: '#ef4444', color: '#fff', fontWeight: '800', cursor: 'pointer', fontSize: '14px', boxShadow: '0 4px 14px rgba(239, 68, 68, 0.2)', display: 'flex', alignItems: 'center', gap: '8px', transition: 'transform 0.2s' }}
+                        onMouseOver={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+                        onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}
                     >
-                        ＋ Generate Invoice
+                        <Plus size={20} /> Generate Invoice
                     </button>
                 )}
             </div>
 
-            {/* ── Outstanding Strip (Finance) ── */}
+            {/* Outstanding Summary (Finance Only) */}
             {isFinance && outstandingData?.totalOutstanding > 0 && (
                 <OutstandingStrip data={outstandingData} />
             )}
 
-            {/* ── Tabs ── */}
-            <div style={{ display: 'flex', gap: '4px', background: '#f3f4f6', padding: '4px', borderRadius: '14px', marginBottom: '28px', overflowX: 'auto' }}>
+            {/* Navigation Tabs */}
+            <div style={{ display: 'flex', gap: '6px', background: '#e2e8f080', padding: '6px', borderRadius: '16px', marginBottom: '32px', width: 'fit-content' }}>
                 {tabs.map(tab => (
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
                         style={{
-                            flexShrink: 0,
-                            padding: '10px 20px',
+                            padding: '10px 24px',
                             border: 'none',
-                            borderRadius: '11px',
+                            borderRadius: '12px',
                             fontSize: '13px',
-                            fontWeight: '800',
+                            fontWeight: '700',
                             cursor: 'pointer',
                             background: activeTab === tab.id ? '#fff' : 'transparent',
-                            color: activeTab === tab.id ? '#111827' : '#6b7280',
-                            boxShadow: activeTab === tab.id ? '0 2px 10px rgba(0,0,0,0.06)' : 'none',
-                            transition: 'all 0.2s',
+                            color: activeTab === tab.id ? '#0f172a' : '#64748b',
+                            boxShadow: activeTab === tab.id ? '0 4px 12px rgba(0,0,0,0.05)' : 'none',
+                            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                             display: 'flex',
                             alignItems: 'center',
                             gap: '8px'
                         }}
                     >
-                        <span>{tab.icon}</span>
+                        <tab.icon size={16} color={activeTab === tab.id ? '#ef4444' : '#64748b'} />
                         {tab.label}
                         {tab.id === 'pending' && pendingOrders.length > 0 && (
-                            <span style={{ background: '#dc2626', color: '#fff', padding: '1px 7px', borderRadius: '10px', fontSize: '10px', fontWeight: '900' }}>
+                            <span style={{ background: '#ef4444', color: '#fff', padding: '2px 8px', borderRadius: '8px', fontSize: '10px', fontWeight: '900' }}>
                                 {pendingOrders.length}
                             </span>
                         )}
                         {tab.id === 'outstanding' && outstandingData?.count > 0 && (
-                            <span style={{ background: '#f59e0b', color: '#fff', padding: '1px 7px', borderRadius: '10px', fontSize: '10px', fontWeight: '900' }}>
+                            <span style={{ background: '#111827', color: '#fff', padding: '2px 8px', borderRadius: '8px', fontSize: '10px', fontWeight: '900' }}>
                                 {outstandingData.count}
                             </span>
                         )}
@@ -183,71 +202,64 @@ const BillingManagement = () => {
                 ))}
             </div>
 
-            {/* ── Tab Content ── */}
-            <div style={{ background: '#fff', borderRadius: '20px', boxShadow: '0 4px 25px rgba(0,0,0,0.04)', border: '1px solid #f0f0f0', padding: '28px' }}>
+            {/* Viewport Content */}
+            <div style={{ background: '#fff', borderRadius: '24px', border: '1px solid #e2e8f0', boxShadow: '0 4px 24px rgba(0,0,0,0.03)', padding: '32px', animation: 'fadeIn 0.3s ease-out' }}>
 
-                {/* Invoices Tab */}
                 {activeTab === 'invoices' && (
                     <InvoiceList onSelectInvoice={setSelectedInvoice} refreshKey={refreshKey} />
                 )}
 
-                {/* Pending Billing Tab */}
                 {activeTab === 'pending' && isFinance && (
                     <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                            <div style={{ fontSize: '15px', fontWeight: '800', color: '#111827' }}>
-                                Orders Awaiting Invoice
-                            </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                            <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: '#0f172a' }}>Orders Awaiting Billing</h3>
                             <button
                                 onClick={fetchPending}
-                                style={{ padding: '8px 16px', borderRadius: '8px', border: '1.5px solid #e5e7eb', background: '#fff', color: '#374151', fontWeight: '700', cursor: 'pointer', fontSize: '12px' }}
+                                style={{ padding: '8px 16px', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#fff', color: '#64748b', fontWeight: '700', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}
                             >
-                                ↻ Refresh
+                                <RefreshCcw size={14} /> Refresh
                             </button>
                         </div>
 
                         {loadingPending ? (
-                            <div style={{ textAlign: 'center', padding: '60px', color: '#9ca3af' }}>Loading...</div>
+                            <div style={{ textAlign: 'center', padding: '60px', color: '#64748b', fontWeight: '600' }}>Analyzing pending production jobs...</div>
                         ) : pendingOrders.length === 0 ? (
-                            <div style={{ textAlign: 'center', padding: '60px', color: '#9ca3af' }}>
-                                <div style={{ fontSize: '40px', marginBottom: '12px' }}>✅</div>
-                                <div style={{ fontWeight: '600' }}>All completed orders have been invoiced.</div>
+                            <div style={{ textAlign: 'center', padding: '80px 40px', color: '#64748b' }}>
+                                <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'center' }}><CheckCircle2 size={48} color="#64748b" /></div>
+                                <div style={{ fontWeight: '800', fontSize: '18px', color: '#0f172a' }}>All Clear!</div>
+                                <div style={{ fontWeight: '500', marginTop: '4px' }}>Every completed production job has been successfully invoiced.</div>
                             </div>
                         ) : (
                             <div style={{ overflowX: 'auto' }}>
                                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                                     <thead>
-                                    <tr style={{ borderBottom: '2px solid #f3f4f6' }}>
-                                        {['Order #', 'Customer', 'Job Type', 'Delivery', 'Total', 'Status', 'Action'].map(h => (
-                                            <th key={h} style={{ padding: '12px 16px', color: '#9ca3af', fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', textAlign: 'left' }}>{h}</th>
+                                    <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
+                                        {['Order #', 'Customer', 'Type', 'Delivery', 'Total', 'Action'].map(h => (
+                                            <th key={h} style={{ padding: '16px', color: '#64748b', fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', textAlign: 'left', letterSpacing: '0.5px' }}>{h}</th>
                                         ))}
                                     </tr>
                                     </thead>
                                     <tbody>
                                     {pendingOrders.map(order => (
-                                        <tr key={order._id} style={{ borderBottom: '1px solid #f9fafb' }}
-                                            onMouseEnter={e => e.currentTarget.style.background = '#fafafa'}
-                                            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                                        >
-                                            <td style={{ padding: '14px 16px', fontWeight: '800', color: '#111827' }}>{order.orderNumber}</td>
-                                            <td style={{ padding: '14px 16px' }}>
-                                                <div style={{ fontWeight: '700', color: '#1f2937', fontSize: '13px' }}>{order.customerId?.name || '—'}</div>
-                                                <div style={{ fontSize: '11px', color: '#9ca3af' }}>{order.customerId?.email}</div>
+                                        <tr key={order._id} style={{ borderBottom: '1px solid #f8fafc', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background = '#fcfdfe'} onMouseOut={e => e.currentTarget.style.background = 'transparent'}>
+                                            <td style={{ padding: '16px', fontWeight: '900', color: '#0f172a' }}>#{order.orderNumber}</td>
+                                            <td style={{ padding: '16px' }}>
+                                                <div style={{ fontWeight: '700', color: '#334155', fontSize: '14px' }}>{order.customerId?.name || 'Guest'}</div>
+                                                <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '500' }}>{order.customerId?.email}</div>
                                             </td>
-                                            <td style={{ padding: '14px 16px', fontSize: '12px', fontWeight: '700', color: '#6366f1', textTransform: 'uppercase' }}>{order.jobType}</td>
-                                            <td style={{ padding: '14px 16px', fontSize: '12px', fontWeight: '700', color: order.deliveryMethod === 'pickup' ? '#2563eb' : '#9333ea', textTransform: 'uppercase' }}>{order.deliveryMethod}</td>
-                                            <td style={{ padding: '14px 16px', fontWeight: '900', color: '#111827' }}>LKR {(order.totalPrice || 0).toLocaleString()}</td>
-                                            <td style={{ padding: '14px 16px' }}>
-                                                    <span style={{ padding: '4px 10px', borderRadius: '10px', fontSize: '11px', fontWeight: '800', background: '#dbeafe', color: '#1d4ed8' }}>
-                                                        {order.status?.toUpperCase()}
-                                                    </span>
+                                            <td style={{ padding: '16px' }}>
+                                                <span style={{ fontSize: '11px', fontWeight: '800', color: '#111827', textTransform: 'uppercase', background: '#f1f5f9', padding: '4px 8px', borderRadius: '6px' }}>{order.jobType}</span>
                                             </td>
-                                            <td style={{ padding: '14px 16px' }}>
+                                            <td style={{ padding: '16px' }}>
+                                                <span style={{ fontSize: '11px', fontWeight: '800', color: order.deliveryMethod === 'pickup' ? '#111827' : '#ef4444', textTransform: 'uppercase' }}>{order.deliveryMethod}</span>
+                                            </td>
+                                            <td style={{ padding: '16px', fontWeight: '900', color: '#0f172a' }}>LKR {(order.totalPrice || 0).toLocaleString()}</td>
+                                            <td style={{ padding: '16px' }}>
                                                 <button
                                                     onClick={() => { setPendingOrders(prev => prev); setShowCreate(true); }}
-                                                    style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', background: '#111827', color: '#fff', fontSize: '11px', fontWeight: '800', cursor: 'pointer' }}
+                                                    style={{ padding: '8px 16px', borderRadius: '10px', border: 'none', background: '#1e293b', color: '#fff', fontSize: '11px', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
                                                 >
-                                                    🧾 CREATE
+                                                    <FileText size={14} /> Create Invoice
                                                 </button>
                                             </td>
                                         </tr>
@@ -259,35 +271,33 @@ const BillingManagement = () => {
                     </div>
                 )}
 
-                {/* Outstanding Tab */}
                 {activeTab === 'outstanding' && isFinance && (
                     <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                            <div style={{ fontSize: '15px', fontWeight: '800', color: '#111827' }}>
-                                Outstanding Invoices
-                            </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                            <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: '#0f172a' }}>Overdue & Outstanding Records</h3>
                             <button
                                 onClick={fetchOutstanding}
-                                style={{ padding: '8px 16px', borderRadius: '8px', border: '1.5px solid #e5e7eb', background: '#fff', color: '#374151', fontWeight: '700', cursor: 'pointer', fontSize: '12px' }}
+                                style={{ padding: '8px 16px', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#fff', color: '#64748b', fontWeight: '700', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}
                             >
-                                ↻ Refresh
+                                <RefreshCcw size={14} /> Refresh
                             </button>
                         </div>
 
                         {loadingOutstanding ? (
-                            <div style={{ textAlign: 'center', padding: '60px', color: '#9ca3af' }}>Loading...</div>
+                            <div style={{ textAlign: 'center', padding: '60px', color: '#64748b', fontWeight: '600' }}>Retrieving outstanding account data...</div>
                         ) : outstandingList.length === 0 ? (
-                            <div style={{ textAlign: 'center', padding: '60px', color: '#9ca3af' }}>
-                                <div style={{ fontSize: '40px', marginBottom: '12px' }}>🎉</div>
-                                <div style={{ fontWeight: '600' }}>No outstanding invoices. All balances are settled!</div>
+                            <div style={{ textAlign: 'center', padding: '80px 40px', color: '#64748b' }}>
+                                <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'center' }}><CheckCircle2 size={48} color="#64748b" /></div>
+                                <div style={{ fontWeight: '800', fontSize: '18px', color: '#0f172a' }}>Perfect Reconciliation</div>
+                                <div style={{ fontWeight: '500', marginTop: '4px' }}>No outstanding accounts found. All payments are fully settled.</div>
                             </div>
                         ) : (
                             <div style={{ overflowX: 'auto' }}>
                                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                                     <thead>
-                                    <tr style={{ borderBottom: '2px solid #f3f4f6' }}>
-                                        {['Invoice #', 'Customer', 'Order', 'Total', 'Balance Due', 'Status', 'Due Date', 'Action'].map(h => (
-                                            <th key={h} style={{ padding: '12px 16px', color: '#9ca3af', fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', textAlign: 'left' }}>{h}</th>
+                                    <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
+                                        {['Invoice', 'Customer', 'Total', 'Balance Due', 'Status', 'Due Date', 'Action'].map(h => (
+                                            <th key={h} style={{ padding: '16px', color: '#64748b', fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', textAlign: 'left', letterSpacing: '0.5px' }}>{h}</th>
                                         ))}
                                     </tr>
                                     </thead>
@@ -295,42 +305,38 @@ const BillingManagement = () => {
                                     {outstandingList.map(inv => {
                                         const isOverdue = inv.dueDate && new Date(inv.dueDate) < new Date();
                                         return (
-                                            <tr key={inv._id} style={{ borderBottom: '1px solid #f9fafb', background: isOverdue ? '#fff7f7' : 'transparent' }}
-                                                onMouseEnter={e => e.currentTarget.style.background = isOverdue ? '#fee2e2' : '#fafafa'}
-                                                onMouseLeave={e => e.currentTarget.style.background = isOverdue ? '#fff7f7' : 'transparent'}
-                                            >
-                                                <td style={{ padding: '14px 16px', fontWeight: '800', color: '#111827' }}>
+                                            <tr key={inv._id} style={{ borderBottom: '1px solid #f8fafc', background: isOverdue ? '#fff1f280' : 'transparent', transition: 'background 0.2s' }} onMouseOver={e => !isOverdue && (e.currentTarget.style.background = '#fcfdfe')} onMouseOut={e => !isOverdue && (e.currentTarget.style.background = 'transparent')}>
+                                                <td style={{ padding: '16px', fontWeight: '900', color: '#0f172a' }}>
                                                     #{inv.invoiceNumber}
-                                                    {isOverdue && <span style={{ marginLeft: '6px', fontSize: '10px', color: '#dc2626', fontWeight: '900' }}>OVERDUE</span>}
+                                                    {isOverdue && <span style={{ marginLeft: '8px', fontSize: '9px', color: '#ef4444', fontWeight: '900', background: '#fee2e2', padding: '2px 6px', borderRadius: '4px' }}>OVERDUE</span>}
                                                 </td>
-                                                <td style={{ padding: '14px 16px', fontWeight: '700', color: '#1f2937', fontSize: '13px' }}>{inv.customerId?.name || '—'}</td>
-                                                <td style={{ padding: '14px 16px', fontSize: '12px', color: '#6b7280' }}>{inv.orderId?.orderNumber || '—'}</td>
-                                                <td style={{ padding: '14px 16px', fontWeight: '800', color: '#111827' }}>LKR {(inv.totalAmount || 0).toLocaleString()}</td>
-                                                <td style={{ padding: '14px 16px', fontWeight: '900', color: '#dc2626' }}>LKR {(inv.balanceDue || 0).toLocaleString()}</td>
-                                                <td style={{ padding: '14px 16px' }}>
+                                                <td style={{ padding: '16px', fontWeight: '700', color: '#334155', fontSize: '14px' }}>{inv.customerId?.name || 'Guest'}</td>
+                                                <td style={{ padding: '16px', fontWeight: '700', color: '#64748b' }}>LKR {(inv.totalAmount || 0).toLocaleString()}</td>
+                                                <td style={{ padding: '16px', fontWeight: '900', color: '#ef4444' }}>LKR {(inv.balanceDue || 0).toLocaleString()}</td>
+                                                <td style={{ padding: '16px' }}>
                                                         <span style={{
-                                                            padding: '4px 10px', borderRadius: '16px', fontSize: '10px', fontWeight: '800', textTransform: 'uppercase',
+                                                            padding: '6px 12px', borderRadius: '10px', fontSize: '11px', fontWeight: '800', textTransform: 'uppercase',
                                                             color: statusColor[inv.paymentStatus], background: statusBg[inv.paymentStatus]
                                                         }}>
                                                             {inv.paymentStatus}
                                                         </span>
                                                 </td>
-                                                <td style={{ padding: '14px 16px', fontSize: '12px', color: isOverdue ? '#dc2626' : '#6b7280', fontWeight: isOverdue ? '800' : '400' }}>
-                                                    {inv.dueDate ? new Date(inv.dueDate).toLocaleDateString('en-GB') : '—'}
+                                                <td style={{ padding: '16px', fontSize: '12px', color: isOverdue ? '#ef4444' : '#64748b', fontWeight: isOverdue ? '800' : '500' }}>
+                                                    {inv.dueDate ? new Date(inv.dueDate).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}
                                                 </td>
-                                                <td style={{ padding: '14px 16px' }}>
-                                                    <div style={{ display: 'flex', gap: '6px' }}>
+                                                <td style={{ padding: '16px' }}>
+                                                    <div style={{ display: 'flex', gap: '8px' }}>
                                                         <button
                                                             onClick={() => setSelectedInvoice(inv)}
-                                                            style={{ padding: '7px 12px', borderRadius: '8px', border: '1.5px solid #e5e7eb', background: '#fff', color: '#374151', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}
+                                                            style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #e2e8f0', background: '#fff', color: '#475569', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}
                                                         >
-                                                            VIEW
+                                                            View
                                                         </button>
                                                         <button
                                                             onClick={() => setPaymentInvoice(inv)}
-                                                            style={{ padding: '7px 12px', borderRadius: '8px', border: 'none', background: '#111827', color: '#fff', fontSize: '11px', fontWeight: '800', cursor: 'pointer' }}
+                                                            style={{ padding: '8px 12px', borderRadius: '8px', border: 'none', background: '#1e293b', color: '#fff', fontSize: '11px', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
                                                         >
-                                                            💰 PAY
+                                                            <CreditCard size={14} /> Pay
                                                         </button>
                                                     </div>
                                                 </td>
@@ -344,13 +350,12 @@ const BillingManagement = () => {
                     </div>
                 )}
 
-                {/* Reports Tab */}
                 {activeTab === 'reports' && isFinance && (
                     <ReportsDashboard key={refreshKey} />
                 )}
             </div>
 
-            {/* ── Modals ── */}
+            {/* Modals */}
             {selectedInvoice && (
                 <InvoiceDetails
                     invoice={selectedInvoice}

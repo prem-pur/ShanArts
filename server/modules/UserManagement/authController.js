@@ -1,4 +1,5 @@
 const User = require("./User");
+const Notification = require("../FeedbackNotificationManagement/Notification");
 const ApiError = require('../../utils/apiError');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
@@ -450,6 +451,55 @@ exports.getCustomers = async (req, res, next) => {
     try {
         const customers = await User.find({ role: 'customer' }).select('-passwordHash');
         res.status(200).json(customers);
+    } catch (error) {
+        next(error);
+    }
+};
+// Forgot password request via Identity Verification (NIC/Phone)
+exports.forgotPassword = async (req, res, next) => {
+    try {
+        const { email, nic, phone, newPassword } = req.body;
+        
+        if (!email || !nic || !phone || !newPassword) {
+            return next(new ApiError('All fields (Email, NIC, Phone, New Password) are required.', 400));
+        }
+
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return next(new ApiError('Verification failed. This email is not registered.', 404));
+        }
+
+        if (user.role === 'customer') {
+            return next(new ApiError('Access denied. Self-service reset is for staff members only.', 403));
+        }
+
+        // Identity Verification: Check if NIC and Phone match exactly
+        if (user.nic !== nic || user.phone !== phone) {
+            return next(new ApiError('Verification failed. Provided NIC or Phone number does not match our records.', 401));
+        }
+
+        // Update password
+        user.passwordHash = newPassword;
+        await user.save();
+
+        // Create an audit notification for managers
+        const managers = await User.find({ role: { $in: ['admin', 'staff_system'] } });
+        for (const manager of managers) {
+            await Notification.create({
+                recipientId: manager._id,
+                type: 'general_announcement',
+                title: 'Password Reset Notification',
+                message: `The password for ${user.name} (${user.role}) was reset using identity verification (NIC/Phone).`,
+                relatedEntityId: user._id,
+                relatedEntityType: 'User'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Verification successful. Your password has been updated!'
+        });
     } catch (error) {
         next(error);
     }

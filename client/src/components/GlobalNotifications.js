@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
+import { Bell } from 'lucide-react';
 import { API_BASE_URL } from '../apiBase';
 
 const GlobalNotifications = () => {
@@ -93,7 +94,7 @@ const GlobalNotifications = () => {
                 onClick={() => setOpen((value) => !value)}
                 aria-label="Open notifications"
             >
-                <span className="global-notification-icon">🔔</span>
+                <Bell size={22} className="global-notification-icon" />
                 {unreadCount > 0 && <span className="global-notification-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>}
             </button>
 

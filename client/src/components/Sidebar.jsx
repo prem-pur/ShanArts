@@ -7,8 +7,16 @@ const Sidebar = () => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
 
     return (
-        <div className="sidebar" style={{ width: 260, backgroundColor: '#1a1a1b', display: 'flex', flexDirection: 'column', height: '100vh', borderRight: '1px solid rgba(255,255,255,0.05)' }}>
-            <div style={{ padding: '32px 24px', borderBottom: '1px solid rgba(255,255,255,0.05)', marginBottom: '16px' }}>
+        <div className="sidebar" style={{ 
+            width: 260, 
+            backgroundColor: '#1a1a1b', 
+            display: 'flex', 
+            flexDirection: 'column', 
+            height: '100vh', 
+            borderRight: '1px solid rgba(255,255,255,0.05)',
+            overflowY: 'auto' 
+        }}>
+            <div style={{ padding: '32px 24px', borderBottom: '1px solid rgba(255,255,255,0.05)', marginBottom: '16px', flexShrink: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }} onClick={() => navigate(user.role === 'admin' ? '/admin-dashboard' : '/')}>
                     <img
                         src="/logo.png"
@@ -66,7 +74,7 @@ const Sidebar = () => {
                 )}
             </nav>
 
-            <div style={{ padding: '24px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+            <div style={{ padding: '24px', borderTop: '1px solid rgba(255,255,255,0.05)', marginTop: 'auto', flexShrink: 0 }}>
                 <button
                     onClick={() => { localStorage.clear(); navigate('/'); }}
                     style={{ width: '100%', background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '12px', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}

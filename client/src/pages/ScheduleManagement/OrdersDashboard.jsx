@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import ScheduleForm from './ScheduleForm';
 
 const STATUS_CONFIG = {
-    scheduled: { label: 'Awaiting Assignment', color: '#f59e0b', bg: '#fffbeb' },
-    confirmed: { label: 'Assigned to Machine', color: '#3b82f6', bg: '#eff6ff' },
-    in_progress: { label: 'Printing', color: '#8b5cf6', bg: '#f5f3ff' },
-    completed: { label: 'Completed', color: '#10b981', bg: '#ecfdf5' },
+    scheduled: { label: 'Awaiting Assignment', color: '#111827', bg: '#f1f5f9' },
+    confirmed: { label: 'Assigned to Machine', color: '#111827', bg: '#f1f5f9' },
+    in_progress: { label: 'Printing', color: '#ef4444', bg: '#fef2f2' },
+    completed: { label: 'Completed', color: '#64748b', bg: '#f8fafc' },
     machine_maintenance: { label: 'Machine Under Maintenance', color: '#ef4444', bg: '#fef2f2' },
 };
 
@@ -347,7 +347,7 @@ const OrdersDashboard = ({
                                                             </button>
                                                         </div>
                                                     ) :
-                                                    <span style={{ color: '#10b981', background: '#ecfdf5', padding: '6px 12px', borderRadius: '12px', fontSize: '11px', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                                    <span style={{ color: '#64748b', background: '#f8fafc', padding: '6px 12px', borderRadius: '12px', fontSize: '11px', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                                                             DONE <Icons.Done />
                                                         </span>
                                                 }

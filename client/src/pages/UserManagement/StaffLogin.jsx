@@ -6,11 +6,18 @@ import { API_BASE_URL } from '../../apiBase';
 const StaffLogin = () => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({ email: '', password: '' });
+    const [forgotData, setForgotData] = useState({ email: '', nic: '', phone: '', newPassword: '' });
+    const [isForgotMode, setIsForgotMode] = useState(false);
     const [error, setError] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
     const [loading, setLoading] = useState(false);
 
     const handleInputChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleForgotInputChange = (e) => {
+        setForgotData({ ...forgotData, [e.target.name]: e.target.value });
     };
 
     const handleSubmit = async (e) => {
@@ -53,6 +60,28 @@ const StaffLogin = () => {
         }
     };
 
+    const handleForgotSubmit = async (e) => {
+        e.preventDefault();
+        setError('');
+        setSuccessMessage('');
+        setLoading(true);
+
+        try {
+            const response = await axios.post(`${API_BASE_URL}/api/auth/forgot-password`, forgotData);
+            setSuccessMessage(response.data.message);
+            // Switch back to login after a short delay
+            setTimeout(() => {
+                setIsForgotMode(false);
+                setSuccessMessage('');
+                setForgotData({ email: '', nic: '', phone: '', newPassword: '' });
+            }, 3000);
+        } catch (err) {
+            setError(err.response?.data?.message || 'Verification failed. Please check your details.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div style={{
             minHeight: '100vh',
@@ -65,40 +94,47 @@ const StaffLogin = () => {
         }}>
             <div style={{
                 width: '100%',
-                maxWidth: '420px',
+                maxWidth: '440px',
                 backgroundColor: '#ffffff',
                 borderRadius: '24px',
-                padding: '48px',
+                padding: '40px',
                 boxShadow: '0 10px 40px rgba(0,0,0,0.05)',
                 border: '1px solid #e5e7eb'
             }}>
-                <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+                <div style={{ textAlign: 'center', marginBottom: '32px' }}>
                     <div style={{
-                        width: '72px',
-                        height: '72px',
+                        width: '64px',
+                        height: '64px',
                         backgroundColor: '#1e1e1e',
                         borderRadius: '16px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        margin: '0 auto 24px',
+                        margin: '0 auto 20px',
                         color: '#fff',
-                        fontSize: '32px',
+                        fontSize: '28px',
                         fontWeight: '900'
                     }}>
                         SP
                     </div>
-                    <h2 style={{ fontSize: '32px', fontWeight: '900', color: '#111827', marginBottom: '12px' }}>Staff Portal</h2>
-                    <p style={{ color: '#6b7280', fontSize: '16px' }}>Sign in to access your professional workspace</p>
+                    <h2 style={{ fontSize: '28px', fontWeight: '900', color: '#111827', marginBottom: '8px' }}>
+                        {isForgotMode ? 'Identity Verification' : 'Staff Portal'}
+                    </h2>
+                    <p style={{ color: '#6b7280', fontSize: '15px' }}>
+                        {isForgotMode 
+                          ? 'Verify your identity to reset your password'
+                          : 'Sign in to access your professional workspace'
+                        }
+                    </p>
                 </div>
 
                 {error && (
                     <div style={{
-                        padding: '16px',
+                        padding: '14px',
                         backgroundColor: '#fef2f2',
                         color: '#dc2626',
                         borderRadius: '12px',
-                        marginBottom: '32px',
+                        marginBottom: '20px',
                         fontSize: '14px',
                         fontWeight: '600',
                         textAlign: 'center',
@@ -108,86 +144,200 @@ const StaffLogin = () => {
                     </div>
                 )}
 
-                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                    <div>
-                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '700', color: '#374151' }}>Work Email</label>
-                        <input
-                            type="email"
-                            name="email"
-                            value={formData.email}
-                            onChange={handleInputChange}
-                            required
-                            style={{
-                                width: '100%',
-                                padding: '14px 18px',
-                                borderRadius: '10px',
-                                border: '1.5px solid #e5e7eb',
-                                backgroundColor: '#f9fafb',
-                                color: '#111827',
-                                fontSize: '16px',
-                                outline: 'none'
-                            }}
-                            onFocus={e => e.target.style.borderColor = 'var(--accent-color)'}
-                            onBlur={e => e.target.style.borderColor = '#e5e7eb'}
-                            placeholder="staff@shanart.com"
-                        />
+                {successMessage && (
+                    <div style={{
+                        padding: '14px',
+                        backgroundColor: '#f0fdf4',
+                        color: '#16a34a',
+                        borderRadius: '12px',
+                        marginBottom: '20px',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        textAlign: 'center',
+                        border: '1px solid #22c55e33'
+                    }}>
+                        {successMessage}
                     </div>
-                    <div>
-                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '700', color: '#374151' }}>Password</label>
-                        <input
-                            type="password"
-                            name="password"
-                            value={formData.password}
-                            onChange={handleInputChange}
-                            required
-                            style={{
-                                width: '100%',
-                                padding: '14px 18px',
-                                borderRadius: '10px',
-                                border: '1.5px solid #e5e7eb',
-                                backgroundColor: '#f9fafb',
-                                color: '#111827',
-                                fontSize: '16px',
-                                outline: 'none'
-                            }}
-                            onFocus={e => e.target.style.borderColor = 'var(--accent-color)'}
-                            onBlur={e => e.target.style.borderColor = '#e5e7eb'}
-                            placeholder="••••••••"
-                        />
-                    </div>
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        style={{
-                            width: '100%',
-                            padding: '18px',
-                            borderRadius: '12px',
-                            border: 'none',
-                            backgroundColor: 'var(--accent-color)',
-                            color: '#fff',
-                            fontSize: '18px',
-                            fontWeight: '800',
-                            cursor: loading ? 'not-allowed' : 'pointer',
-                            marginTop: '12px',
-                            transition: 'all 0.2s',
-                            boxShadow: '0 4px 15px rgba(211, 47, 47, 0.4)'
-                        }}
-                    >
-                        {loading ? 'Authenticating...' : 'Sign In to Portal'}
-                    </button>
-                </form>
+                )}
 
-                <div style={{ textAlign: 'center', marginTop: '32px' }}>
+                {!isForgotMode ? (
+                    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '700', color: '#374151' }}>Work Email</label>
+                            <input
+                                type="email"
+                                name="email"
+                                value={formData.email}
+                                onChange={handleInputChange}
+                                required
+                                style={{
+                                    width: '100%',
+                                    padding: '12px 16px',
+                                    borderRadius: '10px',
+                                    border: '1.5px solid #e5e7eb',
+                                    backgroundColor: '#f9fafb',
+                                    color: '#111827',
+                                    fontSize: '15px',
+                                    outline: 'none',
+                                    boxSizing: 'border-box'
+                                }}
+                                placeholder="staff@shanart.com"
+                            />
+                        </div>
+                        <div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                                <label style={{ fontSize: '13px', fontWeight: '700', color: '#374151' }}>Password</label>
+                                <button 
+                                    type="button"
+                                    onClick={() => {
+                                        setIsForgotMode(true);
+                                        setError('');
+                                        setSuccessMessage('');
+                                    }}
+                                    style={{ 
+                                        background: 'none', 
+                                        border: 'none', 
+                                        color: 'var(--accent-color)', 
+                                        fontSize: '12px', 
+                                        fontWeight: '700', 
+                                        cursor: 'pointer',
+                                        padding: 0
+                                    }}
+                                >
+                                    Forgot?
+                                </button>
+                            </div>
+                            <input
+                                type="password"
+                                name="password"
+                                value={formData.password}
+                                onChange={handleInputChange}
+                                required
+                                style={{
+                                    width: '100%',
+                                    padding: '12px 16px',
+                                    borderRadius: '10px',
+                                    border: '1.5px solid #e5e7eb',
+                                    backgroundColor: '#f9fafb',
+                                    color: '#111827',
+                                    fontSize: '15px',
+                                    outline: 'none',
+                                    boxSizing: 'border-box'
+                                }}
+                                placeholder="••••••••"
+                            />
+                        </div>
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            style={{
+                                width: '100%',
+                                padding: '14px',
+                                borderRadius: '12px',
+                                border: 'none',
+                                backgroundColor: 'var(--accent-color)',
+                                color: '#fff',
+                                fontSize: '16px',
+                                fontWeight: '800',
+                                cursor: loading ? 'not-allowed' : 'pointer',
+                                marginTop: '8px',
+                                transition: 'all 0.2s',
+                                boxShadow: '0 4px 15px rgba(211, 47, 47, 0.4)'
+                            }}
+                        >
+                            {loading ? 'Authenticating...' : 'Sign In to Portal'}
+                        </button>
+                    </form>
+                ) : (
+                    <form onSubmit={handleForgotSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '700', color: '#374151' }}>Work Email</label>
+                            <input
+                                type="email"
+                                name="email"
+                                value={forgotData.email}
+                                onChange={handleForgotInputChange}
+                                required
+                                style={{ width: '100%', padding: '12px 16px', borderRadius: '10px', border: '1.5px solid #e5e7eb', backgroundColor: '#f9fafb', color: '#111827', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
+                                placeholder="staff@shanart.com"
+                            />
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '700', color: '#374151' }}>NIC Number</label>
+                                <input
+                                    type="text"
+                                    name="nic"
+                                    value={forgotData.nic}
+                                    onChange={handleForgotInputChange}
+                                    required
+                                    style={{ width: '100%', padding: '12px 16px', borderRadius: '10px', border: '1.5px solid #e5e7eb', backgroundColor: '#f9fafb', color: '#111827', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
+                                    placeholder="10 characters"
+                                />
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '700', color: '#374151' }}>Phone Number</label>
+                                <input
+                                    type="text"
+                                    name="phone"
+                                    value={forgotData.phone}
+                                    onChange={handleForgotInputChange}
+                                    required
+                                    style={{ width: '100%', padding: '12px 16px', borderRadius: '10px', border: '1.5px solid #e5e7eb', backgroundColor: '#f9fafb', color: '#111827', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
+                                    placeholder="10 digits"
+                                />
+                            </div>
+                        </div>
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '700', color: '#374151' }}>New Password</label>
+                            <input
+                                type="password"
+                                name="newPassword"
+                                value={forgotData.newPassword}
+                                onChange={handleForgotInputChange}
+                                required
+                                style={{ width: '100%', padding: '12px 16px', borderRadius: '10px', border: '1.5px solid #e5e7eb', backgroundColor: '#f9fafb', color: '#111827', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
+                                placeholder="Min 8 characters"
+                            />
+                        </div>
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            style={{
+                                width: '100%',
+                                padding: '14px',
+                                borderRadius: '12px',
+                                border: 'none',
+                                backgroundColor: 'var(--accent-color)',
+                                color: '#fff',
+                                fontSize: '16px',
+                                fontWeight: '800',
+                                cursor: loading ? 'not-allowed' : 'pointer',
+                                transition: 'all 0.2s',
+                                marginTop: '4px',
+                                boxShadow: '0 4px 15px rgba(211, 47, 47, 0.4)'
+                            }}
+                        >
+                            {loading ? 'Verifying...' : 'Set New Password'}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setIsForgotMode(false);
+                                setError('');
+                                setSuccessMessage('');
+                            }}
+                            style={{ width: '100%', background: 'transparent', border: 'none', color: '#6b7280', fontSize: '13px', cursor: 'pointer', fontWeight: '600' }}
+                        >
+                            Back to Login
+                        </button>
+                    </form>
+                )}
+
+                <div style={{ textAlign: 'center', marginTop: '24px' }}>
                     <button
                         onClick={() => navigate('/')}
-                        style={{
-                            background: 'transparent',
-                            border: 'none',
-                            color: '#9ca3af',
-                            fontSize: '14px',
-                            cursor: 'pointer',
-                            fontWeight: '600'
-                        }}
+                        style={{ background: 'transparent', border: 'none', color: '#9ca3af', fontSize: '13px', cursor: 'pointer', fontWeight: '600' }}
                     >
                         ← Back to Site
                     </button>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { DollarSign, Wallet, CreditCard, Landmark, Smartphone, Globe, X } from 'lucide-react';
 import { API_BASE_URL } from '../../apiBase';
 
 const InvoiceDetails = ({ invoice, onClose, onPaymentRecorded }) => {
@@ -32,10 +33,16 @@ const InvoiceDetails = ({ invoice, onClose, onPaymentRecorded }) => {
         }
     };
 
-    const statusColor = { paid: '#10b981', partial: '#f59e0b', unpaid: '#ef4444' };
-    const statusBg = { paid: '#d1fae5', partial: '#fef3c7', unpaid: '#fee2e2' };
+    const statusColor = { paid: '#64748b', partial: '#111827', unpaid: '#ef4444' };
+    const statusBg = { paid: '#f8fafc', partial: '#f1f5f9', unpaid: '#fef2f2' };
 
-    const methodLabel = { cash: '💵 Cash', bank_transfer: '🏦 Bank Transfer', card: '💳 Card', online: '🌐 Online', pickme_pay: '📱 PickMe Pay' };
+    const methodLabel = { 
+        cash: <><DollarSign size={14} style={{ marginRight: '6px' }} /> Cash</>, 
+        bank_transfer: <><Landmark size={14} style={{ marginRight: '6px' }} /> Bank Transfer</>, 
+        card: <><CreditCard size={14} style={{ marginRight: '6px' }} /> Card</>, 
+        online: <><Globe size={14} style={{ marginRight: '6px' }} /> Online</>, 
+        pickme_pay: <><Smartphone size={14} style={{ marginRight: '6px' }} /> PickMe Pay</> 
+    };
 
     return (
         <div style={{
@@ -120,7 +127,7 @@ const InvoiceDetails = ({ invoice, onClose, onPaymentRecorded }) => {
                         ].map(({ label, value }) => value !== undefined && (
                             <div key={label} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '13px', color: '#6b7280' }}>
                                 <span>{label}</span>
-                                <span style={{ fontWeight: '700', color: value < 0 ? '#10b981' : '#374151' }}>
+                                <span style={{ fontWeight: '700', color: value < 0 ? '#111827' : '#374151' }}>
                                     {value < 0 ? `- LKR ${Math.abs(value).toLocaleString()}` : `LKR ${(value || 0).toLocaleString()}`}
                                 </span>
                             </div>
@@ -130,14 +137,14 @@ const InvoiceDetails = ({ invoice, onClose, onPaymentRecorded }) => {
                             <span style={{ fontWeight: '900', fontSize: '20px', color: '#111827' }}>LKR {(invoice.totalAmount || 0).toLocaleString()}</span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px', fontSize: '13px' }}>
-                            <span style={{ color: '#10b981', fontWeight: '700' }}>Amount Paid</span>
-                            <span style={{ color: '#10b981', fontWeight: '800' }}>LKR {(invoice.amountPaid || 0).toLocaleString()}</span>
+                            <span style={{ color: '#111827', fontWeight: '700' }}>Amount Paid</span>
+                            <span style={{ color: '#111827', fontWeight: '800' }}>LKR {(invoice.amountPaid || 0).toLocaleString()}</span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px', fontSize: '15px' }}>
-                            <span style={{ color: invoice.balanceDue > 0 ? '#dc2626' : '#10b981', fontWeight: '800' }}>
+                            <span style={{ color: invoice.balanceDue > 0 ? '#ef4444' : '#64748b', fontWeight: '800' }}>
                                 {invoice.balanceDue > 0 ? 'Balance Due' : '✓ Fully Paid'}
                             </span>
-                            <span style={{ color: invoice.balanceDue > 0 ? '#dc2626' : '#10b981', fontWeight: '900' }}>
+                            <span style={{ color: invoice.balanceDue > 0 ? '#ef4444' : '#64748b', fontWeight: '900' }}>
                                 LKR {(invoice.balanceDue || 0).toLocaleString()}
                             </span>
                         </div>
@@ -154,14 +161,14 @@ const InvoiceDetails = ({ invoice, onClose, onPaymentRecorded }) => {
                             ) : (
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                     {payments.map(p => (
-                                        <div key={p._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', background: '#f0fdf4', borderRadius: '10px', border: '1px solid #bbf7d0' }}>
+                                        <div key={p._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', background: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
                                             <div>
-                                                <div style={{ fontWeight: '700', color: '#065f46', fontSize: '13px' }}>{methodLabel[p.method] || p.method}</div>
-                                                <div style={{ fontSize: '11px', color: '#6b7280' }}>
+                                                <div style={{ fontWeight: '700', color: '#111827', fontSize: '13px' }}>{methodLabel[p.method] || p.method}</div>
+                                                <div style={{ fontSize: '11px', color: '#64748b' }}>
                                                     {new Date(p.createdAt).toLocaleDateString('en-GB')} {p.reference && `• Ref: ${p.reference}`}
                                                 </div>
                                             </div>
-                                            <div style={{ fontWeight: '900', color: '#065f46', fontSize: '15px' }}>
+                                            <div style={{ fontWeight: '900', color: '#111827', fontSize: '15px' }}>
                                                 LKR {(p.amount || 0).toLocaleString()}
                                             </div>
                                         </div>
@@ -176,9 +183,9 @@ const InvoiceDetails = ({ invoice, onClose, onPaymentRecorded }) => {
                         {isFinance && invoice.paymentStatus !== 'paid' && (
                             <button
                                 onClick={() => onPaymentRecorded(invoice)}
-                                style={{ padding: '12px 24px', borderRadius: '12px', border: 'none', background: '#111827', color: '#fff', fontWeight: '800', cursor: 'pointer', fontSize: '13px' }}
+                                style={{ padding: '12px 24px', borderRadius: '12px', border: 'none', background: '#111827', color: '#fff', fontWeight: '800', cursor: 'pointer', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}
                             >
-                                💰 Record Payment
+                                <DollarSign size={16} /> Record Payment
                             </button>
                         )}
                         <button

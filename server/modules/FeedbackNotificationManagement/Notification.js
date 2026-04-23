@@ -10,7 +10,7 @@ const notificationSchema = new mongoose.Schema(
         },
         type: {
             type: String,
-            enum: ['order_update', 'delay_risk', 'low_stock', 'stock_removal', 'payment_due', 'job_assigned', 'feedback_received', 'customer_feedback', 'feedback_response', 'general_announcement'],
+            enum: ['order_update', 'delay_risk', 'low_stock', 'stock_removal', 'payment_due', 'job_assigned', 'feedback_received', 'customer_feedback', 'feedback_response', 'general_announcement', 'password_reset_request'],
             required: true,
         },
         title: {
