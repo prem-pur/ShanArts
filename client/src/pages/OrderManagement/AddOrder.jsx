@@ -210,7 +210,7 @@ const AddOrder = ({ onOrderCreated, onCancel }) => {
         width: '100%',
         padding: '14px',
         borderRadius: '10px',
-        backgroundColor: '#f9fafb',
+        backgroundColor: 'var(--bg-color)',
         border: '1px solid #e5e7eb',
         color: '#111827',
         fontSize: '15px',
@@ -221,7 +221,7 @@ const AddOrder = ({ onOrderCreated, onCancel }) => {
     const labelStyle = { display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '700', color: '#374151' };
 
     return (
-        <div style={{ backgroundColor: '#fff', borderRadius: '16px', border: '1px solid #e5e7eb', boxShadow: 'var(--shadow-sm)', overflow: 'hidden' }}>
+        <div style={{ backgroundColor: 'var(--card-bg)', borderRadius: '16px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)', overflow: 'hidden' }}>
             <div style={{ padding: '24px 32px', borderBottom: '1px solid #f0f0f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f9fafb' }}>
                 <h2 style={{ fontSize: '20px', fontWeight: '900', color: '#111827' }}>Place New Order</h2>
                 <div style={{ fontSize: '14px', color: '#6b7280', fontWeight: '600' }}>Step {step} of 2</div>
@@ -309,13 +309,13 @@ const AddOrder = ({ onOrderCreated, onCancel }) => {
                             <div>
                                 <label style={labelStyle}>Delivery Method</label>
                                 <div style={{ display: 'flex', gap: '12px' }}>
-                                    <label style={{ flex: 1, padding: '16px', borderRadius: '12px', border: `2px solid ${formData.deliveryMethod === 'pickup' ? 'var(--accent-color)' : '#e5e7eb'}`, cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s', background: formData.deliveryMethod === 'pickup' ? '#fff5f5' : '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                                    <label style={{ flex: 1, padding: '16px', borderRadius: '12px', border: `2px solid ${formData.deliveryMethod === 'pickup' ? 'var(--accent-color)' : 'var(--border-color)'}`, cursor: 'pointer', textAlign: 'center', transition: 'all 0.25s cubic-bezier(0.22,1,0.36,1)', background: formData.deliveryMethod === 'pickup' ? 'rgba(99, 102, 241, 0.1)' : 'var(--input-bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
                                         <input type="radio" name="deliveryMethod" value="pickup" checked={formData.deliveryMethod === 'pickup'} onChange={handleInputChange} style={{ display: 'none' }} />
                                         <Store size={24} color={formData.deliveryMethod === 'pickup' ? 'var(--accent-color)' : '#94a3b8'} />
                                         <div style={{ fontWeight: '700', fontSize: '14px', color: formData.deliveryMethod === 'pickup' ? 'var(--accent-color)' : '#374151' }}>Pickup</div>
                                     </label>
 
-                                    <label style={{ flex: 1, padding: '16px', borderRadius: '12px', border: `2px solid ${formData.deliveryMethod === 'delivery' ? 'var(--accent-color)' : '#e5e7eb'}`, cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s', background: formData.deliveryMethod === 'delivery' ? '#fff5f5' : '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                                    <label style={{ flex: 1, padding: '16px', borderRadius: '12px', border: `2px solid ${formData.deliveryMethod === 'delivery' ? 'var(--accent-color)' : 'var(--border-color)'}`, cursor: 'pointer', textAlign: 'center', transition: 'all 0.25s cubic-bezier(0.22,1,0.36,1)', background: formData.deliveryMethod === 'delivery' ? 'rgba(99, 102, 241, 0.1)' : 'var(--input-bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
                                         <input type="radio" name="deliveryMethod" value="delivery" checked={formData.deliveryMethod === 'delivery'} onChange={handleInputChange} style={{ display: 'none' }} />
                                         <Truck size={24} color={formData.deliveryMethod === 'delivery' ? 'var(--accent-color)' : '#94a3b8'} />
                                         <div style={{ fontWeight: '700', fontSize: '14px', color: formData.deliveryMethod === 'delivery' ? 'var(--accent-color)' : '#374151' }}>
@@ -324,7 +324,7 @@ const AddOrder = ({ onOrderCreated, onCancel }) => {
                                         </div>
                                     </label>
 
-                                    <label style={{ flex: 1, padding: '16px', borderRadius: '12px', border: `2px solid ${formData.deliveryMethod === 'pickme' ? 'var(--accent-color)' : '#e5e7eb'}`, cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s', background: formData.deliveryMethod === 'pickme' ? '#fff5f5' : '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                                    <label style={{ flex: 1, padding: '16px', borderRadius: '12px', border: `2px solid ${formData.deliveryMethod === 'pickme' ? 'var(--accent-color)' : 'var(--border-color)'}`, cursor: 'pointer', textAlign: 'center', transition: 'all 0.25s cubic-bezier(0.22,1,0.36,1)', background: formData.deliveryMethod === 'pickme' ? 'rgba(99, 102, 241, 0.1)' : 'var(--input-bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
                                         <input type="radio" name="deliveryMethod" value="pickme" checked={formData.deliveryMethod === 'pickme'} onChange={handleInputChange} style={{ display: 'none' }} />
                                         <Car size={24} color={formData.deliveryMethod === 'pickme' ? 'var(--accent-color)' : '#94a3b8'} />
                                         <div style={{ fontWeight: '700', fontSize: '14px', color: formData.deliveryMethod === 'pickme' ? 'var(--accent-color)' : '#374151' }}>
@@ -351,7 +351,7 @@ const AddOrder = ({ onOrderCreated, onCancel }) => {
                                 </div>
                             )}
 
-                            <button type="button" onClick={checkDistance} style={{ width: '100%', background: 'var(--accent-color)', color: '#fff', border: 'none', padding: '16px', borderRadius: '12px', fontWeight: '800', cursor: 'pointer', fontSize: '16px', boxShadow: '0 4px 15px rgba(211, 47, 47, 0.3)' }}>
+                            <button type="button" onClick={checkDistance} style={{ width: '100%', background: 'var(--accent-color)', color: '#fff', border: 'none', padding: '16px', borderRadius: '12px', fontWeight: '800', cursor: 'pointer', fontSize: '16px', boxShadow: '0 4px 20px var(--accent-glow)' }}>
                                 Next
                             </button>
                         </div>
@@ -430,8 +430,8 @@ const AddOrder = ({ onOrderCreated, onCancel }) => {
                             </div>
 
                             <div style={{ display: 'flex', gap: '16px' }}>
-                                <button type="button" onClick={() => setStep(1)} style={{ flex: 1, background: '#f3f4f6', color: '#374151', border: 'none', padding: '16px', borderRadius: '12px', fontWeight: '700', cursor: 'pointer' }}>Back</button>
-                                <button type="submit" disabled={loading} style={{ flex: 2, background: 'var(--accent-color)', color: '#fff', border: 'none', padding: '16px', borderRadius: '12px', fontWeight: '800', cursor: loading ? 'not-allowed' : 'pointer', boxShadow: '0 4px 15px rgba(211, 47, 47, 0.3)' }}>
+                                <button type="button" onClick={() => setStep(1)} style={{ flex: 1, background: 'var(--surface-muted-2)', color: 'var(--text-primary)', border: 'none', padding: '16px', borderRadius: '12px', fontWeight: '700', cursor: 'pointer' }}>Back</button>
+                                <button type="submit" disabled={loading} style={{ flex: 2, background: 'var(--accent-color)', color: '#fff', border: 'none', padding: '16px', borderRadius: '12px', fontWeight: '800', cursor: loading ? 'not-allowed' : 'pointer', boxShadow: '0 4px 20px var(--accent-glow)' }}>
                                     {loading ? 'Submitting...' : 'Confirm Order'}
                                 </button>
                             </div>

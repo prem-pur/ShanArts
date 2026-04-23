@@ -503,7 +503,7 @@ const CustomerHome = () => {
                                 title="Notifications"
                                 value={stats.unreadNotifications > 0 ? `${stats.unreadNotifications} New` : '0 New'}
                                 icon={<Bell size={22} />}
-                                color={stats.unreadNotifications > 0 ? "var(--accent-color)" : "#666"}
+                                color={stats.unreadNotifications > 0 ? "var(--accent-color)" : "var(--text-secondary)"}
                                 onClick={() => setShowNotificationsModal(true)}
                                 style={{ cursor: 'pointer' }}
                             />
@@ -512,16 +512,16 @@ const CustomerHome = () => {
 
 
                         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px' }}>
-                            <div style={{ background: '#fff', padding: '32px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
-                                <h3 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '24px' }}>Recent Projects</h3>
+                            <div style={{ background: 'var(--card-bg)', padding: '32px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
+                                <h3 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '24px', color: 'var(--text-primary)' }}>Recent Projects</h3>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                                     {orders.slice(0, 5).map(order => (
-                                        <div key={order._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '16px', borderBottom: '1px solid #e0e0e0' }}>
+                                        <div key={order._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '16px', borderBottom: '1px solid var(--border-color)' }}>
                                             <div>
                                                 <div style={{ fontWeight: '700' }}>
                                                     {order.jobType.toUpperCase()}
                                                 </div>
-                                                <div style={{ fontSize: '12px', color: '#666666' }}>{order.orderNumber} • {new Date(order.createdAt).toLocaleDateString()}</div>
+                                                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{order.orderNumber} • {new Date(order.createdAt).toLocaleDateString()}</div>
                                                 {order.deadline && <div style={{ fontSize: '11px', color: 'var(--accent-color)', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '4px' }}><Calendar size={12} /> Needed: {new Date(order.deadline).toLocaleDateString()}</div>}
                                             </div>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -555,7 +555,7 @@ const CustomerHome = () => {
                                                             fontSize: '11px',
                                                             fontWeight: '900',
                                                             cursor: 'pointer',
-                                                            boxShadow: '0 4px 12px rgba(211, 47, 47, 0.2)'
+                                                            boxShadow: '0 4px 16px var(--accent-glow)'
                                                         }}
                                                     >
                                                         REVIEW DESIGN
@@ -566,8 +566,8 @@ const CustomerHome = () => {
                                                         borderRadius: '99px',
                                                         fontSize: '11px',
                                                         fontWeight: '800',
-                                                        background: order.status === 'completed' ? '#ecfdf5' : '#f5f5f5',
-                                                        color: order.status === 'completed' ? '#059669' : '#666666'
+                                                        background: order.status === 'completed' ? 'rgba(16, 185, 129, 0.12)' : 'var(--surface-muted-2)',
+                                                        color: order.status === 'completed' ? '#34d399' : 'var(--text-secondary)'
                                                     }}>
                                                         {order.status.replace(/_/g, ' ')}
                                                     </span>
@@ -575,23 +575,23 @@ const CustomerHome = () => {
                                             </div>
                                         </div>
                                     ))}
-                                    {orders.length === 0 && <p style={{ color: '#666666' }}>No orders yet.</p>}
+                                    {orders.length === 0 && <p style={{ color: 'var(--text-secondary)' }}>No orders yet.</p>}
                                 </div>
                             </div>
 
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                                <div style={{ background: '#fff', padding: '32px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
-                                    <h3 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '24px' }}>Feedback Needed</h3>
+                                <div style={{ background: 'var(--card-bg)', padding: '32px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
+                                    <h3 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '24px', color: 'var(--text-primary)' }}>Feedback Needed</h3>
                                     {orders.filter(o => o.status === 'completed' && !feedbackList.some(f => f.orderId?._id === o._id)).length === 0 ? (
-                                        <p style={{ color: '#666666', fontSize: '14px' }}>No completed orders need feedback right now. You can still submit general feedback from the My Feedback tab.</p>
+                                        <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>No completed orders need feedback right now. You can still submit general feedback from the My Feedback tab.</p>
                                     ) : (
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                                             {orders.filter(o => o.status === 'completed' && !feedbackList.some(f => f.orderId?._id === o._id)).slice(0, 3).map(order => (
-                                                <div key={order._id} style={{ background: '#f5f5f5', padding: '16px', borderRadius: '12px' }}>
+                                                <div key={order._id} style={{ background: 'var(--surface-muted-2)', padding: '16px', borderRadius: '12px' }}>
                                                     <div style={{ fontWeight: '700', fontSize: '14px', marginBottom: '8px' }}>{order.orderNumber}</div>
                                                     <button
                                                         onClick={() => openFeedbackModal(order)}
-                                                        style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--accent-color)', color: 'var(--accent-color)', background: '#fff', fontWeight: '700', cursor: 'pointer' }}
+                                                        style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--accent-color)', color: 'var(--accent-color)', background: 'var(--card-bg)', fontWeight: '700', cursor: 'pointer' }}
                                                     >
                                                         LEAVE FEEDBACK
                                                     </button>
@@ -602,16 +602,16 @@ const CustomerHome = () => {
                                 </div>
 
                                 {feedbackList.length > 0 && (
-                                    <div style={{ background: '#fff', padding: '32px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
-                                        <h3 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '24px' }}>Your Recent Feedback</h3>
+                                    <div style={{ background: 'var(--card-bg)', padding: '32px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
+                                        <h3 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '24px', color: 'var(--text-primary)' }}>Your Recent Feedback</h3>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                                             {feedbackList.slice(0, 3).map(f => (
-                                                <div key={f._id} style={{ borderBottom: '1px solid #f0f0f0', paddingBottom: '12px' }}>
+                                                <div key={f._id} style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '12px' }}>
                                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                                                        <span style={{ fontSize: '12px', fontWeight: '800', color: '#666' }}>{f.orderId?.orderNumber}</span>
+                                                        <span style={{ fontSize: '12px', fontWeight: '800', color: 'var(--text-secondary)' }}>{f.orderId?.orderNumber}</span>
                                                         <div style={{ display: 'flex', gap: '2px' }}>{[...Array(f.rating)].map((_, i) => <Star key={i} size={14} fill="#fbbf24" color="#fbbf24" />)}</div>
                                                     </div>
-                                                    <p style={{ margin: 0, fontSize: '13px', color: '#4b5563', fontStyle: 'italic' }}>"{f.comment || 'No comment'}"</p>
+                                                    <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)', fontStyle: 'italic' }}>"{f.comment || 'No comment'}"</p>
                                                 </div>
                                             ))}
                                         </div>
@@ -625,32 +625,32 @@ const CustomerHome = () => {
                 return <AddOrder onOrderCreated={() => { fetchData(); setActiveTab('dashboard'); }} onCancel={() => setActiveTab('dashboard')} />;
             case 'my_orders':
                 return (
-                    <div style={{ background: '#fff', padding: '32px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
-                        <h3 style={{ fontSize: '24px', fontWeight: '900', marginBottom: '24px' }}>Project History</h3>
+                    <div style={{ background: 'var(--card-bg)', padding: '32px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
+                        <h3 style={{ fontSize: '24px', fontWeight: '900', marginBottom: '24px', color: 'var(--text-primary)' }}>Project History</h3>
                         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                             <thead>
-                            <tr style={{ textAlign: 'left', borderBottom: '2px solid #f9fafb' }}>
-                                <th style={{ padding: '16px', color: '#6b7280', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase' }}>Order Details</th>
-                                <th style={{ padding: '16px', color: '#6b7280', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase' }}>Type</th>
-                                <th style={{ padding: '16px', color: '#6b7280', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase' }}>Status</th>
-                                <th style={{ padding: '16px', color: '#6b7280', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase' }}>Needed By</th>
-                                <th style={{ padding: '16px', color: '#6b7280', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase' }}>Date</th>
+                            <tr style={{ textAlign: 'left', borderBottom: '2px solid var(--border-color)' }}>
+                                <th style={{ padding: '16px', color: 'var(--text-secondary)', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase' }}>Order Details</th>
+                                <th style={{ padding: '16px', color: 'var(--text-secondary)', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase' }}>Type</th>
+                                <th style={{ padding: '16px', color: 'var(--text-secondary)', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase' }}>Status</th>
+                                <th style={{ padding: '16px', color: 'var(--text-secondary)', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase' }}>Needed By</th>
+                                <th style={{ padding: '16px', color: 'var(--text-secondary)', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase' }}>Date</th>
                             </tr>
                             </thead>
                             <tbody>
                             {orders.map(order => (
-                                <tr key={order._id} style={{ borderBottom: '1px solid #f9fafb' }}>
+                                <tr key={order._id} style={{ borderBottom: '1px solid var(--border-color)' }}>
                                     <td style={{ padding: '16px', fontWeight: '700' }}>
                                         {order.orderNumber}
                                     </td>
                                     <td style={{ padding: '16px' }}>{order.jobType.toUpperCase()}</td>
                                     <td style={{ padding: '16px' }}>
-                                            <span style={{ padding: '4px 12px', borderRadius: '99px', fontSize: '11px', fontWeight: '800', background: order.status === 'completed' ? '#ecfdf5' : '#f3f4f6', color: order.status === 'completed' ? '#059669' : '#4b5563' }}>
+                                            <span style={{ padding: '4px 12px', borderRadius: '99px', fontSize: '11px', fontWeight: '800', background: order.status === 'completed' ? 'rgba(16, 185, 129, 0.12)' : 'var(--surface-muted-2)', color: order.status === 'completed' ? '#34d399' : 'var(--text-secondary)' }}>
                                                 {order.status.replace(/_/g, ' ')}
                                             </span>
                                     </td>
-                                    <td style={{ padding: '16px', color: '#d32f2f', fontWeight: '700' }}>{order.deadline ? new Date(order.deadline).toLocaleDateString() : '—'}</td>
-                                    <td style={{ padding: '16px', color: '#6b7280' }}>{new Date(order.createdAt).toLocaleDateString()}</td>
+                                    <td style={{ padding: '16px', color: 'var(--accent-color)', fontWeight: '700' }}>{order.deadline ? new Date(order.deadline).toLocaleDateString() : '—'}</td>
+                                    <td style={{ padding: '16px', color: 'var(--text-secondary)' }}>{new Date(order.createdAt).toLocaleDateString()}</td>
                                 </tr>
                             ))}
                             </tbody>
@@ -659,14 +659,14 @@ const CustomerHome = () => {
                 );
             case 'invoices':
                 return (
-                    <div style={{ background: '#fff', padding: '32px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
-                        <h3 style={{ fontSize: '24px', fontWeight: '900', marginBottom: '24px' }}>Invoices & Payments</h3>
+                    <div style={{ background: 'var(--card-bg)', padding: '32px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
+                        <h3 style={{ fontSize: '24px', fontWeight: '900', marginBottom: '24px', color: 'var(--text-primary)' }}>Invoices & Payments</h3>
                         <div style={{ display: 'grid', gap: '20px' }}>
                             {invoices.map(invoice => (
-                                <div key={invoice._id} style={{ border: '1px solid #f0f0f0', borderRadius: '16px', padding: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div key={invoice._id} style={{ border: '1px solid var(--border-color)', borderRadius: '16px', padding: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <div>
                                         <div style={{ fontSize: '18px', fontWeight: '900' }}>#{invoice.invoiceNumber}</div>
-                                        <div style={{ fontSize: '14px', color: '#6b7280', marginTop: '4px' }}>Order: {invoice.orderId?.orderNumber} • Due: {new Date(invoice.dueDate).toLocaleDateString()}</div>
+                                        <div style={{ fontSize: '14px', color: 'var(--text-secondary)', marginTop: '4px' }}>Order: {invoice.orderId?.orderNumber} • Due: {new Date(invoice.dueDate).toLocaleDateString()}</div>
                                     </div>
                                     <div style={{ textAlign: 'right' }}>
                                         <div style={{ fontSize: '20px', fontWeight: '900', color: 'var(--accent-color)' }}>LKR {invoice.totalAmount?.toLocaleString()}</div>
@@ -674,7 +674,7 @@ const CustomerHome = () => {
                                         <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
                                             <button
                                                 onClick={() => handleDownloadInvoicePdf(invoice)}
-                                                style={{ padding: '6px 12px', borderRadius: '8px', border: '1px solid #d1d5db', background: '#fff', color: '#111827', fontSize: '11px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                                                style={{ padding: '6px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--card-bg)', color: 'var(--text-primary)', fontSize: '11px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
                                             >
                                                 <Download size={13} />
                                                 DOWNLOAD PDF
@@ -695,7 +695,7 @@ const CustomerHome = () => {
                                                         setPaymentError('');
                                                         setShowPaymentModal(true);
                                                     }}
-                                                    style={{ padding: '6px 16px', borderRadius: '8px', border: 'none', background: '#111827', color: '#fff', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}
+                                                    style={{ padding: '6px 16px', borderRadius: '8px', border: 'none', background: 'linear-gradient(135deg, #2d3142 0%, #1e2230 100%)', color: '#fff', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}
                                                 >
                                                     PAY NOW
                                                 </button>
@@ -704,15 +704,15 @@ const CustomerHome = () => {
                                     </div>
                                 </div>
                             ))}
-                            {invoices.length === 0 && <p style={{ textAlign: 'center', padding: '40px', color: '#9ca3af' }}>No invoices found.</p>}
+                            {invoices.length === 0 && <p style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>No invoices found.</p>}
                         </div>
                     </div>
                 );
             case 'feedback':
                 return (
-                    <div style={{ background: '#fff', padding: '32px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
+                    <div style={{ background: 'var(--card-bg)', padding: '32px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
-                            <h3 style={{ fontSize: '24px', fontWeight: '900', margin: 0 }}>My Feedback</h3>
+                            <h3 style={{ fontSize: '24px', fontWeight: '900', margin: 0, color: 'var(--text-primary)' }}>My Feedback</h3>
                             <button
                                 onClick={() => openFeedbackModal()}
                                 style={{ padding: '10px 16px', borderRadius: '10px', border: 'none', background: 'var(--accent-color)', color: '#fff', fontWeight: '800', cursor: 'pointer' }}
@@ -721,35 +721,35 @@ const CustomerHome = () => {
                             </button>
                         </div>
 
-                        <div style={{ marginBottom: '28px', padding: '18px', borderRadius: '12px', background: '#f9fafb', border: '1px solid #eef2f7' }}>
-                            <div style={{ fontSize: '14px', fontWeight: '700', color: '#111827', marginBottom: '6px' }}>Quick note</div>
-                            <div style={{ fontSize: '13px', color: '#6b7280', lineHeight: 1.6 }}>
+                        <div style={{ marginBottom: '28px', padding: '18px', borderRadius: '12px', background: 'var(--surface-muted)', border: '1px solid var(--border-color)' }}>
+                            <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '6px' }}>Quick note</div>
+                            <div style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
                                 You can submit general feedback any time, or give feedback for a completed order from the dashboard.
                             </div>
                         </div>
 
                         {feedbackList.length === 0 ? (
-                            <p style={{ color: '#6b7280' }}>You have not submitted feedback yet.</p>
+                            <p style={{ color: 'var(--text-secondary)' }}>You have not submitted feedback yet.</p>
                         ) : (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                                 {feedbackList.map((f) => (
-                                    <div key={f._id} style={{ border: '1px solid #f0f0f0', borderRadius: '12px', padding: '16px' }}>
+                                    <div key={f._id} style={{ border: '1px solid var(--border-color)', borderRadius: '12px', padding: '16px' }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
-                                            <div style={{ fontWeight: '800', color: '#111827' }}>{f.orderNumber || f.orderId?.orderNumber || 'General Feedback'}</div>
+                                            <div style={{ fontWeight: '800', color: 'var(--text-primary)' }}>{f.orderNumber || f.orderId?.orderNumber || 'General Feedback'}</div>
                                             <div style={{ display: 'flex', gap: '2px' }}>
                                                 {[...Array(f.rating || 0)].map((_, i) => <Star key={i} size={14} fill="#fbbf24" color="#fbbf24" />)}
                                             </div>
                                         </div>
-                                        <div style={{ marginTop: '6px', fontSize: '13px', color: '#4b5563' }}>
+                                        <div style={{ marginTop: '6px', fontSize: '13px', color: 'var(--text-secondary)' }}>
                                             "{f.comment || 'No comment'}"
                                         </div>
-                                        <div style={{ marginTop: '8px', fontSize: '11px', color: '#6b7280', fontWeight: '700', textTransform: 'uppercase' }}>
+                                        <div style={{ marginTop: '8px', fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '700', textTransform: 'uppercase' }}>
                                             Status: {f.status || 'submitted'}
                                         </div>
                                         {f.response && (
                                             <div style={{ marginTop: '10px', padding: '10px', borderRadius: '8px', background: '#f0fdf4', borderLeft: '3px solid #10b981' }}>
                                                 <div style={{ fontSize: '11px', color: '#059669', fontWeight: '800', marginBottom: '4px' }}>Our response</div>
-                                                <div style={{ fontSize: '13px', color: '#374151' }}>{f.response}</div>
+                                                <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{f.response}</div>
                                             </div>
                                         )}
                                     </div>
@@ -760,10 +760,10 @@ const CustomerHome = () => {
                 );
             case 'notifications':
                 return (
-                    <div style={{ background: '#fff', padding: '32px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
-                        <h3 style={{ fontSize: '24px', fontWeight: '900', marginBottom: '24px' }}>My Notifications</h3>
+                    <div style={{ background: 'var(--card-bg)', padding: '32px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
+                        <h3 style={{ fontSize: '24px', fontWeight: '900', marginBottom: '24px', color: 'var(--text-primary)' }}>My Notifications</h3>
                         {notificationList.length === 0 ? (
-                            <p style={{ color: '#6b7280' }}>No notifications yet.</p>
+                            <p style={{ color: 'var(--text-secondary)' }}>No notifications yet.</p>
                         ) : (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                                 {notificationList.map((n) => (
@@ -782,19 +782,19 @@ const CustomerHome = () => {
                                             }
                                         }}
                                         style={{
-                                            border: `1px solid ${n.isRead ? '#f3f4f6' : '#fee2e2'}`,
-                                            background: n.isRead ? '#f9fafb' : '#fff5f5',
+                                            border: `1px solid ${n.isRead ? 'var(--border-color)' : 'rgba(248, 113, 113, 0.35)'}`,
+                                            background: n.isRead ? 'var(--surface-muted)' : 'rgba(127, 29, 29, 0.2)',
                                             borderRadius: '12px',
                                             padding: '14px',
                                             cursor: n.isRead ? 'default' : 'pointer'
                                         }}
                                     >
                                         <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', alignItems: 'center' }}>
-                                            <div style={{ fontSize: '14px', fontWeight: '800', color: '#111827' }}>{n.title}</div>
+                                            <div style={{ fontSize: '14px', fontWeight: '800', color: 'var(--text-primary)' }}>{n.title}</div>
                                             {!n.isRead && <span style={{ fontSize: '10px', fontWeight: '800', color: '#dc2626' }}>NEW</span>}
                                         </div>
-                                        <div style={{ marginTop: '4px', fontSize: '13px', color: '#4b5563' }}>{n.message}</div>
-                                        <div style={{ marginTop: '8px', fontSize: '11px', color: '#9ca3af' }}>{new Date(n.createdAt).toLocaleString()}</div>
+                                        <div style={{ marginTop: '4px', fontSize: '13px', color: 'var(--text-secondary)' }}>{n.message}</div>
+                                        <div style={{ marginTop: '8px', fontSize: '11px', color: 'var(--text-secondary)' }}>{new Date(n.createdAt).toLocaleString()}</div>
                                     </div>
                                 ))}
                             </div>
@@ -804,7 +804,7 @@ const CustomerHome = () => {
             case 'profile':
                 return (
                     <div style={{ animation: 'fadeIn 0.5s ease-out' }}>
-                        <div style={{ background: '#fff', padding: '40px', borderRadius: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)', maxWidth: '800px', margin: '0 auto' }}>
+                        <div style={{ background: 'var(--card-bg)', padding: '40px', borderRadius: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)', maxWidth: '800px', margin: '0 auto' }}>
                             <h3 style={{ fontSize: '28px', fontWeight: '900', marginBottom: '32px', color: 'var(--text-primary)' }}>Profile Settings</h3>
 
                             <form onSubmit={handleUpdateProfile}>
@@ -818,7 +818,7 @@ const CustomerHome = () => {
                                         <h4 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '16px', color: 'var(--text-primary)' }}>Personal Information</h4>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                                             <div>
-                                                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#374151' }}>Name</label>
+                                                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: 'var(--text-muted)' }}>Name</label>
                                                 <input
                                                     type="text"
                                                     value={profileData.name}
@@ -827,16 +827,16 @@ const CustomerHome = () => {
                                                     style={{
                                                         width: '100%',
                                                         padding: '12px 16px',
-                                                        border: '1px solid #e5e7eb',
+                                                        border: '1px solid var(--border-color)',
                                                         borderRadius: '8px',
                                                         fontSize: '16px',
-                                                        background: '#fff',
-                                                        color: '#374151'
+                                                        background: 'var(--card-bg)',
+                                                        color: 'var(--text-muted)'
                                                     }}
                                                 />
                                             </div>
                                             <div>
-                                                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#374151' }}>Phone Number (07XXXXXXXX)</label>
+                                                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: 'var(--text-muted)' }}>Phone Number (07XXXXXXXX)</label>
                                                 <input
                                                     type="text"
                                                     value={profileData.phone}
@@ -846,16 +846,16 @@ const CustomerHome = () => {
                                                     style={{
                                                         width: '100%',
                                                         padding: '12px 16px',
-                                                        border: '1px solid #e5e7eb',
+                                                        border: '1px solid var(--border-color)',
                                                         borderRadius: '8px',
                                                         fontSize: '16px',
-                                                        background: '#fff',
-                                                        color: '#374151'
+                                                        background: 'var(--card-bg)',
+                                                        color: 'var(--text-muted)'
                                                     }}
                                                 />
                                             </div>
                                             <div>
-                                                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#374151' }}>Email</label>
+                                                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: 'var(--text-muted)' }}>Email</label>
                                                 <input
                                                     type="email"
                                                     value={user.email || ''}
@@ -863,11 +863,11 @@ const CustomerHome = () => {
                                                     style={{
                                                         width: '100%',
                                                         padding: '12px 16px',
-                                                        border: '1px solid #e5e7eb',
+                                                        border: '1px solid var(--border-color)',
                                                         borderRadius: '8px',
                                                         fontSize: '16px',
-                                                        background: '#f9fafb',
-                                                        color: '#6b7280'
+                                                        background: 'var(--surface-muted)',
+                                                        color: 'var(--text-secondary)'
                                                     }}
                                                 />
                                             </div>
@@ -881,8 +881,8 @@ const CustomerHome = () => {
                                                 type="button"
                                                 onClick={() => setShowPasswordReset(true)}
                                                 style={{
-                                                    background: '#f3f4f6',
-                                                    border: '1px solid #e5e7eb',
+                                                    background: 'var(--surface-muted-2)',
+                                                    border: '1px solid var(--border-color)',
                                                     padding: '12px 20px',
                                                     borderRadius: '8px',
                                                     fontWeight: '600',
@@ -899,7 +899,7 @@ const CustomerHome = () => {
                                         </div>
                                     </div>
                                 </div>
-                                <div style={{ borderTop: '1px solid #f3f4f6', paddingTop: '24px', display: 'flex', justifyContent: 'flex-end' }}>
+                                <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '24px', display: 'flex', justifyContent: 'flex-end' }}>
                                     <button
                                         type="submit"
                                         disabled={profileSaving}
@@ -925,17 +925,17 @@ const CustomerHome = () => {
         }
     };
 
-    if (loading) return <div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center', background: '#f3f4f6' }}>Loading Workspace...</div>;
+    if (loading) return <div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-color)', color: 'var(--text-primary)', fontFamily: 'var(--font-sans, sans-serif)' }}>Loading Workspace...</div>;
 
     return (
-        <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f3f4f6' }}>
-            <aside style={{ width: '260px', backgroundColor: '#1a1a1b', display: 'flex', flexDirection: 'column' }}>
+        <div className="shan-page" style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--bg-color)', fontFamily: 'var(--font-sans, sans-serif)' }}>
+            <aside style={{ width: '260px', backgroundColor: 'var(--sidebar-bg)', display: 'flex', flexDirection: 'column', borderRight: '1px solid var(--border-color)' }}>
                 <div style={{ padding: '32px 24px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                         <div style={{
                             width: '42px',
                             height: '42px',
-                            background: '#ef4444',
+                            background: 'linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)',
                             borderRadius: '12px',
                             display: 'flex',
                             alignItems: 'center',
@@ -943,7 +943,7 @@ const CustomerHome = () => {
                             color: '#fff',
                             fontWeight: '900',
                             fontSize: '22px',
-                            boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)'
+                            boxShadow: '0 4px 20px rgba(99, 102, 241, 0.4)'
                         }}>SH</div>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                             <div style={{ color: '#fff', fontWeight: '900', fontSize: '20px', lineHeight: 1.1, letterSpacing: '0.5px' }}>SHAN</div>
@@ -979,9 +979,9 @@ const CustomerHome = () => {
                 </nav>
             </aside>
 
-            <main style={{ flex: 1, padding: '48px', overflowY: 'auto' }}>
+            <main style={{ flex: 1, padding: '48px', overflowY: 'auto', color: 'var(--text-primary)' }}>
                 <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
-                    <h2 style={{ fontSize: '32px', fontWeight: '900' }}>Hello, {user.name}!</h2>
+                    <h2 style={{ fontSize: '32px', fontWeight: '900', color: 'var(--text-primary)' }}>Hello, {user.name}!</h2>
                     <div style={{ position: 'relative' }}>
                         <button
                             onClick={() => setShowProfileDropdown(!showProfileDropdown)}
@@ -999,7 +999,7 @@ const CustomerHome = () => {
                             <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--accent-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: '900', fontSize: '16px' }}>
                                 {user.name ? user.name[0].toUpperCase() : 'N'}
                             </div>
-                            <ChevronDown size={18} color="#6b7280" />
+                            <ChevronDown size={18} color="var(--text-secondary)" />
                         </button>
 
                         {showProfileDropdown && (
@@ -1007,8 +1007,8 @@ const CustomerHome = () => {
                                 position: 'absolute',
                                 top: '100%',
                                 right: '0',
-                                background: '#fff',
-                                border: '1px solid #e5e7eb',
+                                background: 'var(--card-bg)',
+                                border: '1px solid var(--border-color)',
                                 borderRadius: '8px',
                                 boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
                                 zIndex: 1000,
@@ -1061,15 +1061,15 @@ const CustomerHome = () => {
                 {/* Approval Modal */}
                 {showApprovalModal && selectedOrder && (
                     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px', overflowY: 'auto' }}>
-                        <div style={{ background: '#fff', width: '100%', maxWidth: '700px', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 25px 50px rgba(0,0,0,0.3)' }}>
+                        <div style={{ background: 'var(--card-bg)', width: '100%', maxWidth: '700px', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 25px 50px rgba(0,0,0,0.3)' }}>
                             {/* Header */}
-                            <div style={{ padding: '28px 32px', borderBottom: '1px solid #f0f0f0' }}>
-                                <h3 style={{ fontSize: '22px', fontWeight: '900', margin: 0, color: '#111827' }}>Review Design — {selectedOrder.orderNumber}</h3>
-                                <p style={{ margin: '6px 0 0 0', color: '#6b7280', fontSize: '14px' }}>Please review the design carefully before approving.</p>
+                            <div style={{ padding: '28px 32px', borderBottom: '1px solid var(--border-color)' }}>
+                                <h3 style={{ fontSize: '22px', fontWeight: '900', margin: 0, color: 'var(--text-primary)' }}>Review Design — {selectedOrder.orderNumber}</h3>
+                                <p style={{ margin: '6px 0 0 0', color: 'var(--text-secondary)', fontSize: '14px' }}>Please review the design carefully before approving.</p>
                             </div>
 
                             {/* Design Preview */}
-                            <div style={{ background: '#f9fafb', margin: '24px 32px', borderRadius: '16px', border: '2px dashed #e5e7eb', minHeight: '280px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                            <div style={{ background: 'var(--surface-muted)', margin: '24px 32px', borderRadius: '16px', border: '2px dashed var(--border-color)', minHeight: '280px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                                 {selectedProductionOrder?.currentVersionId?.pngFilePath ? (
                                     <img
                                         src={`${API_BASE_URL}${selectedProductionOrder.currentVersionId.pngFilePath}`}
@@ -1077,7 +1077,7 @@ const CustomerHome = () => {
                                         style={{ maxWidth: '100%', maxHeight: '340px', objectFit: 'contain', borderRadius: '8px' }}
                                     />
                                 ) : (
-                                    <div style={{ textAlign: 'center', color: '#9ca3af', padding: '40px' }}>
+                                    <div style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '40px' }}>
                                         <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'center' }}><Image size={60} strokeWidth={1} /></div>
                                         <div style={{ fontWeight: '600' }}>Design preview not yet available</div>
                                         <div style={{ fontSize: '12px', marginTop: '4px' }}>The designer may still be working on the design.</div>
@@ -1092,7 +1092,7 @@ const CustomerHome = () => {
                                         <XCircle size={16} /> Rejection Details
                                     </div>
                                     <div style={{ marginBottom: '16px' }}>
-                                        <label style={{ display: 'block', fontWeight: '700', fontSize: '13px', color: '#374151', marginBottom: '8px' }}>Rejection Reason *</label>
+                                        <label style={{ display: 'block', fontWeight: '700', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '8px' }}>Rejection Reason *</label>
                                         <textarea
                                             placeholder="Why are you rejecting this design? (e.g. colours are wrong, layout doesn't match)"
                                             value={rejectionReason}
@@ -1101,7 +1101,7 @@ const CustomerHome = () => {
                                         />
                                     </div>
                                     <div>
-                                        <label style={{ display: 'block', fontWeight: '700', fontSize: '13px', color: '#374151', marginBottom: '8px' }}>What Should Change *</label>
+                                        <label style={{ display: 'block', fontWeight: '700', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '8px' }}>What Should Change *</label>
                                         <textarea
                                             placeholder="Describe exactly what the designer should change (e.g. change text to 'Grand Opening', use blue instead of red)"
                                             value={rejectionChanges}
@@ -1110,7 +1110,7 @@ const CustomerHome = () => {
                                         />
                                     </div>
                                     <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
-                                        <button onClick={() => { setShowRejectionForm(false); setRejectionReason(''); setRejectionChanges(''); }} style={{ flex: 1, padding: '12px', borderRadius: '10px', border: '1px solid #e5e7eb', background: '#fff', fontWeight: '700', cursor: 'pointer', color: '#374151' }}>Cancel</button>
+                                        <button onClick={() => { setShowRejectionForm(false); setRejectionReason(''); setRejectionChanges(''); }} style={{ flex: 1, padding: '12px', borderRadius: '10px', border: '1px solid var(--border-color)', background: 'var(--card-bg)', fontWeight: '700', cursor: 'pointer', color: 'var(--text-muted)' }}>Cancel</button>
                                         <button onClick={() => handleApproval('reject')} style={{ flex: 2, padding: '12px', borderRadius: '10px', border: 'none', background: '#dc2626', color: '#fff', fontWeight: '800', cursor: 'pointer' }}>SUBMIT REJECTION</button>
                                     </div>
                                 </div>
@@ -1119,8 +1119,8 @@ const CustomerHome = () => {
                             {/* Action Buttons */}
                             {!showRejectionForm && (
                                 <div style={{ padding: '0 32px 28px', display: 'flex', gap: '16px' }}>
-                                    <button onClick={() => { setShowApprovalModal(false); setShowRejectionForm(false); setRejectionReason(''); setRejectionChanges(''); }} style={{ flex: 1, padding: '14px', borderRadius: '12px', border: 'none', background: '#f3f4f6', fontWeight: '700', cursor: 'pointer', color: '#374151' }}>Close</button>
-                                    <button onClick={() => setShowRejectionForm(true)} style={{ flex: 1, padding: '14px', borderRadius: '12px', border: '1.5px solid #dc2626', background: '#fff', color: '#dc2626', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                                    <button onClick={() => { setShowApprovalModal(false); setShowRejectionForm(false); setRejectionReason(''); setRejectionChanges(''); }} style={{ flex: 1, padding: '14px', borderRadius: '12px', border: 'none', background: 'var(--surface-muted-2)', fontWeight: '700', cursor: 'pointer', color: 'var(--text-muted)' }}>Close</button>
+                                    <button onClick={() => setShowRejectionForm(true)} style={{ flex: 1, padding: '14px', borderRadius: '12px', border: '1.5px solid #dc2626', background: 'var(--card-bg)', color: '#dc2626', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                                         <XCircle size={18} /> REJECT
                                     </button>
                                     <button onClick={() => handleApproval('approve')} style={{ flex: 2, padding: '14px', borderRadius: '12px', border: 'none', background: '#10b981', color: '#fff', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
@@ -1135,9 +1135,9 @@ const CustomerHome = () => {
                 {/* Feedback Modal */}
                 {showFeedbackModal && (
                     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-                        <form onSubmit={handleSubmitFeedback} style={{ background: '#fff', width: '100%', maxWidth: '500px', borderRadius: '24px', padding: '40px' }}>
+                        <form onSubmit={handleSubmitFeedback} style={{ background: 'var(--card-bg)', width: '100%', maxWidth: '500px', borderRadius: '24px', padding: '40px' }}>
                             <h3 style={{ fontSize: '24px', fontWeight: '900', marginBottom: '8px' }}>Share Your Experience</h3>
-                            <p style={{ color: '#6b7280', marginBottom: '32px' }}>
+                            <p style={{ color: 'var(--text-secondary)', marginBottom: '32px' }}>
                                 {selectedOrder?.orderNumber
                                     ? `How was the service for order ${selectedOrder.orderNumber}?`
                                     : 'Share a general comment about your experience with us.'}
@@ -1145,11 +1145,11 @@ const CustomerHome = () => {
 
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
                                 <div>
-                                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '700', color: '#374151' }}>Category</label>
+                                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '700', color: 'var(--text-muted)' }}>Category</label>
                                     <select
                                         value={feedbackCategory}
                                         onChange={(e) => setFeedbackCategory(e.target.value)}
-                                        style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1.5px solid #e5e7eb', fontSize: '14px', background: '#fff', color: '#374151' }}
+                                        style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1.5px solid var(--border-color)', fontSize: '14px', background: 'var(--card-bg)', color: 'var(--text-muted)' }}
                                     >
                                         <option value="service">Service</option>
                                         <option value="quality">Quality</option>
@@ -1161,11 +1161,11 @@ const CustomerHome = () => {
                                 </div>
 
                                 <div>
-                                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '700', color: '#374151' }}>Order Number (optional)</label>
+                                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '700', color: 'var(--text-muted)' }}>Order Number (optional)</label>
                                     <select
                                         value={feedbackOrderId}
                                         onChange={(e) => setFeedbackOrderId(e.target.value)}
-                                        style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1.5px solid #e5e7eb', fontSize: '14px', background: '#fff', color: '#374151' }}
+                                        style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1.5px solid var(--border-color)', fontSize: '14px', background: 'var(--card-bg)', color: 'var(--text-muted)' }}
                                     >
                                         <option value="">General Feedback (No specific order)</option>
                                         {orders.map((order) => (
@@ -1182,14 +1182,14 @@ const CustomerHome = () => {
                                     <span
                                         key={star}
                                         onClick={() => setRating(star)}
-                                        style={{ cursor: 'pointer', color: star <= rating ? '#fbbf24' : '#e5e7eb' }}
+                                        style={{ cursor: 'pointer', color: star <= rating ? '#fbbf24' : 'rgba(255,255,255,0.25)' }}
                                     >
                                         <Star
                                             key={star}
                                             onClick={() => setRating(star)}
                                             size={32}
                                             fill={star <= rating ? '#fbbf24' : 'transparent'}
-                                            style={{ cursor: 'pointer', color: star <= rating ? '#fbbf24' : '#e5e7eb', transition: 'all 0.2s' }}
+                                            style={{ cursor: 'pointer', color: star <= rating ? '#fbbf24' : 'rgba(255,255,255,0.25)', transition: 'all 0.2s' }}
                                         />
                                     </span>
                                 ))}
@@ -1199,11 +1199,11 @@ const CustomerHome = () => {
                                 placeholder="Your comments (optional)..."
                                 value={comment}
                                 onChange={(e) => setComment(e.target.value)}
-                                style={{ width: '100%', padding: '16px', borderRadius: '12px', border: '1.5px solid #e5e7eb', height: '120px', marginBottom: '24px', resize: 'none' }}
+                                style={{ width: '100%', padding: '16px', borderRadius: '12px', border: '1.5px solid var(--border-color)', height: '120px', marginBottom: '24px', resize: 'none' }}
                             />
 
                             <div style={{ display: 'flex', gap: '16px' }}>
-                                <button type="button" onClick={closeFeedbackModal} style={{ flex: 1, padding: '14px', borderRadius: '12px', border: 'none', background: '#f3f4f6', fontWeight: '700', cursor: 'pointer' }}>Cancel</button>
+                                <button type="button" onClick={closeFeedbackModal} style={{ flex: 1, padding: '14px', borderRadius: '12px', border: 'none', background: 'var(--surface-muted-2)', color: 'var(--text-primary)', fontWeight: '700', cursor: 'pointer' }}>Cancel</button>
                                 <button type="submit" style={{ flex: 2, padding: '14px', borderRadius: '12px', border: 'none', background: 'var(--accent-color)', color: '#fff', fontWeight: '800', cursor: 'pointer' }}>SUBMIT FEEDBACK</button>
                             </div>
                         </form>
@@ -1213,40 +1213,40 @@ const CustomerHome = () => {
                 {/* Password Reset Modal */}
                 {showPasswordReset && (
                     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-                        <div style={{ background: '#fff', width: '100%', maxWidth: '500px', borderRadius: '24px', padding: '40px' }}>
+                        <div style={{ background: 'var(--card-bg)', width: '100%', maxWidth: '500px', borderRadius: '24px', padding: '40px' }}>
                             <h3 style={{ fontSize: '24px', fontWeight: '900', marginBottom: '8px' }}>Reset Password</h3>
-                            <p style={{ color: '#6b7280', marginBottom: '32px' }}>Enter your new password below.</p>
+                            <p style={{ color: 'var(--text-secondary)', marginBottom: '32px' }}>Enter your new password below.</p>
 
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                                 <div>
-                                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#374151' }}>New Password</label>
+                                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: 'var(--text-muted)' }}>New Password</label>
                                     <input
                                         type="password"
                                         placeholder="Enter new password"
                                         style={{
                                             width: '100%',
                                             padding: '12px 16px',
-                                            border: '1px solid #e5e7eb',
+                                            border: '1px solid var(--border-color)',
                                             borderRadius: '8px',
                                             fontSize: '16px',
-                                            background: '#fff',
-                                            color: '#374151'
+                                            background: 'var(--card-bg)',
+                                            color: 'var(--text-muted)'
                                         }}
                                     />
                                 </div>
                                 <div>
-                                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#374151' }}>Confirm Password</label>
+                                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: 'var(--text-muted)' }}>Confirm Password</label>
                                     <input
                                         type="password"
                                         placeholder="Confirm new password"
                                         style={{
                                             width: '100%',
                                             padding: '12px 16px',
-                                            border: '1px solid #e5e7eb',
+                                            border: '1px solid var(--border-color)',
                                             borderRadius: '8px',
                                             fontSize: '16px',
-                                            background: '#fff',
-                                            color: '#374151'
+                                            background: 'var(--card-bg)',
+                                            color: 'var(--text-muted)'
                                         }}
                                     />
                                 </div>
@@ -1256,7 +1256,7 @@ const CustomerHome = () => {
                                 <button
                                     type="button"
                                     onClick={() => setShowPasswordReset(false)}
-                                    style={{ flex: 1, padding: '14px', borderRadius: '12px', border: 'none', background: '#f3f4f6', fontWeight: '700', cursor: 'pointer' }}
+                                    style={{ flex: 1, padding: '14px', borderRadius: '12px', border: 'none', background: 'var(--surface-muted-2)', color: 'var(--text-primary)', fontWeight: '700', cursor: 'pointer' }}
                                 >
                                     Cancel
                                 </button>
@@ -1278,14 +1278,14 @@ const CustomerHome = () => {
                 {/* Payment Modal */}
                 {showPaymentModal && selectedInvoice && (
                     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '16px' }}>
-                        <div style={{ background: '#fff', width: '100%', maxWidth: '430px', maxHeight: 'calc(100vh - 32px)', borderRadius: '24px', padding: '24px', overflowY: 'auto' }}>
+                        <div style={{ background: 'var(--card-bg)', width: '100%', maxWidth: '430px', maxHeight: 'calc(100vh - 32px)', borderRadius: '24px', padding: '24px', overflowY: 'auto' }}>
                             <h3 style={{ fontSize: '24px', fontWeight: '900', marginBottom: '8px' }}>Complete Payment</h3>
-                            <p style={{ color: '#6b7280', marginBottom: '24px' }}>Invoice #{selectedInvoice.invoiceNumber} for {selectedInvoice.orderId?.orderNumber}</p>
+                            <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>Invoice #{selectedInvoice.invoiceNumber} for {selectedInvoice.orderId?.orderNumber}</p>
 
-                            <div style={{ background: '#f9fafb', padding: '20px', borderRadius: '16px', marginBottom: '24px', textAlign: 'center' }}>
-                                <div style={{ fontSize: '13px', color: '#6b7280', marginBottom: '4px' }}>Balance Due</div>
+                            <div style={{ background: 'var(--surface-muted)', padding: '20px', borderRadius: '16px', marginBottom: '24px', textAlign: 'center' }}>
+                                <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '4px' }}>Balance Due</div>
                                 <div style={{ fontSize: '32px', fontWeight: '900', color: 'var(--accent-color)' }}>LKR {selectedInvoice.balanceDue?.toLocaleString()}</div>
-                                <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '8px' }}>
+                                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '8px' }}>
                                     {isPickup(selectedInvoice) ? <><MapPin size={14} /> Pickup Order - Pay Online</> : <><Smartphone size={14} /> Delivery Order - Electronic Payment Only</>}
                                 </div>
                             </div>
@@ -1298,22 +1298,22 @@ const CustomerHome = () => {
 
                             <form onSubmit={handleRecordPayment} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                                 <div>
-                                    <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: '#374151', marginBottom: '8px' }}>Amount to Pay (LKR)</label>
+                                    <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '8px' }}>Amount to Pay (LKR)</label>
                                     <input
                                         type="number"
                                         max={selectedInvoice.balanceDue}
                                         min="1"
                                         step="0.01"
                                         required
-                                        style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1.5px solid #e5e7eb', fontSize: '16px', fontWeight: '700' }}
+                                        style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1.5px solid var(--border-color)', fontSize: '16px', fontWeight: '700' }}
                                         value={paymentData.amount}
                                         onChange={e => setPaymentData({ ...paymentData, amount: Number(e.target.value) })}
                                     />
                                 </div>
                                 <div>
-                                    <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: '#374151', marginBottom: '8px' }}>Payment Method</label>
+                                    <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '8px' }}>Payment Method</label>
                                     <select
-                                        style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1.5px solid #e5e7eb', fontSize: '14px', fontWeight: '600' }}
+                                        style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1.5px solid var(--border-color)', fontSize: '14px', fontWeight: '600' }}
                                         value={paymentData.method}
                                         onChange={e => {
                                             setPaymentData({ ...paymentData, method: e.target.value });
@@ -1328,11 +1328,11 @@ const CustomerHome = () => {
                                 </div>
 
                                 <div>
-                                    <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: '#374151', marginBottom: '8px' }}>Reference / Transaction ID</label>
+                                    <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '8px' }}>Reference / Transaction ID</label>
                                     <input
                                         type="text"
                                         placeholder="Enter transaction reference"
-                                        style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1.5px solid #e5e7eb', fontSize: '14px' }}
+                                        style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1.5px solid var(--border-color)', fontSize: '14px' }}
                                         value={paymentData.reference}
                                         onChange={e => setPaymentData({ ...paymentData, reference: e.target.value })}
                                         required={paymentData.method === 'card' || paymentData.method === 'online'}
@@ -1342,7 +1342,7 @@ const CustomerHome = () => {
                                 {paymentData.method === 'card' && (
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                                         <div>
-                                            <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: '#374151', marginBottom: '8px' }}>Card Number</label>
+                                            <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '8px' }}>Card Number</label>
                                             <input
                                                 type="text"
                                                 inputMode="numeric"
@@ -1350,22 +1350,22 @@ const CustomerHome = () => {
                                                 maxLength={23}
                                                 value={paymentData.cardNumber}
                                                 onChange={e => setPaymentData({ ...paymentData, cardNumber: formatCardNumberInput(e.target.value) })}
-                                                style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1.5px solid #e5e7eb', fontSize: '14px' }}
+                                                style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1.5px solid var(--border-color)', fontSize: '14px' }}
                                             />
                                         </div>
                                         <div style={{ display: 'flex', gap: '16px' }}>
                                             <div style={{ flex: 1 }}>
-                                                <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: '#374151', marginBottom: '8px' }}>Expiry Date</label>
+                                                <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '8px' }}>Expiry Date</label>
                                                 <input
                                                     type="text"
                                                     placeholder="MM/YY"
                                                     value={paymentData.cardExpiry}
                                                     onChange={e => setPaymentData({ ...paymentData, cardExpiry: formatExpiryDateInput(e.target.value) })}
-                                                    style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1.5px solid #e5e7eb', fontSize: '14px' }}
+                                                    style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1.5px solid var(--border-color)', fontSize: '14px' }}
                                                 />
                                             </div>
                                             <div style={{ flex: 1 }}>
-                                                <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: '#374151', marginBottom: '8px' }}>CVV</label>
+                                                <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '8px' }}>CVV</label>
                                                 <input
                                                     type="password"
                                                     inputMode="numeric"
@@ -1373,7 +1373,7 @@ const CustomerHome = () => {
                                                     maxLength="4"
                                                     value={paymentData.cardCvv}
                                                     onChange={e => setPaymentData({ ...paymentData, cardCvv: e.target.value })}
-                                                    style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1.5px solid #e5e7eb', fontSize: '14px' }}
+                                                    style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1.5px solid var(--border-color)', fontSize: '14px' }}
                                                 />
                                             </div>
                                         </div>
@@ -1383,7 +1383,7 @@ const CustomerHome = () => {
                                 {paymentData.method === 'bank_transfer' && (
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                                         <div>
-                                            <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: '#374151', marginBottom: '8px' }}>Upload Transfer Slip</label>
+                                            <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '8px' }}>Upload Transfer Slip</label>
                                             <input
                                                 type="file"
                                                 accept="image/*,.pdf"
@@ -1391,7 +1391,7 @@ const CustomerHome = () => {
                                                 style={{ width: '100%', padding: '10px', borderRadius: '12px', border: '1.5px dashed var(--accent-color)', fontSize: '14px', background: '#fffafa' }}
                                             />
                                         </div>
-                                        <div style={{ fontSize: '12px', color: '#6b7280' }}>
+                                        <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
                                             Once uploaded, the payment will be sent to admin for approval before it is marked as paid.
                                         </div>
                                     </div>
@@ -1411,7 +1411,7 @@ const CustomerHome = () => {
                                             setSelectedInvoice(null);
                                             resetPaymentForm();
                                         }}
-                                        style={{ flex: 1, padding: '16px', borderRadius: '14px', border: 'none', background: '#f3f4f6', fontWeight: '700', cursor: 'pointer' }}
+                                        style={{ flex: 1, padding: '16px', borderRadius: '14px', border: 'none', background: 'var(--surface-muted-2)', color: 'var(--text-primary)', fontWeight: '700', cursor: 'pointer' }}
                                     >
                                         {paymentData.method === 'pickme_pay' ? 'Close' : 'Cancel'}
                                     </button>
@@ -1420,7 +1420,7 @@ const CustomerHome = () => {
                                         <button
                                             type="submit"
                                             disabled={paymentSubmitting}
-                                            style={{ flex: 2, padding: '16px', borderRadius: '14px', border: 'none', background: paymentSubmitting ? '#9ca3af' : 'var(--accent-color)', color: '#fff', fontWeight: '800', cursor: paymentSubmitting ? 'not-allowed' : 'pointer', boxShadow: '0 4px 15px rgba(211, 47, 47, 0.4)' }}
+                                            style={{ flex: 2, padding: '16px', borderRadius: '14px', border: 'none', background: paymentSubmitting ? 'var(--text-secondary)' : 'var(--accent-color)', color: '#fff', fontWeight: '800', cursor: paymentSubmitting ? 'not-allowed' : 'pointer', boxShadow: '0 4px 20px var(--accent-glow)' }}
                                         >
                                             {paymentData.method === 'bank_transfer' ? 'UPLOAD SLIP' : 'PAY NOW'}
                                         </button>
@@ -1457,7 +1457,7 @@ const SummaryCard = ({ title, value, icon, color, onClick, style }) => (
     <div
         onClick={onClick}
         style={{
-            background: '#fff',
+            background: 'var(--card-bg)',
             padding: '24px',
             borderRadius: '16px',
             boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
@@ -1472,7 +1472,7 @@ const SummaryCard = ({ title, value, icon, color, onClick, style }) => (
             {icon}
         </div>
         <div>
-            <div style={{ fontSize: '13px', color: '#6b7280', fontWeight: '600' }}>{title}</div>
+            <div style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>{title}</div>
             <div style={{ fontSize: '24px', fontWeight: '900' }}>{value}</div>
         </div>
     </div>
@@ -1480,27 +1480,27 @@ const SummaryCard = ({ title, value, icon, color, onClick, style }) => (
 
 const NotificationModal = ({ notifications, onClose, onMarkRead }) => (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-        <div style={{ background: '#fff', width: '100%', maxWidth: '500px', borderRadius: '24px', padding: '40px' }}>
+        <div style={{ background: 'var(--card-bg)', width: '100%', maxWidth: '500px', borderRadius: '24px', padding: '40px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                 <h3 style={{ fontSize: '24px', fontWeight: '900', margin: 0 }}>Notifications</h3>
-                <button onClick={onClose} style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#6b7280' }}><XCircle size={24} /></button>
+                <button onClick={onClose} style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-secondary)' }}><XCircle size={24} /></button>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '400px', overflowY: 'auto', marginBottom: '24px' }}>
                 {notifications.length > 0 ? notifications.map(n => (
                     <div
                         key={n._id}
-                        style={{ padding: '16px', borderRadius: '12px', background: n.isRead ? '#f9fafb' : '#fff5f5', border: `1px solid ${n.isRead ? '#f3f4f6' : '#fee2e2'}` }}
+                        style={{ padding: '16px', borderRadius: '12px', background: n.isRead ? 'var(--surface-muted)' : 'rgba(127, 29, 29, 0.2)', border: `1px solid ${n.isRead ? 'var(--border-color)' : 'rgba(248, 113, 113, 0.35)'}` }}
                         onClick={() => !n.isRead && onMarkRead(n._id)}
                     >
-                        <div style={{ fontWeight: '800', fontSize: '14px', color: '#111827', marginBottom: '4px' }}>{n.title}</div>
-                        <div style={{ fontSize: '13px', color: '#4b5563', lineHeight: '1.4' }}>{n.message}</div>
-                        <div style={{ marginTop: '8px', fontSize: '10px', color: '#9ca3af', fontWeight: '600' }}>{new Date(n.createdAt).toLocaleString()}</div>
+                        <div style={{ fontWeight: '800', fontSize: '14px', color: 'var(--text-primary)', marginBottom: '4px' }}>{n.title}</div>
+                        <div style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.4' }}>{n.message}</div>
+                        <div style={{ marginTop: '8px', fontSize: '10px', color: 'var(--text-secondary)', fontWeight: '600' }}>{new Date(n.createdAt).toLocaleString()}</div>
                     </div>
                 )) : (
-                    <div style={{ textAlign: 'center', padding: '40px', color: '#9ca3af' }}>No notifications yet.</div>
+                    <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>No notifications yet.</div>
                 )}
             </div>
-            <button onClick={onClose} style={{ width: '100%', padding: '14px', borderRadius: '12px', border: 'none', background: '#111827', color: '#fff', fontWeight: '800', cursor: 'pointer' }}>CLOSE</button>
+            <button onClick={onClose} style={{ width: '100%', padding: '14px', borderRadius: '12px', border: 'none', background: 'linear-gradient(135deg, #2d3142 0%, #1e2230 100%)', color: '#fff', fontWeight: '800', cursor: 'pointer' }}>CLOSE</button>
         </div>
     </div>
 );

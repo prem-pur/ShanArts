@@ -211,7 +211,7 @@ const OrderWorkspace = () => {
                         border: '1px solid #fecaca'
                     }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <div style={{ color: '#ef4444', display: 'flex' }}>
+                            <div style={{ color: 'var(--accent-color)', display: 'flex' }}>
                                 <Bell size={20} />
                             </div>
                             <div>
@@ -223,7 +223,7 @@ const OrderWorkspace = () => {
                         <button
                             onClick={() => setFilterTab(STATUS.DRAFT)}
                             style={{
-                                background: '#ef4444',
+                                background: 'var(--accent-color)',
                                 color: '#fff',
                                 border: 'none',
                                 padding: '8px 16px',
@@ -241,7 +241,7 @@ const OrderWorkspace = () => {
 
                 <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                     <div>
-                        <h1 style={{ fontSize: '24px', fontWeight: '900', color: '#0f172a', margin: 0, letterSpacing: '-0.5px' }}>Order Management</h1>
+                        <h1 style={{ fontSize: '24px', fontWeight: '900', color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.5px' }}>Order Management</h1>
                     </div>
                     <div style={{ position: 'relative' }}>
                         <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', display: 'flex' }}>
@@ -254,10 +254,10 @@ const OrderWorkspace = () => {
                             style={{
                                 padding: '10px 16px 10px 42px',
                                 borderRadius: '12px',
-                                border: '1px solid #e2e8f0',
+                                border: '1px solid var(--border-color)',
                                 width: '280px',
                                 outline: 'none',
-                                background: '#fff',
+                                background: 'var(--card-bg)',
                                 boxShadow: '0 4px 20px rgba(0,0,0,0.02)',
                                 fontSize: '14px',
                                 fontWeight: '500'
@@ -274,12 +274,12 @@ const OrderWorkspace = () => {
                             style={{
                                 padding: '8px 16px',
                                 borderRadius: '12px',
-                                background: filterTab === tab ? '#ef4444' : '#fff',
-                                color: filterTab === tab ? '#fff' : '#64748b',
+                                background: filterTab === tab ? 'var(--accent-color)' : 'var(--card-bg)',
+                                color: filterTab === tab ? '#fff' : 'var(--text-secondary)',
                                 fontWeight: '800',
                                 cursor: 'pointer',
                                 transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                                border: filterTab === tab ? 'none' : '1px solid #e2e8f0',
+                                border: filterTab === tab ? 'none' : '1px solid var(--border-color)',
                                 boxShadow: filterTab === tab ? '0 8px 20px rgba(239, 68, 68, 0.25)' : 'none',
                                 fontSize: '13px'
                             }}
@@ -300,10 +300,10 @@ const OrderWorkspace = () => {
                             <div
                                 key={order._id}
                                 style={{
-                                    background: '#fff',
+                                    background: 'var(--card-bg)',
                                     padding: '20px',
                                     borderRadius: '20px',
-                                    border: '1px solid #e2e8f0',
+                                    border: '1px solid var(--border-color)',
                                     boxShadow: '0 10px 40px rgba(0,0,0,0.02)',
                                     cursor: 'default',
                                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -322,7 +322,7 @@ const OrderWorkspace = () => {
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        color: '#64748b',
+                                        color: 'var(--text-secondary)',
                                         border: '1px solid #f1f5f9'
                                     }}>
                                         <ImageIcon />
@@ -333,7 +333,7 @@ const OrderWorkspace = () => {
                                         padding: '4px 8px',
                                         borderRadius: '6px',
                                         background: isApproved ? '#ecfdf5' : isDraft ? '#f8fafc' : isRejected ? '#fef2f2' : '#f1f5f9',
-                                        color: isApproved ? '#059669' : isDraft ? '#64748b' : isRejected ? '#ef4444' : '#64748b',
+                                        color: isApproved ? '#059669' : isDraft ? 'var(--text-secondary)' : isRejected ? '#f87171' : 'var(--text-secondary)',
                                         textTransform: 'uppercase',
                                         letterSpacing: '0.8px',
                                         border: `1px solid ${isApproved ? '#a7f3d0' : isDraft ? '#e2e8f0' : isRejected ? '#fecaca' : '#e2e8f0'}`,
@@ -348,10 +348,10 @@ const OrderWorkspace = () => {
                                 </div>
 
                                 <div>
-                                    <h3 style={{ fontSize: '16px', fontWeight: '900', color: '#0f172a', marginBottom: '2px', letterSpacing: '-0.3px' }}>
+                                    <h3 style={{ fontSize: '16px', fontWeight: '900', color: 'var(--text-primary)', marginBottom: '2px', letterSpacing: '-0.3px' }}>
                                         {order.customerName || "Untitled Project"}
                                     </h3>
-                                    <p style={{ color: '#64748b', fontSize: '13px', fontWeight: '600', marginBottom: '0' }}>
+                                    <p style={{ color: 'var(--text-secondary)', fontSize: '13px', fontWeight: '600', marginBottom: '0' }}>
                                         {order.printSpecs?.designType || 'General Product'} • {order.printSpecs?.size ?
                                         `${order.printSpecs.size.width || 0}x${order.printSpecs.size.height || 0}${order.printSpecs.size.unit || 'mm'}` :
                                         'Custom size'
@@ -361,7 +361,7 @@ const OrderWorkspace = () => {
 
                                 {(isRejected || status === 'Revision') && order.revisionNotes && (
                                     <div style={{ background: '#fef2f2', border: '1px solid #fecaca', padding: '10px', borderRadius: '10px' }}>
-                                        <div style={{ fontSize: '10px', fontWeight: '900', color: '#ef4444', marginBottom: '4px', textTransform: 'uppercase' }}>
+                                        <div style={{ fontSize: '10px', fontWeight: '900', color: 'var(--accent-color)', marginBottom: '4px', textTransform: 'uppercase' }}>
                                             Revision Requested:
                                         </div>
                                         <p style={{ margin: 0, fontSize: '11px', color: '#991b1b', fontStyle: 'italic', lineHeight: '1.4', fontWeight: '500' }}>
@@ -378,8 +378,8 @@ const OrderWorkspace = () => {
                                         onClick={() => { setSelectedOrder(order); setViewMode("studio"); }}
                                         style={{
                                             background: 'transparent',
-                                            color: '#ef4444',
-                                            border: '1.5px solid #ef4444',
+                                            color: 'var(--accent-color)',
+                                            border: '1.5px solid var(--accent-color)',
                                             padding: '6px 14px',
                                             borderRadius: '8px',
                                             fontWeight: '800',
@@ -412,7 +412,7 @@ const OrderWorkspace = () => {
             <div style={{ padding: '24px 40px', maxWidth: '1400px', margin: '0 auto', animation: 'fadeIn 0.4s ease-out' }}>
                 <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', paddingBottom: '12px', borderBottom: '1px solid #e5e7eb' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                        <button onClick={() => navigate('/design-workspace')} style={{ width: '32px', height: '32px', borderRadius: '50%', border: 'none', background: '#fff', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}>
+                        <button onClick={() => navigate('/design-workspace')} style={{ width: '32px', height: '32px', borderRadius: '50%', border: 'none', background: 'var(--card-bg)', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>
                             <ChevronLeft size={18} strokeWidth={3} />
                         </button>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
@@ -423,7 +423,7 @@ const OrderWorkspace = () => {
                                     const found = orders.find(o => o._id === e.target.value);
                                     if (found) setSelectedOrder(found);
                                 }}
-                                style={{ fontSize: '18px', fontWeight: '900', color: '#0f172a', border: 'none', background: 'transparent', cursor: 'pointer', outline: 'none', maxWidth: '280px', fontFamily: "'Inter', sans-serif" }}
+                                style={{ fontSize: '18px', fontWeight: '900', color: 'var(--text-primary)', border: 'none', background: 'transparent', cursor: 'pointer', outline: 'none', maxWidth: '280px', fontFamily: "'Inter', sans-serif" }}
                             >
                                 {orders.map(o => (
                                     <option key={o._id} value={o._id}>{o.customerName || 'Untitled'}</option>
@@ -474,7 +474,7 @@ const OrderWorkspace = () => {
                         <button onClick={() => setShowEditor(true)} style={{ background: 'transparent', color: 'var(--accent-color)', border: '1.5px solid var(--accent-color)', padding: '8px 16px', borderRadius: '8px', fontWeight: '800', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <Paintbrush size={16} /> LAUNCH EDITOR
                         </button>
-                        <button onClick={() => handleDeleteOrder(selectedOrder._id)} style={{ background: '#f3f4f6', color: '#374151', border: 'none', padding: '8px 16px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <button onClick={() => handleDeleteOrder(selectedOrder._id)} style={{ background: 'var(--surface-muted-2)', color: 'var(--text-primary)', border: 'none', padding: '8px 16px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <Trash2 size={16} /> DELETE
                         </button>
                     </div>
@@ -482,10 +482,10 @@ const OrderWorkspace = () => {
 
                 <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                        <div style={{ background: '#fff', padding: '20px', borderRadius: '16px', border: '1.5px solid #d1d5db', boxShadow: 'var(--shadow-sm)' }}>
+                        <div style={{ background: 'var(--card-bg)', padding: '20px', borderRadius: '16px', border: '1.5px solid #d1d5db', boxShadow: 'var(--shadow-sm)' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
                                 <h3 style={{ fontSize: '15px', fontWeight: '800', margin: 0, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <span style={{ color: '#64748b', display: 'flex' }}><ImageIcon /></span> Design Preview
+                                    <span style={{ color: 'var(--text-secondary)', display: 'flex' }}><ImageIcon /></span> Design Preview
                                 </h3>
                                 {selectedOrder.currentVersionId && (
                                     <button onClick={() => setShowEditor(true)} style={{ background: 'transparent', color: 'var(--accent-color)', border: '1.5px solid var(--accent-color)', padding: '6px 14px', borderRadius: '8px', fontWeight: '800', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(239, 68, 68, 0.15)' }} onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'} onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
@@ -510,7 +510,7 @@ const OrderWorkspace = () => {
 
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                        <div style={{ background: '#fff', padding: '20px', borderRadius: '16px', border: '1.5px solid #d1d5db', boxShadow: 'var(--shadow-sm)' }}>
+                        <div style={{ background: 'var(--card-bg)', padding: '20px', borderRadius: '16px', border: '1.5px solid #d1d5db', boxShadow: 'var(--shadow-sm)' }}>
                             <h3 style={{ fontSize: '15px', fontWeight: '900', color: 'var(--text-primary)', marginBottom: '14px' }}>Specifications</h3>
 
                             {(selectedOrder.status === 'revision_requested' || selectedOrder.status === 'Rejected') && (() => {
@@ -526,12 +526,12 @@ const OrderWorkspace = () => {
                                         </div>
                                         <div style={{ marginBottom: changes ? '8px' : 0 }}>
                                             <div style={{ fontSize: '10px', fontWeight: '800', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: '4px' }}>Reason</div>
-                                            <p style={{ margin: 0, fontSize: '12px', color: '#374151', lineHeight: '1.5', fontWeight: '600', background: '#fff', padding: '8px', borderRadius: '6px', border: '1px solid #fca5a5' }}>"{reason}"</p>
+                                            <p style={{ margin: 0, fontSize: '12px', color: '#374151', lineHeight: '1.5', fontWeight: '600', background: 'var(--card-bg)', padding: '8px', borderRadius: '6px', border: '1px solid #fca5a5' }}>"{reason}"</p>
                                         </div>
                                         {changes && (
                                             <div>
                                                 <div style={{ fontSize: '10px', fontWeight: '800', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: '4px', marginTop: '8px' }}>Changes</div>
-                                                <p style={{ margin: 0, fontSize: '12px', color: '#374151', lineHeight: '1.5', fontWeight: '600', background: '#fff', padding: '8px', borderRadius: '6px', border: '1px solid #fca5a5' }}>"{changes}"</p>
+                                                <p style={{ margin: 0, fontSize: '12px', color: '#374151', lineHeight: '1.5', fontWeight: '600', background: 'var(--card-bg)', padding: '8px', borderRadius: '6px', border: '1px solid #fca5a5' }}>"{changes}"</p>
                                             </div>
                                         )}
                                     </div>
@@ -550,7 +550,7 @@ const OrderWorkspace = () => {
                             </div>
                         </div>
 
-                        <div style={{ background: '#fff', padding: '20px', borderRadius: '16px', border: '1.5px solid #d1d5db', boxShadow: 'var(--shadow-sm)' }}>
+                        <div style={{ background: 'var(--card-bg)', padding: '20px', borderRadius: '16px', border: '1.5px solid #d1d5db', boxShadow: 'var(--shadow-sm)' }}>
                             <h3 style={{ fontSize: '15px', fontWeight: '800', marginBottom: '14px', color: 'var(--text-primary)' }}>Customer Brief</h3>
                             <div style={{ color: 'var(--text-secondary)', lineHeight: '1.6', fontSize: '13px', background: '#f9fafb', padding: '14px', borderRadius: '10px' }}>
                                 {shopOrder?.preferences ||
@@ -580,7 +580,7 @@ const OrderWorkspace = () => {
                                             const fileName = filePath.split('/').pop();
                                             const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(fileName);
                                             return (
-                                                <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: '#f3f4f6', borderRadius: '8px' }}>
+                                                <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: 'var(--surface-muted-2)', borderRadius: '8px' }}>
                                                 <span style={{ fontSize: '11px', fontWeight: '600', color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '140px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                                                     {isImage ? <ImageIcon size={14} /> : <File size={14} />} {fileName}
                                                 </span>
@@ -599,7 +599,11 @@ const OrderWorkspace = () => {
         );
     };
 
-    if (loading && orders.length === 0) return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f3f4f6', color: '#64748b', fontWeight: '600' }}>Loading Studio...</div>;
+    if (loading && orders.length === 0) return (
+        <div className="shan-fade-in" style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-color)', color: 'var(--text-secondary)', fontWeight: '600', gap: '12px' }}>
+            <div className="shan-spin" /> Loading Studio...
+        </div>
+    );
 
     // Focused Editor View (Mockup UI)
     if (showEditor && selectedOrder) {
@@ -618,13 +622,13 @@ const OrderWorkspace = () => {
     }
 
     return (
-        <div style={{ backgroundColor: '#f3f4f6', minHeight: '100vh', fontFamily: "'Inter', sans-serif" }}>
+        <div className="shan-page" style={{ backgroundColor: 'var(--bg-color)', minHeight: '100vh', fontFamily: 'var(--font-sans, sans-serif)', color: 'var(--text-primary)' }}>
             {viewMode === "list" ? renderOrderList() : renderDesignStudio()}
 
             {showCreateModal && (
-                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, overflow: 'auto', padding: '20px' }}>
-                    <div style={{ background: '#fff', padding: '32px', borderRadius: '20px', width: '100%', maxWidth: '440px', boxShadow: '0 20px 40px rgba(0,0,0,0.2)', maxHeight: '90vh', overflow: 'auto' }}>
-                        <h2 style={{ fontSize: '20px', fontWeight: '900', marginBottom: '20px' }}>Start New Design</h2>
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, overflow: 'auto', padding: '20px' }}>
+                    <div className="shan-fade-in" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)', padding: '32px', borderRadius: '20px', width: '100%', maxWidth: '440px', boxShadow: 'var(--shadow-lg)', maxHeight: '90vh', overflow: 'auto' }}>
+                        <h2 style={{ fontSize: '20px', fontWeight: '900', marginBottom: '20px', color: 'var(--text-primary)' }}>Start New Design</h2>
                         <form onSubmit={async (e) => {
                             e.preventDefault();
                             const formData = new FormData(e.target);
@@ -650,16 +654,16 @@ const OrderWorkspace = () => {
                             }
                         }} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                             <div>
-                                <label style={{ display: 'block', marginBottom: '6px', fontWeight: '700', fontSize: '13px' }}>Customer Name</label>
-                                <input name="customerName" placeholder="Enter name" required style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #e5e7eb', background: '#f9fafb', fontSize: '14px', outline: 'none' }} />
+                                <label style={{ display: 'block', marginBottom: '6px', fontWeight: '700', fontSize: '13px', color: 'var(--text-muted)' }}>Customer Name</label>
+                                <input name="customerName" placeholder="Enter name" required className="shan-input" style={{ width: '100%', padding: '10px', borderRadius: '8px', fontSize: '14px' }} />
                             </div>
                             <div>
-                                <label style={{ display: 'block', marginBottom: '6px', fontWeight: '700', fontSize: '13px' }}>Phone Number</label>
-                                <input name="customerPhone" placeholder="0XXXXXXXXX" style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #e5e7eb', background: '#f9fafb', fontSize: '14px', outline: 'none' }} />
+                                <label style={{ display: 'block', marginBottom: '6px', fontWeight: '700', fontSize: '13px', color: 'var(--text-muted)' }}>Phone Number</label>
+                                <input name="customerPhone" placeholder="0XXXXXXXXX" className="shan-input" style={{ width: '100%', padding: '10px', borderRadius: '8px', fontSize: '14px' }} />
                             </div>
                             <div>
-                                <label style={{ display: 'block', marginBottom: '6px', fontWeight: '700', fontSize: '13px' }}>Category</label>
-                                <select name="designType" required style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #e5e7eb', background: '#f9fafb', fontSize: '14px', outline: 'none' }}>
+                                <label style={{ display: 'block', marginBottom: '6px', fontWeight: '700', fontSize: '13px', color: 'var(--text-muted)' }}>Category</label>
+                                <select name="designType" required className="shan-input" style={{ width: '100%', padding: '10px', borderRadius: '8px', fontSize: '14px' }}>
                                     <option value="Poster">Poster</option>
                                     <option value="Flyer">Flyer</option>
                                     <option value="Business Card">Business Card</option>
@@ -670,11 +674,11 @@ const OrderWorkspace = () => {
                                 </select>
                             </div>
                             <div>
-                                <label style={{ display: 'block', marginBottom: '6px', fontWeight: '700', fontSize: '13px' }}>Size</label>
-                                <input name="size" placeholder="e.g. A4" style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #e5e7eb', background: '#f9fafb', fontSize: '14px', outline: 'none' }} />
+                                <label style={{ display: 'block', marginBottom: '6px', fontWeight: '700', fontSize: '13px', color: 'var(--text-muted)' }}>Size</label>
+                                <input name="size" placeholder="e.g. A4" className="shan-input" style={{ width: '100%', padding: '10px', borderRadius: '8px', fontSize: '14px' }} />
                             </div>
                             <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
-                                <button type="button" onClick={() => setShowCreateModal(false)} style={{ flex: 1, padding: '10px', borderRadius: '10px', border: 'none', background: '#f3f4f6', fontWeight: '700', cursor: 'pointer', fontSize: '14px' }}>Cancel</button>
+                                <button type="button" onClick={() => setShowCreateModal(false)} style={{ flex: 1, padding: '10px', borderRadius: '10px', border: 'none', background: 'var(--surface-muted-2)', color: 'var(--text-primary)', fontWeight: '700', cursor: 'pointer', fontSize: '14px' }}>Cancel</button>
                                 <button type="submit" disabled={loading} style={{ flex: 2, padding: '10px', borderRadius: '10px', border: 'none', background: 'var(--accent-color)', color: '#fff', fontWeight: '800', cursor: 'pointer', fontSize: '14px' }}>
                                     {loading ? 'Creating...' : 'Create Project'}
                                 </button>
@@ -683,12 +687,6 @@ const OrderWorkspace = () => {
                     </div>
                 </div>
             )}
-            <style>{`
-                @keyframes fadeIn {
-                    from { opacity: 0; transform: translateY(10px); }
-                    to { opacity: 1; transform: translateY(0); }
-                }
-            `}</style>
         </div>
     );
 };

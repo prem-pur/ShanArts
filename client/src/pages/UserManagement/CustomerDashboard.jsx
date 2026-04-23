@@ -188,18 +188,18 @@ const CustomerAuthScreen = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: '#f3f4f6',
+            backgroundColor: 'var(--bg-color)',
             padding: '20px',
-            fontFamily: "'Inter', sans-serif"
+            fontFamily: 'var(--font-sans, "Outfit", sans-serif)'
         }}>
             <div style={{
                 width: '100%',
                 maxWidth: '450px',
-                backgroundColor: '#ffffff',
+                backgroundColor: 'var(--card-bg)',
                 borderRadius: '20px',
                 padding: '48px',
-                boxShadow: '0 10px 40px rgba(0,0,0,0.05)',
-                border: '1px solid #e5e7eb'
+                boxShadow: '0 20px 50px rgba(0,0,0,0.45)',
+                border: '1px solid var(--border-color)'
             }}>
                 <div style={{ textAlign: 'center', marginBottom: '40px' }}>
                     <div style={{
@@ -214,14 +214,14 @@ const CustomerAuthScreen = () => {
                         color: '#fff',
                         fontSize: '32px',
                         fontWeight: '900',
-                        boxShadow: '0 4px 15px rgba(211, 47, 47, 0.4)'
+                        boxShadow: '0 4px 20px var(--accent-glow)'
                     }}>
                         {isLogin ? 'LG' : 'RG'}
                     </div>
-                    <h2 style={{ fontSize: '32px', fontWeight: '900', color: '#111827', marginBottom: '12px' }}>
+                    <h2 style={{ fontSize: '32px', fontWeight: '900', color: 'var(--text-primary)', marginBottom: '12px' }}>
                         {isLogin ? 'Welcome Back' : 'Create Account'}
                     </h2>
-                    <p style={{ color: '#6b7280', fontSize: '16px' }}>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '16px' }}>
                         {isLogin ? 'Sign in to access your dashboard' : 'Join Shan Art community today'}
                     </p>
                 </div>
@@ -245,7 +245,7 @@ const CustomerAuthScreen = () => {
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                     {!isLogin && (
                         <div>
-                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '700', color: '#374151' }}>Full Name</label>
+                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '700', color: 'var(--text-muted)' }}>Full Name</label>
                             <input
                                 type="text"
                                 name="name"
@@ -256,22 +256,22 @@ const CustomerAuthScreen = () => {
                                     width: '100%',
                                     padding: '14px 18px',
                                     borderRadius: '10px',
-                                    border: '1.5px solid #e5e7eb',
-                                    backgroundColor: '#f9fafb',
-                                    color: '#111827',
+                                    border: '1.5px solid var(--border-color)',
+                                    backgroundColor: 'var(--input-bg)',
+                                    color: 'var(--text-primary)',
                                     fontSize: '16px',
                                     outline: 'none',
                                     transition: 'border-color 0.2s'
                                 }}
                                 onFocus={e => e.target.style.borderColor = 'var(--accent-color)'}
-                                onBlur={e => e.target.style.borderColor = '#e5e7eb'}
+                                onBlur={e => e.target.style.borderColor = 'var(--border-color)'}
                                 placeholder="Enter your full name"
                             />
                         </div>
                     )}
 
                     <div>
-                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '700', color: '#374151' }}>Email Address</label>
+                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '700', color: 'var(--text-muted)' }}>Email Address</label>
                         <input
                             type="email"
                             name="email"
@@ -282,21 +282,21 @@ const CustomerAuthScreen = () => {
                                 width: '100%',
                                 padding: '14px 18px',
                                 borderRadius: '10px',
-                                border: '1.5px solid #e5e7eb',
-                                backgroundColor: '#f9fafb',
-                                color: '#111827',
+                                border: '1.5px solid var(--border-color)',
+                                backgroundColor: 'var(--input-bg)',
+                                color: 'var(--text-primary)',
                                 fontSize: '16px',
                                 outline: 'none'
                             }}
                             onFocus={e => e.target.style.borderColor = 'var(--accent-color)'}
-                            onBlur={e => e.target.style.borderColor = '#e5e7eb'}
+                            onBlur={e => e.target.style.borderColor = 'var(--border-color)'}
                             placeholder="you@example.com"
                         />
                     </div>
 
                     {!isLogin && (
                         <div>
-                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '700', color: '#374151' }}>Confirm Email Address</label>
+                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '700', color: 'var(--text-muted)' }}>Confirm Email Address</label>
                             <input
                                 type="email"
                                 name="confirmEmail"
@@ -307,21 +307,21 @@ const CustomerAuthScreen = () => {
                                     width: '100%',
                                     padding: '14px 18px',
                                     borderRadius: '10px',
-                                    border: '1.5px solid #e5e7eb',
-                                    backgroundColor: '#f9fafb',
-                                    color: '#111827',
+                                    border: '1.5px solid var(--border-color)',
+                                    backgroundColor: 'var(--input-bg)',
+                                    color: 'var(--text-primary)',
                                     fontSize: '16px',
                                     outline: 'none'
                                 }}
                                 onFocus={e => e.target.style.borderColor = 'var(--accent-color)'}
-                                onBlur={e => e.target.style.borderColor = '#e5e7eb'}
+                                onBlur={e => e.target.style.borderColor = 'var(--border-color)'}
                                 placeholder="Repeat your email"
                             />
                         </div>
                     )}
 
                     <div>
-                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '700', color: '#374151' }}>Password</label>
+                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '700', color: 'var(--text-muted)' }}>Password</label>
                         <div style={{ position: 'relative' }}>
                             <input
                                 type={showPassword ? "text" : "password"}
@@ -334,15 +334,15 @@ const CustomerAuthScreen = () => {
                                     padding: '14px 18px',
                                     paddingRight: '45px',
                                     borderRadius: '10px',
-                                    border: '1.5px solid #e5e7eb',
-                                    backgroundColor: '#f9fafb',
-                                    color: '#111827',
+                                    border: '1.5px solid var(--border-color)',
+                                    backgroundColor: 'var(--input-bg)',
+                                    color: 'var(--text-primary)',
                                     fontSize: '16px',
                                     outline: 'none',
                                     boxSizing: 'border-box'
                                 }}
                                 onFocus={e => e.target.style.borderColor = 'var(--accent-color)'}
-                                onBlur={e => e.target.style.borderColor = '#e5e7eb'}
+                                onBlur={e => e.target.style.borderColor = 'var(--border-color)'}
                                 placeholder="••••••••"
                             />
                             <button
@@ -376,7 +376,7 @@ const CustomerAuthScreen = () => {
 
                     {!isLogin && (
                         <div>
-                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '700', color: '#374151' }}>Confirm Password</label>
+                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '700', color: 'var(--text-muted)' }}>Confirm Password</label>
                             <div style={{ position: 'relative' }}>
                                 <input
                                     type={showConfirmPassword ? "text" : "password"}
@@ -389,15 +389,15 @@ const CustomerAuthScreen = () => {
                                         padding: '14px 18px',
                                         paddingRight: '45px',
                                         borderRadius: '10px',
-                                        border: '1.5px solid #e5e7eb',
-                                        backgroundColor: '#f9fafb',
-                                        color: '#111827',
+                                        border: '1.5px solid var(--border-color)',
+                                        backgroundColor: 'var(--input-bg)',
+                                        color: 'var(--text-primary)',
                                         fontSize: '16px',
                                         outline: 'none',
                                         boxSizing: 'border-box'
                                     }}
                                     onFocus={e => e.target.style.borderColor = 'var(--accent-color)'}
-                                    onBlur={e => e.target.style.borderColor = '#e5e7eb'}
+                                    onBlur={e => e.target.style.borderColor = 'var(--border-color)'}
                                     placeholder="Repeat password"
                                 />
                                 <button
@@ -440,7 +440,7 @@ const CustomerAuthScreen = () => {
                             cursor: loading || googleLoading ? 'not-allowed' : 'pointer',
                             marginTop: '12px',
                             transition: 'all 0.2s',
-                            boxShadow: '0 4px 15px rgba(211, 47, 47, 0.4)',
+                            boxShadow: '0 4px 20px var(--accent-glow)',
                             opacity: googleLoading ? 0.6 : 1
                         }}
                     >
@@ -460,7 +460,7 @@ const CustomerAuthScreen = () => {
                                 padding: '16px',
                                 borderRadius: '12px',
                                 border: '2px solid var(--accent-color)',
-                                backgroundColor: '#fff',
+                                backgroundColor: 'var(--card-bg)',
                                 color: 'var(--accent-color)',
                                 fontSize: '17px',
                                 fontWeight: '800',
@@ -491,9 +491,9 @@ const CustomerAuthScreen = () => {
                             marginBottom: '12px',
                         }}
                     >
-                        <div style={{ flex: 1, height: '1px', backgroundColor: '#e5e7eb' }} />
+                        <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border-color)' }} />
                         <span style={{ color: '#9ca3af', fontSize: '13px', fontWeight: 700, letterSpacing: '0.05em' }}>OR</span>
-                        <div style={{ flex: 1, height: '1px', backgroundColor: '#e5e7eb' }} />
+                        <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border-color)' }} />
                     </div>
                     {oauthLoading ? (
                         <p
@@ -534,10 +534,10 @@ const CustomerAuthScreen = () => {
                             <code
                                 style={{
                                     fontSize: '12px',
-                                    background: '#f3f4f6',
+                                    background: 'var(--surface-muted-2)',
                                     padding: '2px 6px',
                                     borderRadius: '4px',
-                                    color: '#374151',
+                                    color: 'var(--text-muted)',
                                 }}
                             >
                                 GOOGLE_CLIENT_ID
@@ -548,7 +548,7 @@ const CustomerAuthScreen = () => {
                 </div>
 
                 {!isLogin && (
-                    <div style={{ textAlign: 'center', marginTop: '40px', fontSize: '15px', color: '#6b7280' }}>
+                    <div style={{ textAlign: 'center', marginTop: '40px', fontSize: '15px', color: 'var(--text-secondary)' }}>
                         Already have an account?{' '}
                         <span
                             onClick={() => {

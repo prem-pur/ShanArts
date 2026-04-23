@@ -53,29 +53,29 @@ const PriorityBadge = ({ priority }) => {
     return isUrgent ? (
         <span style={{
             padding: '4px 10px', borderRadius: '8px', fontSize: '11px', fontWeight: '900',
-            background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', textTransform: 'uppercase'
+            background: 'rgba(248, 113, 113, 0.15)', color: '#f87171', border: '1px solid rgba(248, 113, 113, 0.4)', textTransform: 'uppercase'
         }}>Urgent</span>
     ) : (
         <span style={{
             padding: '4px 10px', borderRadius: '8px', fontSize: '11px', fontWeight: '800',
-            background: '#f8fafc', color: '#94a3b8', border: '1px solid #e2e8f0', textTransform: 'uppercase'
+            background: 'var(--surface-muted)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)', textTransform: 'uppercase'
         }}>Normal</span>
     );
 };
 
 const InfoRow = ({ label, value, accent }) => (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '10px 0', borderBottom: '1px solid #f8fafc', gap: '12px' }}>
-        <span style={{ fontSize: '12px', fontWeight: '700', color: '#94a3b8', whiteSpace: 'nowrap', textTransform: 'uppercase', letterSpacing: '0.4px' }}>{label}</span>
-        <span style={{ fontSize: '13px', fontWeight: '800', color: accent || '#0f172a', textAlign: 'right' }}>{value || '—'}</span>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '10px 0', borderBottom: '1px solid var(--border-color)', gap: '12px' }}>
+        <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-secondary)', whiteSpace: 'nowrap', textTransform: 'uppercase', letterSpacing: '0.4px' }}>{label}</span>
+        <span style={{ fontSize: '13px', fontWeight: '800', color: accent || 'var(--text-primary)', textAlign: 'right' }}>{value || '—'}</span>
     </div>
 );
 
-const SectionCard = ({ title, icon, children, style }) => (
-    <div style={{ background: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '20px', boxShadow: '0 2px 12px rgba(0,0,0,0.03)', ...style }}>
+const SectionCard = ({ title, icon, children, style, className = '' }) => (
+    <div className={className} style={{ background: 'var(--card-bg)', borderRadius: '16px', border: '1px solid var(--border-color)', padding: '20px', boxShadow: 'var(--shadow-sm)', ...style }}>
         {title && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid #f1f5f9' }}>
-                <span style={{ color: '#64748b', display: 'flex' }}>{icon}</span>
-                <h3 style={{ margin: 0, fontSize: '14px', fontWeight: '900', color: '#0f172a', letterSpacing: '-0.2px' }}>{title}</h3>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid var(--border-color)' }}>
+                <span style={{ color: 'var(--text-secondary)', display: 'flex' }}>{icon}</span>
+                <h3 style={{ margin: 0, fontSize: '14px', fontWeight: '900', color: 'var(--text-primary)', letterSpacing: '-0.2px' }}>{title}</h3>
             </div>
         )}
         {children}
@@ -116,18 +116,17 @@ const OrderDetail = () => {
     useEffect(() => { fetchOrder(); }, [fetchOrder]);
 
     if (loading) return (
-        <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f3f4f6', color: '#64748b', fontWeight: '600', gap: '12px' }}>
-            <div style={{ width: '20px', height: '20px', border: '3px solid #e5e7eb', borderTopColor: '#ef4444', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+        <div className="shan-fade-in" style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-color)', color: 'var(--text-secondary)', fontWeight: '600', gap: '14px' }}>
+            <div className="shan-spin" />
             Loading Order...
-            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         </div>
     );
 
     if (!order) return (
-        <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#f3f4f6', color: '#64748b', fontWeight: '600', gap: '16px' }}>
-            <div style={{ color: '#94a3b8' }}><Search size={48} /></div>
-            <div style={{ fontSize: '18px', fontWeight: '800', color: '#374151' }}>Order not found</div>
-            <button onClick={() => navigate('/orders')} style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '10px', fontWeight: '800', cursor: 'pointer' }}>Back to Orders</button>
+        <div className="shan-page" style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-color)', color: 'var(--text-secondary)', fontWeight: '600', gap: '16px' }}>
+            <div style={{ color: 'var(--text-secondary)' }}><Search size={48} /></div>
+            <div style={{ fontSize: '18px', fontWeight: '800', color: 'var(--text-primary)' }}>Order not found</div>
+            <button type="button" onClick={() => navigate('/orders')} className="shan-btn-primary" style={{ padding: '10px 20px' }}>Back to Orders</button>
         </div>
     );
 
@@ -152,23 +151,23 @@ const OrderDetail = () => {
     }
 
     return (
-        <div style={{ backgroundColor: '#f3f4f6', minHeight: '100vh', fontFamily: "'Inter', sans-serif", padding: '28px 36px' }}>
-            <style>{`@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }`}</style>
+        <div className="shan-page" style={{ backgroundColor: 'var(--bg-color)', minHeight: '100vh', fontFamily: 'var(--font-sans, sans-serif)', padding: '28px 36px', color: 'var(--text-primary)' }}>
 
             {/* Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', animation: 'fadeIn 0.3s ease-out' }}>
+            <div className="shan-fade-in" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                     <button
+                        type="button"
                         onClick={() => navigate('/orders')}
-                        style={{ width: '38px', height: '38px', borderRadius: '50%', border: '1px solid #e2e8f0', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#64748b', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', transition: 'all 0.15s' }}
-                        onMouseEnter={e => e.currentTarget.style.background = '#f8fafc'}
-                        onMouseLeave={e => e.currentTarget.style.background = '#fff'}
+                        style={{ width: '38px', height: '38px', borderRadius: '50%', border: '1px solid var(--border-color)', background: 'var(--card-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-secondary)', boxShadow: 'var(--shadow-sm)', transition: 'all 0.2s' }}
+                        onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface-muted)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = 'var(--card-bg)'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
                     >
                         <ArrowLeft size={18} strokeWidth={2.5} />
                     </button>
                     <div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <h1 style={{ fontSize: '22px', fontWeight: '900', color: '#0f172a', margin: 0, letterSpacing: '-0.5px' }}>
+                            <h1 style={{ fontSize: '22px', fontWeight: '900', color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.5px' }}>
                                 {order.customerName || 'Unnamed Order'}
                             </h1>
                             <span style={{
@@ -181,10 +180,10 @@ const OrderDetail = () => {
                             </span>
                             <PriorityBadge priority={priority} />
                         </div>
-                        <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '3px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '3px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px' }}>
                             Order #{order._id.slice(-8).toUpperCase()}
                             {deadline && (
-                                <span style={{ marginLeft: '6px', color: isOverdue ? '#dc2626' : '#64748b', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <span style={{ marginLeft: '6px', color: isOverdue ? '#f87171' : 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                                     {isOverdue ? <AlertTriangle size={12} /> : <Calendar size={12} />}
                                     {isOverdue ? 'Overdue — ' : 'Needed by '}
                                     {new Date(deadline).toLocaleDateString([], { day: 'numeric', month: 'long', year: 'numeric' })}
@@ -198,21 +197,21 @@ const OrderDetail = () => {
 
             {/* Rejection Banner */}
             {(rawKey === 'rejected' || rawKey === 'revision_requested' || rawKey === 'revision requested') && order.revisionNotes && (
-                <div style={{ background: '#fef2f2', border: '1.5px solid #fca5a5', borderRadius: '14px', padding: '18px 22px', marginBottom: '24px', animation: 'fadeIn 0.3s ease-out' }}>
-                    <div style={{ fontWeight: '900', color: '#dc2626', fontSize: '13px', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div className="shan-fade-in" style={{ background: 'rgba(127, 29, 29, 0.2)', border: '1.5px solid rgba(248, 113, 113, 0.45)', borderRadius: '14px', padding: '18px 22px', marginBottom: '24px' }}>
+                    <div style={{ fontWeight: '900', color: '#fca5a5', fontSize: '13px', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <XCircle size={16} /> Design Rejected — Revision Required
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: revisionChanges ? '1fr 1fr' : '1fr', gap: '12px' }}>
                         <div>
-                            <div style={{ fontSize: '10px', fontWeight: '900', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>Reason</div>
-                            <p style={{ margin: 0, fontSize: '13px', color: '#7f1d1d', lineHeight: '1.5', fontWeight: '600', background: '#fff', padding: '10px', borderRadius: '8px', border: '1px solid #fecaca' }}>
+                            <div style={{ fontSize: '10px', fontWeight: '900', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>Reason</div>
+                            <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-primary)', lineHeight: '1.5', fontWeight: '600', background: 'var(--input-bg)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                                 "{revisionReason}"
                             </p>
                         </div>
                         {revisionChanges && (
                             <div>
-                                <div style={{ fontSize: '10px', fontWeight: '900', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>Changes Requested</div>
-                                <p style={{ margin: 0, fontSize: '13px', color: '#7f1d1d', lineHeight: '1.5', fontWeight: '600', background: '#fff', padding: '10px', borderRadius: '8px', border: '1px solid #fecaca' }}>
+                                <div style={{ fontSize: '10px', fontWeight: '900', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>Changes Requested</div>
+                                <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-primary)', lineHeight: '1.5', fontWeight: '600', background: 'var(--input-bg)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                                     "{revisionChanges}"
                                 </p>
                             </div>
@@ -222,7 +221,7 @@ const OrderDetail = () => {
             )}
 
             {/* Expanded Order Timeline */}
-            <SectionCard title="Production Process Timeline" icon={<Clock size={18} />} style={{ marginBottom: '24px', animation: 'fadeIn 0.4s ease-out' }}>
+            <SectionCard title="Production Process Timeline" icon={<Clock size={18} />} className="shan-fade-in" style={{ marginBottom: '24px' }}>
                 <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', overflowX: 'auto', paddingBottom: '8px' }}>
                     {[
                         { label: 'Order Placed', desc: 'Order received', done: true, date: new Date(order.createdAt).toLocaleDateString([], { day: 'numeric', month: 'short' }) },
@@ -234,22 +233,22 @@ const OrderDetail = () => {
                         { label: 'Completed', desc: 'Finished & ready', done: rawKey === 'completed' },
                     ].map((step, i, arr) => (
                         <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', position: 'relative', flex: 1, minWidth: '110px' }}>
-                            {i < arr.length - 1 && <div style={{ position: 'absolute', left: '50%', top: '13px', width: '100%', height: '2px', background: step.done ? '#a7f3d0' : '#f1f5f9', zIndex: 0 }} />}
+                            {i < arr.length - 1 && <div style={{ position: 'absolute', left: '50%', top: '13px', width: '100%', height: '2px', background: step.done ? 'rgba(16, 185, 129, 0.5)' : 'var(--border-color)', zIndex: 0 }} />}
                             <div style={{
                                 width: '28px', height: '28px', borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                background: step.done ? '#059669' : '#f8fafc', border: `2px solid ${step.done ? '#059669' : '#e2e8f0'}`, zIndex: 1, boxShadow: step.done ? '0 0 0 3px #ecfdf5' : 'none',
+                                background: step.done ? '#059669' : 'var(--surface-muted)', border: `2px solid ${step.done ? '#059669' : 'var(--border-color)'}`, zIndex: 1, boxShadow: step.done ? '0 0 0 3px rgba(16, 185, 129, 0.25)' : 'none',
                                 marginBottom: '12px'
                             }}>
                                 {step.done ? (
                                     <Check size={14} color="#fff" strokeWidth={3} />
                                 ) : (
-                                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#cbd5e1' }} />
+                                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--text-secondary)' }} />
                                 )}
                             </div>
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                <div style={{ fontSize: '13px', fontWeight: '800', color: step.done ? '#0f172a' : '#94a3b8', lineHeight: '1.3' }}>{step.label}</div>
-                                <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px', fontWeight: '500', lineHeight: '1.3' }}>{step.desc}</div>
-                                {step.date && <div style={{ fontSize: '10px', color: '#94a3b8', marginTop: '6px', fontWeight: '700' }}>{step.date}</div>}
+                                <div style={{ fontSize: '13px', fontWeight: '800', color: step.done ? 'var(--text-primary)' : 'var(--text-secondary)', lineHeight: '1.3' }}>{step.label}</div>
+                                <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px', fontWeight: '500', lineHeight: '1.3' }}>{step.desc}</div>
+                                {step.date && <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginTop: '6px', fontWeight: '700' }}>{step.date}</div>}
                             </div>
                         </div>
                     ))}
@@ -257,7 +256,7 @@ const OrderDetail = () => {
             </SectionCard>
 
             {/* Main Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', animation: 'fadeIn 0.5s ease-out' }}>
+            <div className="shan-fade-in" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
 
                 {/* Left Column */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -314,11 +313,11 @@ const OrderDetail = () => {
                     {/* Customer Brief */}
                     <SectionCard title="Customer Brief & Preferences" icon={<FileText size={18} />}>
                         {preferences ? (
-                            <div style={{ fontSize: '13px', color: '#374151', lineHeight: '1.7', background: '#f8fafc', padding: '14px', borderRadius: '10px', border: '1px solid #f1f5f9', fontWeight: '500' }}>
+                            <div style={{ fontSize: '13px', color: 'var(--text-primary)', lineHeight: '1.7', background: 'var(--input-bg)', padding: '14px', borderRadius: '10px', border: '1px solid var(--border-color)', fontWeight: '500' }}>
                                 {preferences}
                             </div>
                         ) : (
-                            <div style={{ fontSize: '13px', color: '#94a3b8', fontWeight: '600', textAlign: 'center', padding: '20px 0' }}>
+                            <div style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600', textAlign: 'center', padding: '20px 0' }}>
                                 No special instructions provided.
                             </div>
                         )}
@@ -326,7 +325,7 @@ const OrderDetail = () => {
                         {/* Sample Photo */}
                         {(shopOrder?.samplePhoto || order.printSpecs?.samplePhoto) && (
                             <div style={{ marginTop: '16px' }}>
-                                <div style={{ fontSize: '11px', fontWeight: '800', color: '#64748b', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Reference Photo</div>
+                                <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-secondary)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Reference Photo</div>
                                 <img
                                     src={`${API_BASE_URL}${shopOrder?.samplePhoto || order.printSpecs?.samplePhoto}`}
                                     alt="Customer sample"
@@ -339,13 +338,13 @@ const OrderDetail = () => {
                         {/* Design Files */}
                         {shopOrder?.designFiles?.length > 0 && (
                             <div style={{ marginTop: '16px' }}>
-                                <div style={{ fontSize: '11px', fontWeight: '800', color: '#64748b', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Uploaded Design Files</div>
+                                <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-secondary)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Uploaded Design Files</div>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                                     {shopOrder.designFiles.map((filePath, i) => {
                                         const fileName = filePath.split('/').pop();
                                         const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(fileName);
                                         return (
-                                            <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 12px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #f1f5f9' }}>
+                                            <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 12px', background: 'var(--surface-muted)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                                                 <span style={{ fontSize: '12px', fontWeight: '700', color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '200px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                     {isImage ? <Image size={14} /> : <File size={14} />} {fileName}
                                                 </span>
@@ -379,10 +378,10 @@ const OrderDetail = () => {
                                     </div>
                                 </div>
                             ) : (
-                                <div style={{ textAlign: 'center', color: '#94a3b8', padding: '40px' }}>
+                                <div style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '40px' }}>
                                     <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px' }}><Image size={48} /></div>
-                                    <div style={{ fontSize: '14px', fontWeight: '700', color: '#64748b', marginBottom: '6px' }}>No design yet</div>
-                                    <div style={{ fontSize: '12px', color: '#94a3b8' }}>The design preview will appear here once it has been created by the designer.</div>
+                                    <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '6px' }}>No design yet</div>
+                                    <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>The design preview will appear here once it has been created by the designer.</div>
                                 </div>
                             )}
                         </div>

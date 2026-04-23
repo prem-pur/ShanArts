@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import axios from 'axios';
 import { MessageCircle, X, Send, Loader2, Trash2, BookOpen, ChevronUp } from 'lucide-react';
 import { API_BASE_URL } from '../apiBase';
@@ -82,7 +83,17 @@ const PrintKnowledgeChatbot = () => {
         setInput('');
     };
 
-    return (
+    useEffect(() => {
+        const onOpen = () => {
+            setOpen(true);
+            setError('');
+        };
+        window.addEventListener('open-print-chat', onOpen);
+        return () => window.removeEventListener('open-print-chat', onOpen);
+    }, []);
+
+    /** Portal to <body> so `position:fixed` is not broken by parent transforms; FAB stays bottom-right on scroll. */
+    const shell = (
         <div className="pk-chat-root" aria-live="polite">
             {open && (
                 <div className="pk-chat-panel" role="dialog" aria-label="Print Knowledge Assistant">
@@ -200,6 +211,11 @@ const PrintKnowledgeChatbot = () => {
             </button>
         </div>
     );
+
+    if (typeof document === 'undefined') {
+        return null;
+    }
+    return createPortal(shell, document.body);
 };
 
 export default PrintKnowledgeChatbot;

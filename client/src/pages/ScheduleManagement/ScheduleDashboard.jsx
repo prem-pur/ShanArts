@@ -42,10 +42,10 @@ const ScheduleDashboard = () => {
 
     const StatCard = ({ label, value, color, icon: Icon, subtitle }) => (
         <div style={{
-            background: '#fff',
+            background: 'var(--card-bg)',
             padding: '24px',
             borderRadius: '24px',
-            border: '1px solid #e2e8f0',
+            border: '1px solid var(--border-color)',
             display: 'flex',
             alignItems: 'center',
             gap: '20px',
@@ -66,8 +66,8 @@ const ScheduleDashboard = () => {
                 <Icon size={28} />
             </div>
             <div>
-                <div style={{ fontSize: '11px', color: '#64748b', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '4px' }}>{label}</div>
-                <div style={{ fontSize: '28px', fontWeight: '900', color: '#0f172a', lineHeight: 1 }}>{value}</div>
+                <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '4px' }}>{label}</div>
+                <div style={{ fontSize: '28px', fontWeight: '900', color: 'var(--text-primary)', lineHeight: 1 }}>{value}</div>
                 {subtitle && <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '700', marginTop: '6px' }}>{subtitle}</div>}
             </div>
         </div>
@@ -251,20 +251,19 @@ const ScheduleDashboard = () => {
     };
 
     if (loading) return (
-        <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f3f4f6', color: '#64748b', fontWeight: '600', gap: '12px', fontFamily: "'Inter', sans-serif" }}>
-            <div style={{ width: '20px', height: '20px', border: '3px solid #e5e7eb', borderTopColor: '#ef4444', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+        <div className="shan-fade-in" style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-color)', color: 'var(--text-secondary)', fontWeight: '600', gap: '14px', fontFamily: 'var(--font-sans, sans-serif)' }}>
+            <div className="shan-spin" />
             Initializing Scheduler...
-            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         </div>
     );
 
     return (
-        <div style={{
+        <div className="shan-page" style={{
             minHeight: '100vh',
-            backgroundColor: '#f3f4f6',
-            fontFamily: "'Inter', sans-serif",
+            backgroundColor: 'var(--bg-color)',
+            fontFamily: 'var(--font-sans, sans-serif)',
             padding: '28px 36px',
-            color: '#1e293b'
+            color: 'var(--text-primary)'
         }}>
             <ToastContainer toasts={toasts} onRemove={removeToast} />
             <style>{`
@@ -274,21 +273,21 @@ const ScheduleDashboard = () => {
             {/* Header section managed like OrderList */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
                 <div>
-                  <h1 style={{ fontSize: '26px', fontWeight: '800', color: '#0f172a', margin: 0, letterSpacing: '-0.5px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <Calendar size={28} color="#ef4444" /> Schedule Management
+                  <h1 style={{ fontSize: '26px', fontWeight: '800', color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.5px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <Calendar size={28} color="var(--accent-color)" /> Schedule Management
                   </h1>
-                  <p style={{ color: '#64748b', fontSize: '14px', marginTop: '6px', fontWeight: '500' }}>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginTop: '6px', fontWeight: '500' }}>
                       Production Central Control Dashboard
                   </p>
                 </div>
 
                 <div style={{
                     display: 'flex',
-                    background: '#fff',
+                    background: 'var(--card-bg)',
                     padding: '4px',
                     borderRadius: '12px',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-                    border: '1px solid #e2e8f0'
+                    boxShadow: 'var(--shadow-sm)',
+                    border: '1px solid var(--border-color)'
                 }}>
                     {['overview', 'orders', 'operators'].map(tab => (
                         <button
@@ -298,8 +297,8 @@ const ScheduleDashboard = () => {
                                 padding: '10px 20px',
                                 borderRadius: '10px',
                                 border: 'none',
-                                background: activeView === tab ? '#ef4444' : 'transparent',
-                                color: activeView === tab ? '#fff' : '#64748b',
+                                background: activeView === tab ? 'var(--accent-color)' : 'transparent',
+                                color: activeView === tab ? '#fff' : 'var(--text-secondary)',
                                 fontWeight: '700',
                                 cursor: 'pointer',
                                 transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -317,7 +316,7 @@ const ScheduleDashboard = () => {
                             borderRadius: '10px',
                             border: 'none',
                             background: 'transparent',
-                            color: '#64748b',
+                            color: 'var(--text-secondary)',
                             fontWeight: '700',
                             cursor: 'pointer',
                             transition: 'all 0.2s',
@@ -355,13 +354,13 @@ const ScheduleDashboard = () => {
                             <StatCard 
                                  label="Printing" 
                                  value={orders.filter(o => o.status === 'in_progress' || o.status === 'printing').length} 
-                                 color="#ef4444" 
+                                 color="var(--accent-color)" 
                                  icon={Printer} 
                             />
                             <StatCard 
                                  label="Completed Today" 
                                  value={orders.filter(o => o.status === 'completed' && new Date(o.updatedAt).toDateString() === new Date().toDateString()).length} 
-                                 color="#64748b" 
+                                 color="var(--text-secondary)" 
                                  icon={CheckCircle} 
                                  subtitle="Last 24 hours"
                             />
@@ -374,7 +373,7 @@ const ScheduleDashboard = () => {
                             gap: '32px',
                             alignItems: 'start'
                         }}>
-                            <div style={{ minWidth: 0, background: '#fff', borderRadius: '18px', padding: '24px', border: '1px solid #e2e8f0', boxShadow: '0 4px 24px rgba(0,0,0,0.04)' }}>
+                            <div style={{ minWidth: 0, background: 'var(--card-bg)', borderRadius: '18px', padding: '24px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)' }}>
                                 <WeeklyTimeline machines={machines} orders={orders} />
                             </div>
                             <UpcomingJobs orders={orders} />
