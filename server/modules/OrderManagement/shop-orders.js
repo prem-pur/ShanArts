@@ -8,6 +8,12 @@ const upload = require('../../middleware/uploadMiddleware');
 
 router.get('/', auth, orderController.getAllOrders);
 router.get('/my', auth, orderController.getMyOrders);
+router.patch(
+    '/:id/ack-design-message',
+    auth,
+    roleCheck(['customer']),
+    orderController.acknowledgeDesignMessage
+);
 router.post(
     '/convert-ai',
     auth,

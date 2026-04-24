@@ -1,6 +1,12 @@
 const copywritingService = require('../../services/copywritingService');
 const { printKnowledgeReply } = require('../../services/printKnowledgeChatService');
+const {
+    generateDesignCustomerMessage,
+    normalizeScenario,
+    SCENARIOS,
+} = require('../../services/designMessageService');
 const ApiError = require('../../utils/apiError');
+const config = require('../../config/env');
 
 const CONTENT_TYPES = ['Flyer', 'Business Card', 'Poster', 'Social Media Caption', 'Banner'];
 const TONES = ['Professional', 'Friendly', 'Luxury', 'Modern', 'Promotional'];
@@ -106,4 +112,70 @@ async function printChat(req, res, next) {
     }
 }
 
-module.exports = { generateCopy, printChat, CONTENT_TYPES, TONES };
+/**
+ * POST /api/ai/generate-design-message
+ * Staff-only. Generate a message to send with "share design" to the customer.
+ *
+ * Sample request body:
+ * {
+ *   "scenario": "draft_for_approval",
+ *   "companyName": "Shan Art Advertising",
+ *   "customerName": "John",
+ *   "productName": "Business cards",
+ *   "quantity": 500,
+ *   "finishOrType": "Matte lamination",
+ *   "deadline": "2026-05-01",
+ *   "designStatus": "Draft",
+ *   "orderNumber": "ORD-10042",
+ *   "size": "90x50mm"
+ * }
+ *
+ * Sample success response:
+ * {
+ *   "success": true,
+ *   "message": "Dear John,\\n\\nWe have prepared...",
+ *   "usedFallback": false,
+ *   "model": "llama3"
+ * }
+ */
+async function generateDesignMessage(req, res, next) {
+    try {
+        const b = req.body && typeof req.body === 'object' ? req.body : {};
+        if (b.scenario != null && String(b.scenario).trim() !== '') {
+            const raw = String(b.scenario).trim();
+            if (!SCENARIOS.includes(raw)) {
+                throw new ApiError(`scenario must be one of: ${SCENARIOS.join(', ')}`, 400);
+            }
+        }
+        const scenario = normalizeScenario(b.scenario);
+
+        const str = (v) => (typeof v === 'string' ? v.trim() : v != null && v !== '' ? String(v).trim() : '');
+        const ctx = {
+            scenario,
+            companyName: str(b.companyName) || 'Shan Art Advertising',
+            customerName: str(b.customerName) || 'Valued Customer',
+            productName: str(b.productName),
+            quantity: b.quantity,
+            finishOrType: str(b.finishOrType),
+            deadline: b.deadline,
+            designStatus: str(b.designStatus),
+            orderNumber: str(b.orderNumber),
+            size: str(b.size),
+        };
+
+        const result = await generateDesignCustomerMessage(ctx);
+        res.status(200).json({
+            success: true,
+            message: result.message,
+            usedFallback: result.usedFallback,
+            model: result.model || config.OLLAMA_TEXT_MODEL,
+        });
+    } catch (err) {
+        if (err instanceof ApiError) {
+            return res.status(err.status).json({ message: err.message, status: err.status });
+        }
+        next(err);
+    }
+}
+
+module.exports = { generateCopy, printChat, generateDesignMessage, CONTENT_TYPES, TONES };
