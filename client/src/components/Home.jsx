@@ -348,12 +348,12 @@ const Home = () => {
             type="button"
             onClick={openPrintChat}
             style={{
-              background: 'transparent', border: 'none', color: '#ff6666', fontSize: '14px', fontWeight: 600, padding: '8px 16px',
+              background: 'transparent', border: 'none', color: '#999999', fontSize: '14px', fontWeight: 500, padding: '8px 16px',
               borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.2s',
               display: 'inline-flex', alignItems: 'center', gap: '6px',
             }}
           >
-            <MessageCircle size={15} style={{ opacity: 0.9 }} />
+            <MessageCircle size={15} style={{ opacity: 0.8 }} />
             Chatbot
           </button>
           <div style={{ width: '1px', height: '24px', background: 'rgba(255,255,255,0.08)', margin: '0 8px' }} />
@@ -374,20 +374,17 @@ const Home = () => {
         <ParticleCanvas />
 
         {/* Floating decorative elements */}
-        <div className="float-slow" style={{ position: 'absolute', top: '18%', left: '8%', width: '56px', height: '56px', borderRadius: '14px', background: 'rgba(255,51,51,0.12)', border: '1px solid rgba(255,51,51,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ff3333' }}>
+        <div className="float-slow" style={{ position: 'absolute', top: '18%', left: '8%', width: '56px', height: '56px', borderRadius: '14px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999999' }}>
           <Printer size={22} />
         </div>
-        <div className="float-mid" style={{ position: 'absolute', top: '25%', right: '9%', width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(255,51,51,0.1)', border: '1px solid rgba(255,51,51,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ff3333' }}>
+        <div className="float-mid" style={{ position: 'absolute', top: '25%', right: '9%', width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888888' }}>
           <CheckCircle size={20} />
         </div>
-        <div className="float-slow" style={{ position: 'absolute', bottom: '30%', left: '12%', width: '44px', height: '44px', borderRadius: '10px', background: 'rgba(153,153,153,0.1)', border: '1px solid rgba(153,153,153,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999999' }}>
+        <div className="float-slow" style={{ position: 'absolute', bottom: '30%', left: '12%', width: '44px', height: '44px', borderRadius: '10px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#777777' }}>
           <Zap size={18} />
         </div>
 
-        <div className="animate-1" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,51,51,0.1)', border: '1px solid rgba(255,51,51,0.28)', color: '#ff6666', fontSize: '12px', fontWeight: 600, padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', letterSpacing: '0.05em' }}>
-          <span className="live-dot" style={{ width: 7, height: 7, borderRadius: '50%', background: '#ff3333', display: 'inline-block' }} />
-          PRINT SHOP MANAGEMENT SYSTEM — v2.0
-        </div>
+
 
         {/* Logo in hero */}
         <div className="animate-1" style={{ marginBottom: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -411,12 +408,9 @@ const Home = () => {
         <div className="animate-3" style={{ display: 'flex', gap: '14px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '80px' }}>
           <button className="btn-primary-h glow-btn" onClick={() => navigate('/customer-dashboard')}
             style={{ background: 'linear-gradient(135deg, #ff3333, #990000)', color: '#fff', border: 'none', padding: '15px 32px', borderRadius: '12px', fontSize: '15px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '9px', transition: 'all 0.25s', fontFamily: 'inherit', boxShadow: '0 0 40px rgba(255,51,51,0.4)', letterSpacing: '0.01em' }}>
-            Open Client Dashboard <ArrowRight size={16} />
+            Place an Order <ArrowRight size={16} />
           </button>
-          <button className="btn-secondary-h" onClick={() => navigate('/staff-login')}
-            style={{ background: 'rgba(255,255,255,0.05)', color: '#999999', border: '1px solid rgba(255,255,255,0.12)', padding: '15px 32px', borderRadius: '12px', fontSize: '15px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '9px', transition: 'all 0.25s', fontFamily: 'inherit' }}>
-            <Settings size={15} /> Staff Portal
-          </button>
+
         </div>
 
         {/* Stats strip */}
@@ -428,7 +422,7 @@ const Home = () => {
             { num: `${count.uptime}%`, label: 'Uptime SLA', icon: <Zap size={20} /> },
           ].map((s, i) => (
             <div key={i} style={{ flex: 1, padding: '22px 20px', textAlign: 'center', borderRight: i < 3 ? '1px solid rgba(255,255,255,0.06)' : 'none' }}>
-              <div style={{ fontSize: '18px', marginBottom: '8px', color: '#ff3333', display: 'flex', justifyContent: 'center' }}>{s.icon}</div>
+              <div style={{ fontSize: '18px', marginBottom: '8px', color: '#888888', display: 'flex', justifyContent: 'center' }}>{s.icon}</div>
               <div style={{ fontSize: '26px', fontWeight: 800, color: '#ffffff', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '-0.02em', marginBottom: '4px' }}>{s.num}</div>
               <div style={{ fontSize: '11px', color: '#666666', letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 500 }}>{s.label}</div>
             </div>
@@ -597,12 +591,9 @@ const Home = () => {
         <div style={{ display: 'flex', gap: '14px', justifyContent: 'center', flexWrap: 'wrap' }}>
           <button className="btn-primary-h glow-btn" onClick={() => navigate('/customer-dashboard')}
             style={{ background: 'linear-gradient(135deg, #ff3333, #990000)', color: '#fff', border: 'none', padding: '15px 32px', borderRadius: '12px', fontSize: '15px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '9px', transition: 'all 0.25s', fontFamily: 'inherit', boxShadow: '0 0 40px rgba(255,51,51,0.4)' }}>
-            Client Login <ArrowRight size={16} />
+            Place an Order <ArrowRight size={16} />
           </button>
-          <button className="btn-secondary-h" onClick={() => navigate('/staff-login')}
-            style={{ background: 'rgba(255,255,255,0.05)', color: '#999999', border: '1px solid rgba(255,255,255,0.12)', padding: '15px 32px', borderRadius: '12px', fontSize: '15px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '9px', transition: 'all 0.25s', fontFamily: 'inherit' }}>
-            Staff Portal
-          </button>
+
         </div>
       </div>
 
