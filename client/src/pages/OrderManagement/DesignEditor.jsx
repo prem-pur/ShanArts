@@ -73,12 +73,12 @@ const DesignEditor = ({ order, onClose }) => {
     };
 
     return (
-        <div style={{ background: "#f8fafc", padding: "24px 48px", flex: 1, display: "flex", flexDirection: "column", alignItems: "center", minHeight: '100vh', animation: 'fadeIn 0.3s ease-out' }}>
+        <div style={{ background: "var(--bg-color)", padding: "24px 48px", flex: 1, display: "flex", flexDirection: "column", alignItems: "center", minHeight: '100vh', animation: 'fadeIn 0.3s ease-out' }}>
 
             {/* Header */}
             <div style={{ width: '100%', maxWidth: '1000px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
                 <div>
-                    <h2 style={{ margin: 0, fontSize: '22px', fontWeight: '800', color: '#1e293b', letterSpacing: '-0.5px' }}>Design Studio</h2>
+                    <h2 style={{ margin: 0, fontSize: '22px', fontWeight: '800', color: 'var(--text-primary)', letterSpacing: '-0.5px' }}>Design Studio</h2>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
                         <span style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '600' }}>Order #{order?.orderId || order?._id?.slice(-8).toUpperCase()}</span>
                         <span style={{ width: '3px', height: '3px', borderRadius: '50%', background: '#cbd5e1' }} />
@@ -86,10 +86,10 @@ const DesignEditor = ({ order, onClose }) => {
                     </div>
                 </div>
                 <div style={{ display: 'flex', gap: '12px' }}>
-                    <button onClick={() => onClose(false)} style={{ background: '#ffffff', border: '1px solid #e2e8f0', color: '#64748b', padding: '10px 24px', borderRadius: '10px', fontWeight: '700', fontSize: '14px', cursor: 'pointer', transition: 'all 0.2s' }}>
+                    <button onClick={() => onClose(false)} style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)', color: 'var(--text-secondary)', padding: '10px 24px', borderRadius: '10px', fontWeight: '700', fontSize: '14px', cursor: 'pointer', transition: 'all 0.2s' }}>
                         Cancel
                     </button>
-                    <button onClick={handleSave} disabled={isSaving || !previewUrl} style={{ background: '#546271', color: '#ffffff', border: 'none', padding: '10px 24px', borderRadius: '10px', fontWeight: '800', fontSize: '14px', cursor: (isSaving || !previewUrl) ? 'not-allowed' : 'pointer', opacity: (isSaving || !previewUrl) ? 0.6 : 1, transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '10px', boxShadow: '0 4px 12px rgba(84, 98, 113, 0.2)' }}>
+                    <button onClick={handleSave} disabled={isSaving || !previewUrl} style={{ background: 'var(--accent-color)', color: '#ffffff', border: 'none', padding: '10px 24px', borderRadius: '10px', fontWeight: '800', fontSize: '14px', cursor: (isSaving || !previewUrl) ? 'not-allowed' : 'pointer', opacity: (isSaving || !previewUrl) ? 0.6 : 1, transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '10px', boxShadow: 'var(--accent-glow)' }}>
                         {isSaving ? <RefreshCw size={18} className="animate-spin" /> : <Save size={18} />}
                         {isSaving ? "Saving..." : "Save Design"}
                     </button>
@@ -105,15 +105,15 @@ const DesignEditor = ({ order, onClose }) => {
                     onDragLeave={() => setIsDragging(false)}
                     onDrop={(e) => { e.preventDefault(); setIsDragging(false); const file = e.dataTransfer.files[0]; if (file) processFile(file); }}
                     style={{
-                        background: '#ffffff',
-                        border: `2px dashed ${isDragging ? '#3b82f6' : '#e2e8f0'}`,
+                        background: 'var(--card-bg)',
+                        border: `2px dashed ${isDragging ? 'var(--accent-color)' : 'var(--border-color)'}`,
                         borderRadius: '24px',
                         padding: '60px 40px',
                         textAlign: 'center',
                         transition: 'all 0.2s',
                         cursor: 'pointer',
                         position: 'relative',
-                        boxShadow: '0 4px 20px rgba(0,0,0,0.01)'
+                        boxShadow: 'var(--shadow-sm)'
                     }}
                     onClick={() => !previewUrl && fileInputRef.current?.click()}
                 >
@@ -125,8 +125,8 @@ const DesignEditor = ({ order, onClose }) => {
                                 <Upload size={32} />
                             </div>
                             <div>
-                                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: '#1e293b' }}>Upload Final Design</h3>
-                                <p style={{ margin: '6px 0 0', fontSize: '14px', color: '#94a3b8', fontWeight: '500' }}>Drop files from Photoshop / Illustrator or click to browse</p>
+                                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: 'var(--text-primary)' }}>Upload Final Design</h3>
+                                <p style={{ margin: '6px 0 0', fontSize: '14px', color: 'var(--text-secondary)', fontWeight: '500' }}>Drop files from Photoshop / Illustrator or click to browse</p>
                             </div>
                             <div style={{ background: '#edf2f7', padding: '8px 20px', borderRadius: '12px', fontSize: '12px', color: '#4a5568', fontWeight: '700', letterSpacing: '0.2px' }}>
                                 PSD, AI, EPS, PNG or high-res JPG
@@ -141,7 +141,7 @@ const DesignEditor = ({ order, onClose }) => {
                                 </button>
                             </div>
                             {selectedFile && (
-                                <div style={{ marginTop: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: '#059669', fontSize: '14px', fontWeight: '700' }}>
+                                <div style={{ marginTop: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: '#16a34a', fontSize: '14px', fontWeight: '700' }}>
                                     <Check size={18} strokeWidth={3} /> {selectedFile.name} ready for secure upload
                                 </div>
                             )}
@@ -150,19 +150,19 @@ const DesignEditor = ({ order, onClose }) => {
                 </div>
 
                 {/* Design Specs */}
-                <div style={{ background: '#ffffff', borderRadius: '20px', padding: '24px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', color: '#1e293b' }}>
+                <div style={{ background: 'var(--card-bg)', borderRadius: '20px', padding: '24px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', color: 'var(--text-primary)' }}>
                         <FileText size={20} strokeWidth={2.5} />
                         <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '800' }}>Design Specs</h4>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span style={{ fontSize: '13px', color: '#94a3b8', fontWeight: '600' }}>Design Type:</span>
-                            <span style={{ fontSize: '14px', color: '#1e293b', fontWeight: '800' }}>{order?.printSpecs?.designType || 'Poster'}</span>
+                            <span style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>Design Type:</span>
+                            <span style={{ fontSize: '14px', color: 'var(--text-primary)', fontWeight: '800' }}>{order?.printSpecs?.designType || 'Poster'}</span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span style={{ fontSize: '13px', color: '#94a3b8', fontWeight: '600' }}>Dimensions:</span>
-                            <span style={{ fontSize: '14px', color: '#1e293b', fontWeight: '800' }}>
+                            <span style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>Dimensions:</span>
+                            <span style={{ fontSize: '14px', color: 'var(--text-primary)', fontWeight: '800' }}>
                                 {order?.printSpecs?.size ?
                                     `${order.printSpecs.size.width}x${order.printSpecs.size.height || 0} ${order.printSpecs.size.unit || 'mm'}` :
                                     '297x420 mm'}

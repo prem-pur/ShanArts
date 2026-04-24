@@ -196,11 +196,11 @@ const OrderWorkspace = () => {
                 const originalText = btn.innerText;
                 btn.innerHTML =
                     '<span style="display: flex; align-items: center; gap: 4px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> SENT!</span>';
-                btn.style.background = "#059669";
+                btn.style.background = "#cc0000";
                 setTimeout(() => {
                     if (btn) {
                         btn.innerText = originalText;
-                        btn.style.background = "#10b981";
+                        btn.style.background = "#ff3333";
                     }
                 }, 3000);
             }
@@ -240,21 +240,21 @@ const OrderWorkspace = () => {
                 {/* Red Notification Banner */}
                 {newOrdersCount > 0 && (
                     <div style={{
-                        background: '#fee2e2',
+                        background: 'rgba(255, 51, 51, 0.1)',
                         padding: '16px 20px',
                         borderRadius: '16px',
                         marginBottom: '24px',
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',
-                        border: '1px solid #fecaca'
+                        border: '1px solid rgba(255, 51, 51, 0.2)'
                     }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                             <div style={{ color: 'var(--accent-color)', display: 'flex' }}>
                                 <Bell size={20} />
                             </div>
                             <div>
-                                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '900', color: '#b91c1c' }}>
+                                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '900', color: 'var(--accent-color)' }}>
                                     {newOrdersCount} New Orders to Design
                                 </h3>
                             </div>
@@ -270,7 +270,7 @@ const OrderWorkspace = () => {
                                 fontWeight: '800',
                                 cursor: 'pointer',
                                 fontSize: '13px',
-                                boxShadow: '0 4px 12px rgba(239, 68, 68, 0.2)'
+                                boxShadow: 'var(--accent-glow)'
                             }}
                         >
                             View New Orders
@@ -371,11 +371,11 @@ const OrderWorkspace = () => {
                                         fontWeight: '900',
                                         padding: '4px 8px',
                                         borderRadius: '6px',
-                                        background: isApproved ? '#ecfdf5' : isDraft ? '#f8fafc' : isRejected ? '#fef2f2' : '#f1f5f9',
-                                        color: isApproved ? '#059669' : isDraft ? 'var(--text-secondary)' : isRejected ? '#f87171' : 'var(--text-secondary)',
+                                        background: isApproved ? '#f0fdf4' : isDraft ? '#f8fafc' : isRejected ? '#fef2f2' : '#f1f5f9',
+                                        color: isApproved ? '#16a34a' : isDraft ? 'var(--text-secondary)' : isRejected ? '#ff3333' : 'var(--text-secondary)',
                                         textTransform: 'uppercase',
                                         letterSpacing: '0.8px',
-                                        border: `1px solid ${isApproved ? '#a7f3d0' : isDraft ? '#e2e8f0' : isRejected ? '#fecaca' : '#e2e8f0'}`,
+                                        border: `1px solid ${isApproved ? '#bcf0da' : isDraft ? '#e2e8f0' : isRejected ? '#ff333340' : '#e2e8f0'}`,
                                         display: 'flex',
                                         alignItems: 'center',
                                         gap: '4px'
@@ -470,10 +470,10 @@ const OrderWorkspace = () => {
                             </select>
                             <span style={{
                                 fontSize: '11px', fontWeight: '800', padding: '4px 10px', borderRadius: '8px',
-                                background: selectedOrder.status === STATUS.DRAFT ? '#fef3c7' : '#dbeafe',
-                                color: selectedOrder.status === STATUS.DRAFT ? '#d97706' : '#2563eb',
+                                background: selectedOrder.status === STATUS.DRAFT ? '#fef2f2' : '#fef2f2',
+                                color: selectedOrder.status === STATUS.DRAFT ? '#ff3333' : '#ff3333',
                                 textTransform: 'uppercase', letterSpacing: '0.05em',
-                                border: `1px solid ${selectedOrder.status === STATUS.DRAFT ? '#fde68a' : '#bfdbfe'}`,
+                                border: `1px solid ${selectedOrder.status === STATUS.DRAFT ? '#ff333340' : '#ff333340'}`,
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: '4px'
@@ -493,7 +493,7 @@ const OrderWorkspace = () => {
                                 onClick={openSendDesignModal}
                                 disabled={loading}
                                 style={{
-                                    background: loading ? '#9ca3af' : '#10b981',
+                                    background: loading ? 'grey' : '#ff3333',
                                     color: '#fff',
                                     border: 'none',
                                     padding: '8px 16px',

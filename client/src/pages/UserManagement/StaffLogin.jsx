@@ -105,7 +105,7 @@ const StaffLogin = () => {
                     <div style={{
                         width: '64px',
                         height: '64px',
-                        background: 'linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)',
+                        background: 'linear-gradient(135deg, #ff3333 0%, #990000 100%)',
                         borderRadius: '16px',
                         display: 'flex',
                         alignItems: 'center',

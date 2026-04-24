@@ -101,7 +101,7 @@ const SidebarLink = ({ to, icon, label }) => (
             fontSize: '14px',
             transition: 'all 0.25s cubic-bezier(0.22, 1, 0.36, 1)',
             borderLeft: isActive ? '4px solid rgba(255,255,255,0.9)' : '4px solid transparent',
-            boxShadow: isActive ? 'inset 0 0 0 1px rgba(99, 102, 241, 0.35)' : 'none'
+            boxShadow: isActive ? 'inset 0 0 0 1px rgba(255, 51, 51, 0.35)' : 'none'
         })}
     >
         <span style={{ fontSize: '18px' }}>{icon}</span>

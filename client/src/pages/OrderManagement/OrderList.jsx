@@ -17,22 +17,22 @@ const STATUS_MAP = {
     'design in progress': { label: 'Design In Progress',  color: '#d97706', bg: '#fef3c7', border: '#fde68a' },
     'pending_design':     { label: 'Pending Design',      color: '#d97706', bg: '#fef3c7', border: '#fde68a' },
     // Approval phase
-    'waiting_approval':   { label: 'Waiting Approval',    color: '#7c3aed', bg: '#f5f3ff', border: '#ddd6fe' },
-    'waiting approval':   { label: 'Waiting Approval',    color: '#7c3aed', bg: '#f5f3ff', border: '#ddd6fe' },
-    'sent to customer':   { label: 'Sent to Customer',    color: '#2563eb', bg: '#dbeafe', border: '#bfdbfe' },
+    'waiting_approval':   { label: 'Waiting Approval',    color: '#ff3333', bg: '#fee2e2', border: '#fecaca' },
+    'waiting approval':   { label: 'Waiting Approval',    color: '#ff3333', bg: '#fee2e2', border: '#fecaca' },
+    'sent to customer':   { label: 'Sent to Customer',    color: '#ff3333', bg: '#fee2e2', border: '#fecaca' },
     'revision_requested': { label: 'Revision Requested',  color: '#dc2626', bg: '#fef2f2', border: '#fecaca' },
     'revision requested': { label: 'Revision Requested',  color: '#dc2626', bg: '#fef2f2', border: '#fecaca' },
     'rejected':           { label: 'Rejected',             color: '#dc2626', bg: '#fef2f2', border: '#fecaca' },
-    'approved':           { label: 'Approved',             color: '#059669', bg: '#ecfdf5', border: '#a7f3d0' },
+    'approved':           { label: 'Approved',             color: '#ff3333', bg: 'var(--surface-muted)', border: 'var(--border-color)' },
     // Production phase
-    'scheduled':          { label: 'Scheduled',            color: '#0284c7', bg: '#e0f2fe', border: '#bae6fd' },
-    'confirmed':          { label: 'Confirmed',            color: '#0284c7', bg: '#e0f2fe', border: '#bae6fd' },
+    'scheduled':          { label: 'Scheduled',            color: '#cc0000', bg: '#fee2e2', border: '#fecaca' },
+    'confirmed':          { label: 'Confirmed',            color: '#cc0000', bg: '#fee2e2', border: '#fecaca' },
     'in_progress':        { label: 'In Progress',          color: '#ea580c', bg: '#fff7ed', border: '#fed7aa' },
     'in progress':        { label: 'In Progress',          color: '#ea580c', bg: '#fff7ed', border: '#fed7aa' },
-    'printing':           { label: 'Printing',             color: '#7c3aed', bg: '#f5f3ff', border: '#ddd6fe' },
+    'printing':           { label: 'Printing',             color: '#cc0000', bg: '#fee2e2', border: '#fecaca' },
     'machine_maintenance':{ label: 'Machine Maintenance',  color: '#b45309', bg: '#fffbeb', border: '#fde68a' },
     // Done
-    'completed':          { label: 'Completed',            color: '#059669', bg: '#ecfdf5', border: '#a7f3d0' },
+    'completed':          { label: 'Completed',            color: '#ff3333', bg: 'var(--surface-muted)', border: 'var(--border-color)' },
 };
 
 const getStatusConf = (raw) => {

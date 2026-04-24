@@ -4,9 +4,9 @@ import { API_BASE_URL } from '../../apiBase';
 
 const STATUS_CONFIG = {
     scheduled: { label: 'Awaiting Assignment', color: '#f59e0b', bg: '#fffbeb' },
-    confirmed: { label: 'Assigned to Machine', color: '#3b82f6', bg: '#eff6ff' },
-    in_progress: { label: 'Printing', color: '#8b5cf6', bg: '#f5f3ff' },
-    completed: { label: 'Completed', color: '#10b981', bg: '#ecfdf5' },
+    confirmed: { label: 'Assigned to Machine', color: '#ff3333', bg: '#fee2e2' },
+    in_progress: { label: 'Printing', color: '#cc0000', bg: '#fee2e2' },
+    completed: { label: 'Completed', color: '#ff3333', bg: 'var(--surface-muted)' },
 };
 
 const Machines = () => {
@@ -54,26 +54,26 @@ const Machines = () => {
     };
 
     if (loading) return (
-        <div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center', background: '#f9faff', color: '#6b7280', fontSize: '18px', fontWeight: '600' }}>
+        <div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-color)', color: 'var(--text-secondary)', fontSize: '18px', fontWeight: '600' }}>
             Synchronizing Machines...
         </div>
     );
 
     return (
-        <div style={{ padding: '40px', maxWidth: '1400px', margin: '0 auto', fontFamily: "'Inter', sans-serif" }}>
+        <div style={{ padding: '40px', maxWidth: '1400px', margin: '0 auto', fontFamily: "var(--font-sans, sans-serif)", backgroundColor: 'var(--bg-color)', minHeight: '100vh', color: 'var(--text-primary)' }}>
             <header style={{ marginBottom: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                 <div>
-                    <h1 style={{ fontSize: '32px', fontWeight: '900', color: '#111827', letterSpacing: '-1px', margin: 0 }}>MACHINE FLEET</h1>
-                    <p style={{ color: '#6b7280', fontSize: '16px', marginTop: '8px', fontWeight: '500' }}>Real-time production monitoring and asset management.</p>
+                    <h1 style={{ fontSize: '32px', fontWeight: '900', color: 'var(--text-primary)', letterSpacing: '-1px', margin: 0 }}>MACHINE FLEET</h1>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '16px', marginTop: '8px', fontWeight: '500' }}>Real-time production monitoring and asset management.</p>
                 </div>
-                <div style={{ background: '#fff', padding: '12px 24px', borderRadius: '16px', border: '1px solid #f0f0f0', display: 'flex', gap: '24px' }}>
+                <div style={{ background: 'var(--card-bg)', padding: '12px 24px', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', gap: '24px', boxShadow: 'var(--shadow-sm)' }}>
                     <div>
-                        <div style={{ fontSize: '11px', color: '#6b7280', fontWeight: '700', textTransform: 'uppercase' }}>Total Capacity</div>
-                        <div style={{ fontSize: '20px', fontWeight: '900', color: '#111827' }}>{machines.length} Units</div>
+                        <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '700', textTransform: 'uppercase' }}>Total Capacity</div>
+                        <div style={{ fontSize: '20px', fontWeight: '900', color: 'var(--text-primary)' }}>{machines.length} Units</div>
                     </div>
-                    <div style={{ borderLeft: '1px solid #eee', paddingLeft: '24px' }}>
-                        <div style={{ fontSize: '11px', color: '#6b7280', fontWeight: '700', textTransform: 'uppercase' }}>Active Production</div>
-                        <div style={{ fontSize: '20px', fontWeight: '900', color: '#3b82f6' }}>{machines.filter(m => orders.some(o => (o.assignedMachineId?._id || o.assignedMachineId) === m._id && o.status !== 'completed')).length} In Use</div>
+                    <div style={{ borderLeft: '1px solid var(--border-color)', paddingLeft: '24px' }}>
+                        <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '700', textTransform: 'uppercase' }}>Active Production</div>
+                        <div style={{ fontSize: '20px', fontWeight: '900', color: 'var(--accent-color)' }}>{machines.filter(m => orders.some(o => (o.assignedMachineId?._id || o.assignedMachineId) === m._id && o.status !== 'completed')).length} In Use</div>
                     </div>
                 </div>
             </header>
@@ -81,23 +81,23 @@ const Machines = () => {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '32px', alignItems: 'start' }}>
                 {/* Main Machine Grid */}
                 <div>
-                    <h3 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '20px', color: '#111827' }}>Machine Status</h3>
+                    <h3 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '20px', color: 'var(--text-primary)' }}>Machine Status</h3>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '24px' }}>
                         {machines.map(machine => {
                             const machineOrders = orders.filter(order => (order.assignedMachineId?._id || order.assignedMachineId) === machine._id && order.status !== 'completed');
-                            const statusColor = machine.status === 'In Use' ? '#3b82f6' : machine.status === 'Available' ? '#10b981' : '#f59e0b';
-                            const statusBg = machine.status === 'In Use' ? '#eff6ff' : machine.status === 'Available' ? '#ecfdf5' : '#fffbeb';
+                            const statusColor = machine.status === 'In Use' ? 'var(--accent-color)' : machine.status === 'Available' ? '#ff3333' : '#f59e0b';
+                            const statusBg = machine.status === 'In Use' ? '#fee2e2' : machine.status === 'Available' ? 'var(--surface-muted)' : '#fffbeb';
 
                             return (
-                                <div key={machine._id} style={{ border: '1.5px solid #f3f4f6', borderRadius: '16px', padding: '24px', background: '#fff', display: 'flex', flexDirection: 'column', transition: 'transform 0.2s ease, box-shadow 0.2s ease', cursor: 'default' }}>
+                                <div key={machine._id} style={{ border: '1.5px solid var(--border-color)', borderRadius: '16px', padding: '24px', background: 'var(--card-bg)', display: 'flex', flexDirection: 'column', transition: 'transform 0.2s ease, box-shadow 0.2s ease', cursor: 'default', boxShadow: 'var(--shadow-sm)' }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                                            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px' }}>
+                                            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'var(--surface-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px' }}>
                                                 🖨️
                                             </div>
                                             <div>
-                                                <div style={{ fontWeight: '800', fontSize: '17px', color: '#111827', lineHeight: '1.2' }}>{machine.name}</div>
-                                                <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: '700', textTransform: 'uppercase', marginTop: '2px', letterSpacing: '0.2px' }}>{machine.type}</div>
+                                                <div style={{ fontWeight: '800', fontSize: '17px', color: 'var(--text-primary)', lineHeight: '1.2' }}>{machine.name}</div>
+                                                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: '700', textTransform: 'uppercase', marginTop: '2px', letterSpacing: '0.2px' }}>{machine.type}</div>
                                             </div>
                                         </div>
                                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
@@ -107,7 +107,7 @@ const Machines = () => {
                                             <select
                                                 value={machine.status}
                                                 onChange={(e) => updateMachineStatus(machine._id, e.target.value)}
-                                                style={{ fontSize: '10px', fontWeight: '800', border: '1px solid #e5e7eb', borderRadius: '6px', padding: '2px 6px', background: '#f9fafb', cursor: 'pointer', outline: 'none' }}
+                                                style={{ fontSize: '10px', fontWeight: '800', border: '1px solid var(--border-color)', borderRadius: '6px', padding: '2px 6px', background: 'var(--input-bg)', color: 'var(--text-primary)', cursor: 'pointer', outline: 'none' }}
                                             >
                                                 <option value="Available">Available</option>
                                                 <option value="In Use">In Use</option>
@@ -131,7 +131,7 @@ const Machines = () => {
                                         )}
 
                                         {machineOrders.length === 0 ? (
-                                            <div style={{ textAlign: 'center', padding: '24px', background: '#f9fafb', borderRadius: '14px', color: '#9ca3af', fontSize: '13px', fontWeight: '600' }}>
+                                            <div style={{ textAlign: 'center', padding: '24px', background: 'var(--surface-muted)', borderRadius: '14px', color: 'var(--text-muted)', fontSize: '13px', fontWeight: '600' }}>
                                                 No active jobs — {machine.status}
                                             </div>
                                         ) : (
@@ -139,10 +139,10 @@ const Machines = () => {
                                                 {machineOrders.map(order => {
                                                     const cfg = STATUS_CONFIG[order.status] || STATUS_CONFIG.scheduled;
                                                     return (
-                                                        <div key={order._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
+                                                        <div key={order._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', background: 'var(--surface-muted)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
                                                             <div>
-                                                                <div style={{ fontWeight: '800', fontSize: '14px', color: '#111827' }}>#{order.orderId || order.orderNumber}</div>
-                                                                <div style={{ fontSize: '11px', color: '#6b7280', fontWeight: '700', textTransform: 'uppercase', marginTop: '2px' }}>{(order.jobType || '').replace('_', ' ')}</div>
+                                                                <div style={{ fontWeight: '800', fontSize: '14px', color: 'var(--text-primary)' }}>#{order.orderId || order.orderNumber}</div>
+                                                                <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '700', textTransform: 'uppercase', marginTop: '2px' }}>{(order.jobType || '').replace('_', ' ')}</div>
                                                             </div>
                                                             <span style={{ background: cfg.bg, color: cfg.color, padding: '6px 14px', borderRadius: '10px', fontSize: '11px', fontWeight: '800' }}>
                                                                 {cfg.label}

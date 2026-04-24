@@ -2,10 +2,10 @@ import React, { useState, useCallback, useEffect } from 'react';
 
 // ─── Toast types ──────────────────────────────────────────────────
 const TOAST_STYLES = {
-    success: { bg: '#10b981', icon: '✓', label: 'Success' },
+    success: { bg: '#ff3333', icon: '✓', label: 'Success' },
     error:   { bg: '#ef4444', icon: '✕', label: 'Error'   },
     warning: { bg: '#f59e0b', icon: '!', label: 'Warning'  },
-    info:    { bg: '#6366f1', icon: 'i', label: 'Info'     },
+    info:    { bg: '#666666', icon: 'i', label: 'Info'     },
 };
 
 // ─── Single Toast item ────────────────────────────────────────────

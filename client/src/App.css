@@ -1,27 +1,70 @@
 /* Aligns with Home.jsx: deep slate base, indigo / violet accent */
 :root {
-  --bg-color: #060810;
-  --sidebar-bg: #0a0c12;
-  --card-bg: #111520;
-  --surface-muted: #1a1f2e;
-  --surface-muted-2: #151a24;
-  --input-bg: #0c0e14;
-  --text-primary: #e8eaf0;
-  --text-secondary: #7a83a0;
-  --text-muted: #8b95a8;
-  --accent-color: #6366f1;
-  --accent-hover: #4f46e5;
-  --accent-glow: rgba(99, 102, 241, 0.35);
-  --border-color: rgba(255, 255, 255, 0.08);
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45);
-  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.35);
-  --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.45);
+  --bg-color: #000000;
+  --sidebar-bg: #0d0d0d;
+  --card-bg: #141414;
+  --surface-muted: #1a1a1a;
+  --surface-muted-2: #141414;
+  --input-bg: #0a0a0a;
+  --text-primary: #ffffff;
+  --text-secondary: #999999;
+  --text-muted: #666666;
+  --accent-color: #ff3333;
+  --accent-hover: #cc0000;
+  --accent-glow: rgba(255, 51, 51, 0.35);
+  --border-color: rgba(255, 255, 255, 0.1);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.6);
   --radius-md: 12px;
   --radius-lg: 16px;
-  --sidebar-border: rgba(255, 255, 255, 0.06);
-  --card-border: rgba(255, 255, 255, 0.08);
-  --text-color: #e8eaf0;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --card-border: rgba(255, 255, 255, 0.1);
+  --text-color: #ffffff;
   --font-sans: "Outfit", "Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.light-layout {
+  --bg-color: #ffffff;
+  --sidebar-bg: #0d0d0d; /* Keep sidebar dark */
+  --card-bg: #ffffff;
+  --surface-muted: #f8fafc;
+  --surface-muted-2: #f1f5f9;
+  --input-bg: #ffffff;
+  --text-primary: #111111;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --border-color: #e2e8f0;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.04);
+  --card-border: #e2e8f0;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --text-color: #111111;
+}
+
+.light-layout .app-main-canvas {
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+}
+
+.light-layout .app-main-canvas::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.light-layout .app-main-canvas::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+}
+
+.light-layout .app-main-canvas::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.light-layout .app-footer {
+  background-color: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  color: #64748b;
 }
 
 /* Global Reset */
@@ -82,10 +125,10 @@ body {
 @keyframes shan-border-glow {
   0%,
   100% {
-    box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.25);
+    box-shadow: 0 0 0 1px rgba(255, 51, 51, 0.25);
   }
   50% {
-    box-shadow: 0 0 24px rgba(139, 92, 246, 0.35);
+    box-shadow: 0 0 24px rgba(255, 51, 51, 0.35);
   }
 }
 
@@ -109,7 +152,7 @@ body {
   transition: box-shadow 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
 }
 .shan-card-surface:hover {
-  border-color: rgba(99, 102, 241, 0.35);
+  border-color: rgba(255, 51, 51, 0.35);
   box-shadow: var(--shadow-lg);
   transform: translateY(-1px);
 }
@@ -126,7 +169,7 @@ body {
 }
 .shan-btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 0 40px rgba(99, 102, 241, 0.55);
+  box-shadow: 0 0 40px rgba(255, 51, 51, 0.55);
 }
 
 .shan-input {
@@ -138,8 +181,8 @@ body {
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 .shan-input:focus {
-  border-color: rgba(99, 102, 241, 0.55);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+  border-color: rgba(255, 51, 51, 0.55);
+  box-shadow: 0 0 0 3px rgba(255, 51, 51, 0.15);
 }
 
 .shan-spin {
@@ -157,11 +200,11 @@ body {
 .order-row:hover {
   background: var(--surface-muted) !important;
   transform: translateX(4px);
-  box-shadow: inset 0 0 0 1px rgba(99, 102, 241, 0.2);
+  box-shadow: inset 0 0 0 1px rgba(255, 51, 51, 0.2);
 }
 
 .shan-gradient-text {
-  background: linear-gradient(135deg, #6366f1 0%, #a78bfa 40%, #60a5fa 80%, #34d399 100%);
+  background: linear-gradient(135deg, #ff3333 0%, #cc0000 40%, #ff6666 80%, #990000 100%);
   background-size: 200% 200%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -1680,7 +1723,7 @@ body {
   height: 56px;
   border-radius: 50%;
   border: none;
-  background: linear-gradient(135deg, #1e3a5f, #0f172a);
+  background: linear-gradient(135deg, #cc0000, #111111);
   color: #e2e8f0;
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.08);
   cursor: pointer;
@@ -1703,7 +1746,7 @@ body {
   max-height: min(80vh, 520px);
   display: flex;
   flex-direction: column;
-  background: #0f172a;
+  background: #111111;
   border: 1px solid rgba(148, 163, 184, 0.25);
   border-radius: 16px;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55);
@@ -1729,7 +1772,7 @@ body {
   justify-content: space-between;
   gap: 8px;
   padding: 14px 12px 12px 16px;
-  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+  background: linear-gradient(180deg, #1a1a1a 0%, #111111 100%);
   border-bottom: 1px solid rgba(148, 163, 184, 0.15);
 }
 
@@ -1819,7 +1862,7 @@ body {
   font-size: 0.75rem;
   line-height: 1.35;
   color: #cbd5e1;
-  background: rgba(30, 41, 59, 0.8);
+  background: rgba(30, 30, 30, 0.8);
   border: 1px solid rgba(100, 116, 139, 0.35);
   border-radius: 8px;
   padding: 8px 10px;
@@ -1854,7 +1897,7 @@ body {
 
 .pk-bubble-assistant {
   align-self: flex-start;
-  background: #1e293b;
+  background: #1a1a1a;
   color: #e2e8f0;
   border: 1px solid rgba(71, 85, 105, 0.5);
   border-bottom-left-radius: 4px;
@@ -1881,15 +1924,15 @@ body {
   gap: 8px;
   padding: 10px 12px 12px;
   border-top: 1px solid rgba(51, 65, 85, 0.6);
-  background: #0a0f1a;
+  background: #0d0d0d;
 }
 
 .pk-chat-input {
   flex: 1;
   min-width: 0;
   border-radius: 10px;
-  border: 1px solid #334155;
-  background: #1e293b;
+  border: 1px solid #444444;
+  background: #1a1a1a;
   color: #f1f5f9;
   font-size: 0.85rem;
   padding: 10px 12px;

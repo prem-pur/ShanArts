@@ -71,57 +71,57 @@ const SystemManagerDashboard = () => {
     return (
         <div style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto', fontFamily: "'Inter', sans-serif" }}>
             <header style={{ marginBottom: '40px' }}>
-                <h1 style={{ fontSize: '32px', fontWeight: '900', color: '#111827', letterSpacing: '-1px' }}>SYSTEM MONITOR</h1>
-                <p style={{ color: '#6b7280', fontSize: '16px' }}>Quality control, customer feedback, and operation oversight.</p>
+                <h1 style={{ fontSize: '32px', fontWeight: '900', color: 'var(--text-primary)', letterSpacing: '-1px' }}>SYSTEM MONITOR</h1>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '16px' }}>Quality control, customer feedback, and operation oversight.</p>
             </header>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px', marginBottom: '40px' }}>
-                <StatCard title="Total Orders" value={stats.totalOrders} icon={<Package size={28} />} color="#111827" />
-                <StatCard title="Total Revenue" value={`LKR ${stats.totalRevenue.toLocaleString()}`} icon={<DollarSign size={28} />} color="#111827" />
+                <StatCard title="Total Orders" value={stats.totalOrders} icon={<Package size={28} />} color="var(--text-primary)" />
+                <StatCard title="Total Revenue" value={`LKR ${stats.totalRevenue.toLocaleString()}`} icon={<DollarSign size={28} />} color="var(--text-primary)" />
                 <StatCard title="Active Jobs" value={stats.pendingTasks} icon={<Zap size={28} />} color="#ef4444" />
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
-                <div style={{ background: '#fff', borderRadius: '24px', padding: '32px', border: '1px solid #f0f0f0', boxShadow: '0 4px 25px rgba(0,0,0,0.03)' }}>
+                <div style={{ background: 'var(--card-bg)', borderRadius: '24px', padding: '32px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)' }}>
                     <h2 style={{ fontSize: '20px', fontWeight: '900', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <Bell size={20} color="var(--accent-color)" /> Recent Notifications
                     </h2>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '500px', overflowY: 'auto' }}>
                         {notifications.length > 0 ? notifications.map(n => (
-                            <div key={n._id} style={{ padding: '16px', borderRadius: '12px', background: n.isRead ? '#f9fafb' : '#fff5f5', border: `1px solid ${n.isRead ? '#f3f4f6' : '#fee2e2'}` }}>
-                                <div style={{ fontWeight: '800', fontSize: '14px', color: '#111827', marginBottom: '4px' }}>{n.title}</div>
-                                <div style={{ fontSize: '13px', color: '#4b5563', lineHeight: '1.4' }}>{n.message}</div>
-                                <div style={{ marginTop: '8px', fontSize: '10px', color: '#9ca3af', fontWeight: '600' }}>
+                            <div key={n._id} style={{ padding: '16px', borderRadius: '12px', background: n.isRead ? 'var(--surface-muted)' : 'var(--card-bg)', border: `1px solid ${n.isRead ? 'var(--border-color)' : '#fee2e2'}` }}>
+                                <div style={{ fontWeight: '800', fontSize: '14px', color: 'var(--text-primary)', marginBottom: '4px' }}>{n.title}</div>
+                                <div style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.4' }}>{n.message}</div>
+                                <div style={{ marginTop: '8px', fontSize: '10px', color: 'var(--text-muted)', fontWeight: '600' }}>
                                     {new Date(n.createdAt).toLocaleString()}
                                 </div>
                             </div>
                         )) : (
-                            <div style={{ textAlign: 'center', padding: '40px', color: '#9ca3af', fontSize: '14px' }}>No recent system notifications.</div>
+                            <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)', fontSize: '14px' }}>No recent system notifications.</div>
                         )}
                     </div>
                 </div>
 
-                <div style={{ background: '#fff', borderRadius: '24px', padding: '32px', border: '1px solid #f0f0f0', boxShadow: '0 4px 25px rgba(0,0,0,0.03)' }}>
+                <div style={{ background: 'var(--card-bg)', borderRadius: '24px', padding: '32px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)' }}>
                     <h2 style={{ fontSize: '20px', fontWeight: '900', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <MessageSquare size={20} color="#111827" /> Customer Feedback
+                        <MessageSquare size={20} color="var(--text-primary)" /> Customer Feedback
                     </h2>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                         {feedback && feedback.map(f => (
-                            <div key={f._id} style={{ background: '#f9fafb', padding: '20px', borderRadius: '16px', border: '1px solid #f3f4f6' }}>
+                            <div key={f._id} style={{ background: 'var(--surface-muted)', padding: '20px', borderRadius: '16px', border: '1px solid var(--border-color)' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                                     <div style={{ fontWeight: '800', fontSize: '14px' }}>{f.customerId?.name || 'Anonymous Customer'}</div>
-                                    <div style={{ color: '#111827', fontSize: '14px' }}>
+                                    <div style={{ color: 'var(--text-primary)', fontSize: '14px' }}>
                                         {'★'.repeat(f.rating || 0)}{'☆'.repeat(5 - (f.rating || 0))}
                                     </div>
                                 </div>
-                                <p style={{ margin: 0, color: '#4b5563', lineHeight: '1.5', fontSize: '13px', fontStyle: 'italic' }}>
+                                <p style={{ margin: 0, color: 'var(--text-secondary)', lineHeight: '1.5', fontSize: '13px', fontStyle: 'italic' }}>
                                     "{f.comment || 'No comment provided.'}"
                                 </p>
                             </div>
                         ))}
                         {(!feedback || feedback.length === 0) && (
-                            <div style={{ textAlign: 'center', padding: '40px', color: '#9ca3af', fontSize: '14px' }}>
+                            <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)', fontSize: '14px' }}>
                                 No feedback submitted yet.
                             </div>
                         )}
@@ -133,11 +133,11 @@ const SystemManagerDashboard = () => {
 };
 
 const StatCard = ({ title, value, icon, color }) => (
-    <div style={{ background: '#fff', padding: '24px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '20px', border: '1px solid #f0f0f0', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
+    <div style={{ background: 'var(--card-bg)', padding: '24px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '20px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
         <div style={{ width: '56px', height: '56px', borderRadius: '14px', background: `${color}15`, color: color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px' }}>{icon}</div>
         <div>
-            <div style={{ fontSize: '13px', color: '#6b7280', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{title}</div>
-            <div style={{ fontSize: '24px', fontWeight: '900', color: '#111827' }}>{value}</div>
+            <div style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{title}</div>
+            <div style={{ fontSize: '24px', fontWeight: '900', color: 'var(--text-primary)' }}>{value}</div>
         </div>
     </div>
 );

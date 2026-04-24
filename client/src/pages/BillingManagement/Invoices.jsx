@@ -35,7 +35,7 @@ const OutstandingStrip = ({ data }) => {
     if (!data) return null;
     return (
         <div style={{
-            background: 'linear-gradient(135deg, #6366F1 0%, #8B5CF6 50%, #4F46E5 100%)',
+            background: 'linear-gradient(135deg, #ff3333 0%, #990000 50%, #cc0000 100%)',
             borderRadius: '16px', 
             padding: '24px', 
             marginBottom: '32px',
@@ -132,8 +132,8 @@ const BillingManagement = () => {
     };
 
     // ─── Status colors ────────────────────────────────────────────────────────
-    const statusColor = { paid: '#10b981', partial: '#f59e0b', pending_approval: '#7c3aed', unpaid: '#ef4444' };
-    const statusBg = { paid: '#d1fae5', partial: '#fef3c7', pending_approval: '#ede9fe', unpaid: '#fee2e2' };
+    const statusColor = { paid: '#ff3333', partial: '#f59e0b', pending_approval: '#ff3333', unpaid: '#ef4444' };
+    const statusBg = { paid: '#d1fae5', partial: '#fef3c7', pending_approval: '#fee2e2', unpaid: '#fee2e2' };
 
     return (
         <div className="shan-page" style={{ padding: '28px 36px', maxWidth: '1400px', margin: '0 auto', fontFamily: 'var(--font-sans, sans-serif)', backgroundColor: 'var(--bg-color)', minHeight: '100vh', color: 'var(--text-primary)' }}>

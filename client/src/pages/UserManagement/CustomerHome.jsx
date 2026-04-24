@@ -523,9 +523,9 @@ const CustomerHome = () => {
     };
 
     const paymentStatusColors = {
-        paid: '#059669',
+        paid: '#ff3333',
         partial: '#d97706',
-        pending_approval: '#7c3aed',
+        pending_approval: '#ff3333',
         unpaid: '#dc2626'
     };
 
@@ -626,8 +626,8 @@ const CustomerHome = () => {
                                                         borderRadius: '99px',
                                                         fontSize: '11px',
                                                         fontWeight: '800',
-                                                        background: order.status === 'completed' ? 'rgba(16, 185, 129, 0.12)' : 'var(--surface-muted-2)',
-                                                        color: order.status === 'completed' ? '#34d399' : 'var(--text-secondary)'
+                                                        background: order.status === 'completed' ? 'var(--surface-muted-2)' : 'var(--surface-muted-2)',
+                                                        color: order.status === 'completed' ? '#ff3333' : 'var(--text-secondary)'
                                                     }}>
                                                         {order.status.replace(/_/g, ' ')}
                                                     </span>
@@ -705,7 +705,7 @@ const CustomerHome = () => {
                                     </td>
                                     <td style={{ padding: '16px' }}>{order.jobType.toUpperCase()}</td>
                                     <td style={{ padding: '16px' }}>
-                                            <span style={{ padding: '4px 12px', borderRadius: '99px', fontSize: '11px', fontWeight: '800', background: order.status === 'completed' ? 'rgba(16, 185, 129, 0.12)' : 'var(--surface-muted-2)', color: order.status === 'completed' ? '#34d399' : 'var(--text-secondary)' }}>
+                                            <span style={{ padding: '4px 12px', borderRadius: '99px', fontSize: '11px', fontWeight: '800', background: order.status === 'completed' ? 'var(--surface-muted-2)' : 'var(--surface-muted-2)', color: order.status === 'completed' ? '#ff3333' : 'var(--text-secondary)' }}>
                                                 {order.status.replace(/_/g, ' ')}
                                             </span>
                                     </td>
@@ -755,7 +755,7 @@ const CustomerHome = () => {
                                                         setPaymentError('');
                                                         setShowPaymentModal(true);
                                                     }}
-                                                    style={{ padding: '6px 16px', borderRadius: '8px', border: 'none', background: 'linear-gradient(135deg, #2d3142 0%, #1e2230 100%)', color: '#fff', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}
+                                                    style={{ padding: '6px 16px', borderRadius: '8px', border: 'none', background: 'linear-gradient(135deg, #222222 0%, #111111 100%)', color: '#fff', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}
                                                 >
                                                     PAY NOW
                                                 </button>
@@ -807,8 +807,8 @@ const CustomerHome = () => {
                                             Status: {f.status || 'submitted'}
                                         </div>
                                         {f.response && (
-                                            <div style={{ marginTop: '10px', padding: '10px', borderRadius: '8px', background: '#f0fdf4', borderLeft: '3px solid #10b981' }}>
-                                                <div style={{ fontSize: '11px', color: '#059669', fontWeight: '800', marginBottom: '4px' }}>Our response</div>
+                                            <div style={{ marginTop: '10px', padding: '10px', borderRadius: '8px', background: 'var(--surface-muted)', borderLeft: '3px solid #ff3333' }}>
+                                                <div style={{ fontSize: '11px', color: '#ff3333', fontWeight: '800', marginBottom: '4px' }}>Our response</div>
                                                 <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{f.response}</div>
                                             </div>
                                         )}
@@ -995,7 +995,7 @@ const CustomerHome = () => {
                         <div style={{
                             width: '42px',
                             height: '42px',
-                            background: 'linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)',
+                            background: 'linear-gradient(135deg, #ff3333 0%, #990000 100%)',
                             borderRadius: '12px',
                             display: 'flex',
                             alignItems: 'center',
@@ -1003,7 +1003,7 @@ const CustomerHome = () => {
                             color: '#fff',
                             fontWeight: '900',
                             fontSize: '22px',
-                            boxShadow: '0 4px 20px rgba(99, 102, 241, 0.4)'
+                            boxShadow: '0 4px 20px rgba(255, 51, 51, 0.4)'
                         }}>SH</div>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                             <div style={{ color: '#fff', fontWeight: '900', fontSize: '20px', lineHeight: 1.1, letterSpacing: '0.5px' }}>SHAN</div>
@@ -1183,7 +1183,7 @@ const CustomerHome = () => {
                                     <button onClick={() => setShowRejectionForm(true)} style={{ flex: 1, padding: '14px', borderRadius: '12px', border: '1.5px solid #dc2626', background: 'var(--card-bg)', color: '#dc2626', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                                         <XCircle size={18} /> REJECT
                                     </button>
-                                    <button onClick={() => handleApproval('approve')} style={{ flex: 2, padding: '14px', borderRadius: '12px', border: 'none', background: '#10b981', color: '#fff', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                                    <button onClick={() => handleApproval('approve')} style={{ flex: 2, padding: '14px', borderRadius: '12px', border: 'none', background: '#ff3333', color: '#fff', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                                         <CheckCircle size={18} /> APPROVE & PRINT
                                     </button>
                                 </div>
@@ -1570,7 +1570,7 @@ const NotificationModal = ({ notifications, onClose, onMarkRead }) => (
                     <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>No notifications yet.</div>
                 )}
             </div>
-            <button onClick={onClose} style={{ width: '100%', padding: '14px', borderRadius: '12px', border: 'none', background: 'linear-gradient(135deg, #2d3142 0%, #1e2230 100%)', color: '#fff', fontWeight: '800', cursor: 'pointer' }}>CLOSE</button>
+            <button onClick={onClose} style={{ width: '100%', padding: '14px', borderRadius: '12px', border: 'none', background: 'linear-gradient(135deg, #222222 0%, #111111 100%)', color: '#fff', fontWeight: '800', cursor: 'pointer' }}>CLOSE</button>
         </div>
     </div>
 );

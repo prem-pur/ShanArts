@@ -341,14 +341,14 @@ const ScheduleDashboard = () => {
                             <StatCard
                                  label="Awaiting"
                                  value={orders.filter(o => o.status === 'scheduled').length}
-                                 color="#111827"
+                                 color="var(--text-primary)"
                                  icon={ClipboardList}
                                  subtitle={`${orders.filter(o => o.status === 'scheduled' && (o.priority?.toLowerCase() === 'urgent' || o.priority?.toLowerCase() === 'high' || o.priority?.toLowerCase() === 'ugent' )).length} Urgent Jobs`}
                             />
                             <StatCard 
                                  label="Assigned" 
                                  value={orders.filter(o => o.status === 'confirmed').length} 
-                                 color="#111827" 
+                                 color="var(--text-primary)" 
                                  icon={Activity} 
                             />
                             <StatCard 
