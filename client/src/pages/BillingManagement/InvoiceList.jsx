@@ -33,7 +33,7 @@ const InvoiceList = ({ onSelectInvoice, refreshKey }) => {
         }
     };
 
-    const statusColor = { paid: '#10b981', partial: '#f59e0b', pending_approval: '#7c3aed', unpaid: '#ef4444' };
+    const statusColor = { paid: '#ff3333', partial: '#f59e0b', pending_approval: '#7c3aed', unpaid: '#ef4444' };
     const statusBg = { paid: '#d1fae5', partial: '#fef3c7', pending_approval: '#ede9fe', unpaid: '#fee2e2' };
 
     const filtered = invoices.filter(inv => {

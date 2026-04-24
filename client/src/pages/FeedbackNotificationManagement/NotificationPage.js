@@ -214,7 +214,7 @@ const NotificationsPage = () => {
                 <div style={{ textAlign: 'center', padding: '100px', color: '#64748b', fontWeight: '600' }}>Synchronizing notifications...</div>
             ) : notifications.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '120px 40px', background: '#fff', borderRadius: '32px', border: '1px dashed #cbd5e1' }}>
-                    <div style={{ fontSize: '48px', marginBottom: '20px' }}><CheckCircle2 size={64} color="#10b981" style={{ margin: '0 auto' }} /></div>
+                    <div style={{ fontSize: '48px', marginBottom: '20px' }}><CheckCircle2 size={64} color="#ff3333" style={{ margin: '0 auto' }} /></div>
                     <div style={{ fontWeight: '900', fontSize: '20px', color: '#0f172a' }}>All Systems Optimized</div>
                     <div style={{ color: '#64748b', marginTop: '8px', fontWeight: '500' }}>No active risks or delays detected in the system.</div>
                 </div>
@@ -260,7 +260,7 @@ const NotificationsPage = () => {
                                         <p style={{ margin: 0, fontSize: '14px', color: '#334155', fontWeight: '500', lineHeight: 1.6 }}>{notif.message}</p>
                                         
                                         {notif.predictionVerification?.status === 'verified' && (
-                                            <div style={{ marginTop: '16px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: '800', color: notif.predictionVerification.isAccurate ? '#10b981' : '#f59e0b' }}>
+                                            <div style={{ marginTop: '16px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: '800', color: notif.predictionVerification.isAccurate ? '#ff3333' : '#f59e0b' }}>
                                                 <ShieldCheck size={14} /> 
                                                 Prediction Validated: {notif.predictionVerification.isAccurate ? 'Model Accurate' : 'Heuristic Adjustment Required'}
                                             </div>
@@ -318,9 +318,9 @@ const NotificationsPage = () => {
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '32px' }}>
                             <button 
                                 onClick={() => setVerificationChoice(true)} 
-                                style={{ padding: '16px', borderRadius: '16px', border: verificationChoice === true ? '2.5px solid #10b981' : '1.5px solid #e2e8f0', background: verificationChoice === true ? '#f0fdf4' : '#fff', color: '#0f172a', fontWeight: '800', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', transition: 'all 0.2s' }}
+                                style={{ padding: '16px', borderRadius: '16px', border: verificationChoice === true ? '2.5px solid #ff3333' : '1.5px solid #e2e8f0', background: verificationChoice === true ? 'var(--surface-muted)' : '#fff', color: '#0f172a', fontWeight: '800', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', transition: 'all 0.2s' }}
                             >
-                                <CheckCircle2 size={24} color={verificationChoice === true ? '#10b981' : '#cbd5e1'} />
+                                <CheckCircle2 size={24} color={verificationChoice === true ? '#ff3333' : '#cbd5e1'} />
                                 Precise Prediction
                             </button>
                             <button 

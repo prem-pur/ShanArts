@@ -97,7 +97,7 @@ const AddMaterialModal = ({ isOpen, onClose, onSuccess, categories, fetchCategor
                                     <button
                                         type="button"
                                         onClick={handleAddCategory}
-                                        style={{ padding: '0 16px', borderRadius: '10px', border: 'none', background: '#10b981', color: '#fff', fontWeight: '800', cursor: 'pointer' }}
+                                        style={{ padding: '0 16px', borderRadius: '10px', border: 'none', background: 'var(--accent-color)', color: '#fff', fontWeight: '800', cursor: 'pointer' }}
                                     >
                                         Add
                                     </button>

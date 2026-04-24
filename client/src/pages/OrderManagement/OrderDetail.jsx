@@ -27,20 +27,20 @@ const STATUS_MAP = {
     'draft':              { label: 'Draft',               color: '#64748b', bg: '#f1f5f9', border: '#e2e8f0' },
     'design in progress': { label: 'Design In Progress',  color: '#d97706', bg: '#fef3c7', border: '#fde68a' },
     'pending_design':     { label: 'Pending Design',      color: '#d97706', bg: '#fef3c7', border: '#fde68a' },
-    'waiting_approval':   { label: 'Waiting Approval',    color: '#7c3aed', bg: '#f5f3ff', border: '#ddd6fe' },
-    'waiting approval':   { label: 'Waiting Approval',    color: '#7c3aed', bg: '#f5f3ff', border: '#ddd6fe' },
-    'sent to customer':   { label: 'Sent to Customer',    color: '#2563eb', bg: '#dbeafe', border: '#bfdbfe' },
+    'waiting_approval':   { label: 'Waiting Approval',    color: '#ff3333', bg: '#fee2e2', border: '#fecaca' },
+    'waiting approval':   { label: 'Waiting Approval',    color: '#ff3333', bg: '#fee2e2', border: '#fecaca' },
+    'sent to customer':   { label: 'Sent to Customer',    color: '#ff3333', bg: '#fee2e2', border: '#fecaca' },
     'revision_requested': { label: 'Revision Requested',  color: '#dc2626', bg: '#fef2f2', border: '#fecaca' },
     'revision requested': { label: 'Revision Requested',  color: '#dc2626', bg: '#fef2f2', border: '#fecaca' },
     'rejected':           { label: 'Rejected',             color: '#dc2626', bg: '#fef2f2', border: '#fecaca' },
-    'approved':           { label: 'Approved',             color: '#059669', bg: '#ecfdf5', border: '#a7f3d0' },
-    'scheduled':          { label: 'Scheduled',            color: '#0284c7', bg: '#e0f2fe', border: '#bae6fd' },
-    'confirmed':          { label: 'Confirmed',            color: '#0284c7', bg: '#e0f2fe', border: '#bae6fd' },
+    'approved':           { label: 'Approved',             color: '#ff3333', bg: 'var(--surface-muted)', border: 'var(--border-color)' },
+    'scheduled':          { label: 'Scheduled',            color: '#cc0000', bg: '#fee2e2', border: '#fecaca' },
+    'confirmed':          { label: 'Confirmed',            color: '#cc0000', bg: '#fee2e2', border: '#fecaca' },
     'in_progress':        { label: 'In Progress',          color: '#ea580c', bg: '#fff7ed', border: '#fed7aa' },
     'in progress':        { label: 'In Progress',          color: '#ea580c', bg: '#fff7ed', border: '#fed7aa' },
-    'printing':           { label: 'Printing',             color: '#7c3aed', bg: '#f5f3ff', border: '#ddd6fe' },
+    'printing':           { label: 'Printing',             color: '#cc0000', bg: '#fee2e2', border: '#fecaca' },
     'machine_maintenance':{ label: 'Machine Maintenance',  color: '#b45309', bg: '#fffbeb', border: '#fde68a' },
-    'completed':          { label: 'Completed',            color: '#059669', bg: '#ecfdf5', border: '#a7f3d0' },
+    'completed':          { label: 'Completed',            color: '#ff3333', bg: 'var(--surface-muted)', border: 'var(--border-color)' },
 };
 
 const getStatusConf = (raw) => {
@@ -197,21 +197,21 @@ const OrderDetail = () => {
 
             {/* Rejection Banner */}
             {(rawKey === 'rejected' || rawKey === 'revision_requested' || rawKey === 'revision requested') && order.revisionNotes && (
-                <div className="shan-fade-in" style={{ background: 'rgba(127, 29, 29, 0.2)', border: '1.5px solid rgba(248, 113, 113, 0.45)', borderRadius: '14px', padding: '18px 22px', marginBottom: '24px' }}>
-                    <div style={{ fontWeight: '900', color: '#fca5a5', fontSize: '13px', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div className="shan-fade-in" style={{ background: '#fff1f2', border: '1.5px solid #fecaca', borderRadius: '14px', padding: '18px 22px', marginBottom: '24px' }}>
+                    <div style={{ fontWeight: '900', color: '#be123c', fontSize: '13px', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <XCircle size={16} /> Design Rejected — Revision Required
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: revisionChanges ? '1fr 1fr' : '1fr', gap: '12px' }}>
                         <div>
-                            <div style={{ fontSize: '10px', fontWeight: '900', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>Reason</div>
-                            <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-primary)', lineHeight: '1.5', fontWeight: '600', background: 'var(--input-bg)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                            <div style={{ fontSize: '10px', fontWeight: '900', color: '#9f1239', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', opacity: 0.7 }}>Reason</div>
+                            <p style={{ margin: 0, fontSize: '13px', color: '#881337', lineHeight: '1.5', fontWeight: '600', background: '#fff', padding: '10px', borderRadius: '8px', border: '1px solid #fecaca' }}>
                                 "{revisionReason}"
                             </p>
                         </div>
                         {revisionChanges && (
                             <div>
-                                <div style={{ fontSize: '10px', fontWeight: '900', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>Changes Requested</div>
-                                <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-primary)', lineHeight: '1.5', fontWeight: '600', background: 'var(--input-bg)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                                <div style={{ fontSize: '10px', fontWeight: '900', color: '#9f1239', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', opacity: 0.7 }}>Changes Requested</div>
+                                <p style={{ margin: 0, fontSize: '13px', color: '#881337', lineHeight: '1.5', fontWeight: '600', background: '#fff', padding: '10px', borderRadius: '8px', border: '1px solid #fecaca' }}>
                                     "{revisionChanges}"
                                 </p>
                             </div>
@@ -233,10 +233,10 @@ const OrderDetail = () => {
                         { label: 'Completed', desc: 'Finished & ready', done: rawKey === 'completed' },
                     ].map((step, i, arr) => (
                         <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', position: 'relative', flex: 1, minWidth: '110px' }}>
-                            {i < arr.length - 1 && <div style={{ position: 'absolute', left: '50%', top: '13px', width: '100%', height: '2px', background: step.done ? 'rgba(16, 185, 129, 0.5)' : 'var(--border-color)', zIndex: 0 }} />}
+                            {i < arr.length - 1 && <div style={{ position: 'absolute', left: '50%', top: '13px', width: '100%', height: '2px', background: step.done ? 'rgba(255, 51, 51, 0.35)' : 'var(--border-color)', zIndex: 0 }} />}
                             <div style={{
                                 width: '28px', height: '28px', borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                background: step.done ? '#059669' : 'var(--surface-muted)', border: `2px solid ${step.done ? '#059669' : 'var(--border-color)'}`, zIndex: 1, boxShadow: step.done ? '0 0 0 3px rgba(16, 185, 129, 0.25)' : 'none',
+                                background: step.done ? '#ff3333' : 'var(--surface-muted)', border: `2px solid ${step.done ? '#ff3333' : 'var(--border-color)'}`, zIndex: 1, boxShadow: step.done ? '0 0 0 3px rgba(255, 51, 51, 0.15)' : 'none',
                                 marginBottom: '12px'
                             }}>
                                 {step.done ? (
@@ -372,7 +372,7 @@ const OrderDetail = () => {
                                         style={{ width: '100%', maxHeight: '360px', objectFit: 'contain', display: 'block' }}
                                     />
                                     <div style={{ position: 'absolute', bottom: '10px', right: '10px' }}>
-                                        <span style={{ background: '#ecfdf5', color: '#059669', border: '1px solid #a7f3d0', padding: '4px 10px', borderRadius: '8px', fontSize: '11px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                        <span style={{ background: 'var(--surface-muted)', color: '#ff3333', border: '1px solid var(--border-color)', padding: '4px 10px', borderRadius: '8px', fontSize: '11px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '6px' }}>
                                             <Check size={12} strokeWidth={3} /> Design Created
                                         </span>
                                     </div>

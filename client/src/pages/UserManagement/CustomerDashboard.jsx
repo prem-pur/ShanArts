@@ -229,14 +229,14 @@ const CustomerAuthScreen = () => {
                 {error && (
                     <div style={{
                         padding: '16px',
-                        backgroundColor: error.includes('successful') ? '#ecfdf5' : '#fef2f2',
-                        color: error.includes('successful') ? '#059669' : '#dc2626',
+                        backgroundColor: error.includes('successful') ? 'var(--surface-muted)' : '#fef2f2',
+                        color: error.includes('successful') ? '#ff3333' : '#dc2626',
                         borderRadius: '12px',
                         marginBottom: '32px',
                         fontSize: '14px',
                         fontWeight: '600',
                         textAlign: 'center',
-                        border: `1px solid ${error.includes('successful') ? '#10b98133' : '#ef444433'}`
+                        border: `1px solid ${error.includes('successful') ? '#ff333333' : '#ef444433'}`
                     }}>
                         {error}
                     </div>

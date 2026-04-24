@@ -303,7 +303,7 @@ const Schedule = () => {
                                             padding: '8px 12px',
                                             borderRadius: '8px',
                                             fontSize: '12px',
-                                            color: '#059669'
+                                            color: '#ff3333'
                                         }}>
                                             📐 {order.printSpecs?.size?.width || 0}x{order.printSpecs?.size?.height || 0}{order.printSpecs?.size?.unit || 'mm'}
                                         </div>

@@ -417,7 +417,7 @@ const QRScanner = ({ onClose, onStockUpdated }) => {
                                     padding: '14px',
                                     borderRadius: '12px',
                                     border: 'none',
-                                    background: updating ? '#d1d5db' : 'var(--accent-color, #10b981)',
+                                    background: updating ? '#d1d5db' : 'var(--accent-color, #ff3333)',
                                     color: '#fff',
                                     fontWeight: '800',
                                     fontSize: '15px',

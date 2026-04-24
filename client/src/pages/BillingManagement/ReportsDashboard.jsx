@@ -98,7 +98,7 @@ const ReportsDashboard = () => {
             {/* KPI Cards */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
                 <StatCard label="Total Revenue" value={`LKR ${(totalRevenue || 0).toLocaleString()}`} icon="💰" color="#111827" sub={`${invoiceCount} invoice(s)`} />
-                <StatCard label="Collected" value={`LKR ${(totalCollected || 0).toLocaleString()}`} icon="✅" color="#10b981" sub={`${collectionRate}% collection rate`} />
+                <StatCard label="Collected" value={`LKR ${(totalCollected || 0).toLocaleString()}`} icon="✅" color="#ff3333" sub={`${collectionRate}% collection rate`} />
                 <StatCard label="Outstanding" value={`LKR ${(totalOutstanding || 0).toLocaleString()}`} icon="⏳" color="#ef4444" sub="Unpaid + Partial + Pending" />
                 <StatCard label="Status Breakdown" icon="📋"
                           value={
@@ -166,7 +166,7 @@ const ReportsDashboard = () => {
                             </thead>
                             <tbody>
                             {recentInvoices.map(inv => {
-                                const sColor = { paid: '#10b981', partial: '#f59e0b', pending_approval: '#7c3aed', unpaid: '#ef4444' };
+                                const sColor = { paid: '#ff3333', partial: '#f59e0b', pending_approval: '#7c3aed', unpaid: '#ef4444' };
                                 return (
                                     <tr key={inv._id} style={{ borderBottom: '1px solid #f9fafb' }}>
                                         <td style={{ padding: '12px', fontWeight: '800', color: '#111827', fontSize: '13px' }}>#{inv.invoiceNumber}</td>

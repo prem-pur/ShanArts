@@ -432,7 +432,6 @@ const AdminDashboard = () => {
 
     return (
         <div className="shan-page" style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto', fontFamily: 'var(--font-sans, sans-serif)', color: 'var(--text-primary)' }}>
-            {/* Header */}
             <header style={{ marginBottom: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                     <h1 style={{ fontSize: '32px', fontWeight: '900', color: 'var(--text-primary)', letterSpacing: '-1px' }}>SYSTEM CENTRAL</h1>
@@ -443,7 +442,7 @@ const AdminDashboard = () => {
                         <div style={{ fontWeight: '800', color: 'var(--text-primary)', fontSize: '15px' }}>{user.name}</div>
                         <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Administrator</div>
                     </div>
-                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent-color), #7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', color: '#fff', fontSize: '14px', boxShadow: '0 4px 16px var(--accent-glow)' }}>{user.name?.[0] || 'A'}</div>
+                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent-color), #cc0000)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', color: '#fff', fontSize: '14px', boxShadow: '0 4px 16px var(--accent-glow)' }}>{user.name?.[0] || 'A'}</div>
                 </div>
             </header>
 
@@ -457,7 +456,7 @@ const AdminDashboard = () => {
                         tabIndex={0}
                         onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') navigate(link.path); }}
                         style={{ background: 'var(--card-bg)', padding: '24px 16px', borderRadius: '16px', textAlign: 'center', cursor: 'pointer', border: '1px solid var(--border-color)', transition: 'transform 0.25s, border-color 0.25s, box-shadow 0.25s', boxShadow: 'var(--shadow-sm)' }}
-                        onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.5)'; e.currentTarget.style.boxShadow = 'var(--shadow-md)'; }}
+                        onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.borderColor = 'rgba(255, 51, 51, 0.5)'; e.currentTarget.style.boxShadow = 'var(--shadow-md)'; }}
                         onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.boxShadow = 'var(--shadow-sm)'; }}
                     >
                         <div style={{ fontSize: '28px', marginBottom: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>{link.icon}</div>
@@ -497,7 +496,7 @@ const AdminDashboard = () => {
                         <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginBottom: '32px' }}>A unique QR code is generated automatically.</p>
 
                         {message.text && (
-                            <div style={{ padding: '12px', borderRadius: '10px', marginBottom: '24px', backgroundColor: message.type === 'success' ? '#ecfdf5' : '#fef2f2', color: message.type === 'success' ? '#059669' : '#dc2626', fontSize: '13px', fontWeight: '600', textAlign: 'center', border: `1px solid ${message.type === 'success' ? '#10b98133' : '#ef444433'}` }}>
+                            <div style={{ padding: '12px', borderRadius: '10px', marginBottom: '24px', backgroundColor: message.type === 'success' ? 'var(--surface-muted)' : '#fef2f2', color: message.type === 'success' ? '#ff3333' : '#dc2626', fontSize: '13px', fontWeight: '600', textAlign: 'center', border: `1px solid ${message.type === 'success' ? 'var(--border-color)' : '#ef444433'}` }}>
                                 {message.text}
                             </div>
                         )}
@@ -617,7 +616,7 @@ const AdminDashboard = () => {
                         )}
 
                         {scanResult && (
-                            <div style={{ marginTop: '20px', padding: '14px', borderRadius: '12px', background: scanResult.type === 'success' ? '#ecfdf5' : '#fef2f2', color: scanResult.type === 'success' ? '#059669' : '#dc2626', fontWeight: '700', fontSize: '14px', textAlign: 'center', border: `1px solid ${scanResult.type === 'success' ? '#10b98133' : '#ef444433'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                            <div style={{ marginTop: '20px', padding: '14px', borderRadius: '12px', background: scanResult.type === 'success' ? 'var(--surface-muted)' : '#fef2f2', color: scanResult.type === 'success' ? '#ff3333' : '#dc2626', fontWeight: '700', fontSize: '14px', textAlign: 'center', border: `1px solid ${scanResult.type === 'success' ? 'var(--border-color)' : '#ef444433'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                                 {scanResult.type === 'success' ? <Check size={18} /> : <XCircle size={18} />} {scanResult.text}
                                 <button onClick={() => setScanResult(null)} style={{ marginLeft: '12px', background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', fontWeight: '700' }}>✕</button>
                             </div>
@@ -659,7 +658,7 @@ const AdminDashboard = () => {
                         ) : (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '400px', overflowY: 'auto', paddingRight: '4px' }}>
                                 {attendanceList.map(member => (
-                                    <div key={member.userId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', borderRadius: '12px', border: '1px solid var(--border-color)', background: member.status === 'present' ? 'rgba(16, 185, 129, 0.12)' : 'var(--surface-muted-2)' }}>
+                                    <div key={member.userId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', borderRadius: '12px', border: '1px solid var(--border-color)', background: member.status === 'present' ? 'var(--surface-muted-2)' : 'var(--surface-muted-2)' }}>
                                         <div>
                                             <div style={{ fontWeight: '800', color: 'var(--text-primary)', fontSize: '14px' }}>{member.name}</div>
                                             <div style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: '600' }}>
@@ -753,7 +752,7 @@ const AdminDashboard = () => {
                     {/* QR Result Card */}
                     {merchantQRResult && (
                         <div style={{ background: 'var(--card-bg)', padding: '32px 40px', borderRadius: '20px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                            <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent-color), #8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', marginBottom: '12px', boxShadow: '0 8px 24px var(--accent-glow)' }}><Ticket size={28} /></div>
+                            <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent-color), #cc0000)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', marginBottom: '12px', boxShadow: '0 8px 24px var(--accent-glow)' }}><Ticket size={28} /></div>
                             <h3 style={{ fontWeight: '900', color: 'var(--text-primary)', marginBottom: '4px', fontSize: '18px' }}>{merchantQRResult.name}</h3>
                             <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginBottom: '4px' }}>{ROLE_LABELS[merchantQRResult.role] || merchantQRResult.role}</p>
                             <div style={{ padding: '6px 16px', background: '#fef2f2', borderRadius: '20px', marginBottom: '20px' }}>
@@ -1031,7 +1030,7 @@ const AdminDashboard = () => {
                                                     <span style={{ padding: '2px 8px', background: 'rgba(99, 102, 241, 0.12)', color: 'var(--accent-color)', borderRadius: '6px', fontSize: '11px', fontWeight: '800', border: '1px solid rgba(99, 102, 241, 0.35)' }}>
                                                         {s.merchantCode}
                                                     </span>
-                                                    <span style={{ padding: '2px 8px', marginLeft: '6px', background: s.isActive === false ? 'rgba(220, 38, 38, 0.12)' : 'rgba(16, 185, 129, 0.12)', color: s.isActive === false ? '#f87171' : '#4ade80', border: `1px solid ${s.isActive === false ? 'rgba(220, 38, 38, 0.3)' : 'rgba(16, 185, 129, 0.35)'}`, borderRadius: '6px', fontSize: '11px', fontWeight: '800' }}>
+                                                    <span style={{ padding: '2px 8px', marginLeft: '6px', background: s.isActive === false ? 'rgba(220, 38, 38, 0.12)' : 'var(--surface-muted-2)', color: s.isActive === false ? '#f87171' : '#ff3333', border: `1px solid ${s.isActive === false ? 'rgba(220, 38, 38, 0.3)' : 'var(--border-color)'}`, borderRadius: '6px', fontSize: '11px', fontWeight: '800' }}>
                                                         {s.isActive === false ? 'Inactive' : 'Active'}
                                                     </span>
                                                 </div>

@@ -81,7 +81,7 @@ const PaymentPage = ({ invoice, onClose, onSuccess }) => {
                                 <span>{paidPercent}% complete</span>
                             </div>
                             <div style={{ background: 'rgba(255,255,255,0.2)', borderRadius: '6px', height: '6px', overflow: 'hidden' }}>
-                                <div style={{ width: `${paidPercent}%`, background: '#10b981', height: '100%', borderRadius: '6px', transition: 'width 0.6s ease' }} />
+                                <div style={{ width: `${paidPercent}%`, background: '#ff3333', height: '100%', borderRadius: '6px', transition: 'width 0.6s ease' }} />
                             </div>
                         </div>
                         <div style={{ fontSize: '11px', opacity: 0.6 }}>

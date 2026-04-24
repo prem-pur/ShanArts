@@ -163,7 +163,7 @@ const BarcodeScanner = ({ onScanComplete, onMaterialFound }) => {
                     width: '12px',
                     height: '12px',
                     borderRadius: '50%',
-                    backgroundColor: isScanning ? '#10b981' : '#6b7280'
+                    backgroundColor: isScanning ? '#ff3333' : '#6b7280'
                 }} />
                 <span style={{ fontSize: '14px', color: '#6b7280' }}>
                     {isScanning ? '🟢 Scanner Active - Scan barcode now' : '⚫ Scanner Inactive'}
@@ -179,7 +179,7 @@ const BarcodeScanner = ({ onScanComplete, onMaterialFound }) => {
                         padding: '12px',
                         border: 'none',
                         borderRadius: '8px',
-                        backgroundColor: isScanning ? '#ef4444' : '#10b981',
+                        backgroundColor: isScanning ? '#ef4444' : '#ff3333',
                         color: 'white',
                         fontWeight: '600',
                         cursor: 'pointer'
@@ -367,7 +367,7 @@ const BarcodeScanner = ({ onScanComplete, onMaterialFound }) => {
                             padding: '10px',
                             border: 'none',
                             borderRadius: '6px',
-                            backgroundColor: operation === 'subtract' && (!password || !notes.trim()) ? '#9ca3af' : '#10b981',
+                            backgroundColor: operation === 'subtract' && (!password || !notes.trim()) ? '#9ca3af' : '#ff3333',
                             color: 'white',
                             fontWeight: '600',
                             cursor: operation === 'subtract' && (!password || !notes.trim()) ? 'not-allowed' : 'pointer'

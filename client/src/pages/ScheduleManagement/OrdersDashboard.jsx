@@ -9,8 +9,8 @@ const STATUS_CONFIG = {
     machine_maintenance: { label: 'Machine Under Maintenance', color: '#ef4444', bg: '#fef2f2' },
 };
 
-const thStyle = { padding: '16px', color: '#64748b', fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.8px', borderBottom: '1px solid #f1f5f9' };
-const tdStyle = { padding: '20px 16px', fontSize: '14px', borderBottom: '1px solid #f8fafc' };
+const thStyle = { padding: '16px', color: 'var(--text-secondary)', fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.8px', borderBottom: '1px solid var(--border-color)' };
+const tdStyle = { padding: '20px 16px', fontSize: '14px', borderBottom: '1px solid var(--surface-muted)' };
 
 
 
@@ -162,19 +162,19 @@ const OrdersDashboard = ({
             <div style={{ transition: 'all 0.3s ease' }}>
                 {/* Orders Table */}
                 <div style={{
-                    background: '#fff',
+                    background: 'var(--card-bg)',
                     borderRadius: '28px',
                     padding: '32px',
-                    border: '1px solid rgba(0,0,0,0.03)',
-                    boxShadow: '0 10px 40px rgba(0,0,0,0.04)'
+                    border: '1px solid var(--border-color)',
+                    boxShadow: 'var(--shadow-md)'
                 }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '28px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                             <button
                                 onClick={onBack}
                                 style={{
-                                    background: '#fff',
-                                    border: '1.5px solid #e2e8f0',
+                                    background: 'var(--card-bg)',
+                                    border: '1.5px solid var(--border-color)',
                                     width: '42px',
                                     height: '42px',
                                     borderRadius: '12px',
@@ -182,26 +182,26 @@ const OrdersDashboard = ({
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                     cursor: 'pointer',
-                                    color: '#0f172a',
-                                    boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
+                                    color: 'var(--text-primary)',
+                                    boxShadow: 'var(--shadow-sm)',
                                     transition: 'all 0.2s'
                                 }}
                             >
                                 <Icons.Back />
                             </button>
-                            <h1 style={{ fontSize: '24px', fontWeight: '900', color: '#0f172a', margin: 0, letterSpacing: '-0.5px' }}>Production Queue</h1>
+                            <h1 style={{ fontSize: '24px', fontWeight: '900', color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.5px' }}>Production Queue</h1>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <span style={{ fontSize: '13px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Sort By:</span>
+                            <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Sort By:</span>
                             <select
                                 value={sortBy}
                                 onChange={(e) => setSortBy(e.target.value)}
                                 style={{
                                     padding: '10px 16px',
                                     borderRadius: '12px',
-                                    border: '1.5px solid #e2e8f0',
-                                    background: '#f8fafc',
-                                    color: '#0f172a',
+                                    border: '1.5px solid var(--border-color)',
+                                    background: 'var(--input-bg)',
+                                    color: 'var(--text-primary)',
                                     fontWeight: '700',
                                     fontSize: '14px',
                                     cursor: 'pointer',
