@@ -613,11 +613,18 @@ const orderController = {
     // Submit design to customer for approval
     async submitToCustomer(req, res, next) {
         try {
+            const customerMessage =
+                typeof req.body?.customerMessage === 'string' ? req.body.customerMessage.trim() : '';
+
             let order = await ShopOrder.findById(req.params.id);
             let productionOrder;
 
             if (order) {
                 order.status = 'waiting_approval';
+                const defaultBody = `The design for order #${order.orderNumber || order._id} is ready. Please review and approve.`;
+                const notifBody = customerMessage || defaultBody;
+                order.lastDesignShareMessage = notifBody;
+                order.lastDesignSharedAt = new Date();
                 await order.save();
                 productionOrder = await ProductionOrder.findOne({ shopOrderId: order._id });
             } else {
@@ -633,17 +640,37 @@ const orderController = {
 
             // Notify customer only if a ShopOrder exists
             if (order && order.customerId) {
+                const defaultBody = `The design for order #${order.orderNumber || order._id} is ready. Please review and approve.`;
+                const notifBody = order.lastDesignShareMessage || defaultBody;
                 await notificationService.createNotification(
                     order.customerId,
                     'order_update',
                     'Design Ready for Review',
-                    `The design for order #${order.orderNumber || order._id} is ready. Please review and approve.`,
+                    notifBody,
                     order._id,
                     'Order'
                 );
             }
 
             res.json({ message: 'Design submitted for customer approval', order: order || productionOrder });
+        } catch (error) {
+            next(error);
+        }
+    },
+
+    /** Customer dismissed the "design message" popup (stops re-showing until the next time staff sends a design). */
+    async acknowledgeDesignMessage(req, res, next) {
+        try {
+            const order = await ShopOrder.findById(req.params.id);
+            if (!order) {
+                throw new ApiError('Order not found', 404);
+            }
+            if (order.customerId.toString() !== req.user._id.toString()) {
+                throw new ApiError('Access denied', 403);
+            }
+            order.customerDesignMessagePopupAckAt = new Date();
+            await order.save();
+            res.json({ success: true, orderId: order._id });
         } catch (error) {
             next(error);
         }

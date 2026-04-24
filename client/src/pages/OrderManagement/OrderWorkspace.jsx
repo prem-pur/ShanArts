@@ -16,6 +16,7 @@ import {
     XCircle
 } from "lucide-react";
 import DesignEditor from "./DesignEditor";
+import SendDesignToCustomerModal from "../../components/SendDesignToCustomerModal";
 import { API_BASE_URL } from "../../apiBase";
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -43,6 +44,7 @@ const OrderWorkspace = () => {
     const [newOrdersDismissed, setNewOrdersDismissed] = useState(false);
     const [sentOrdersDismissed, setSentOrdersDismissed] = useState(false);
     const [shopOrder, setShopOrder] = useState(null);
+    const [sendDesignModalOpen, setSendDesignModalOpen] = useState(false);
 
 
     const fetchOrders = useCallback(() => {
@@ -111,7 +113,7 @@ const OrderWorkspace = () => {
         }
     }, [selectedOrder]);
 
-    const normalizeStatus = (rawStatus) => {
+    const normalizeStatus = useCallback((rawStatus) => {
         const s = (rawStatus || "").trim().toLowerCase();
 
         if (s === 'draft' || s === 'design in progress' || !s) return STATUS.DRAFT;
@@ -125,8 +127,7 @@ const OrderWorkspace = () => {
         if (s === 'completed') return STATUS.COMPLETED;
 
         return rawStatus;
-    };
-
+    }, []);
 
     const handleDeleteOrder = async (orderId) => {
         if (!window.confirm("Delete this design project?")) return;
@@ -140,29 +141,61 @@ const OrderWorkspace = () => {
         }
     };
 
-    const handleSendForApproval = async () => {
+    /** Data sent to POST /api/ai/generate-design-message (Ollama + fallback) */
+    const getDesignMessagePayload = useCallback(() => {
+        if (!selectedOrder) return {};
+        const st = (selectedOrder.status || "").toLowerCase();
+        const isRevision =
+            st === "revision_requested" ||
+            st === "rejected" ||
+            normalizeStatus(selectedOrder.status) === STATUS.REJECTED;
+        const scenario = isRevision ? "revision" : "draft_for_approval";
+        const so = shopOrder;
+        const dl = so?.deadline;
+        return {
+            scenario,
+            companyName: "Shan Art Advertising",
+            customerName: selectedOrder.customerName || "Valued Customer",
+            productName: selectedOrder.printSpecs?.designType,
+            quantity: selectedOrder.printSpecs?.quantity ?? so?.quantity,
+            finishOrType: selectedOrder.printSpecs?.material || selectedOrder.printSpecs?.finish,
+            deadline: dl ? (typeof dl === "string" ? dl : new Date(dl).toISOString()) : undefined,
+            designStatus: selectedOrder.status,
+            orderNumber: so?.orderNumber,
+            size: selectedOrder.printSpecs?.size
+                ? `${selectedOrder.printSpecs.size.width || 0}×${selectedOrder.printSpecs.size.height || 0}${selectedOrder.printSpecs.size.unit || "mm"}`
+                : undefined,
+        };
+    }, [selectedOrder, shopOrder, normalizeStatus]);
+
+    const openSendDesignModal = () => {
         if (!selectedOrder) return;
         if (!selectedOrder.currentVersionId) {
             alert("Please create at least one design version before sending for approval.");
             return;
         }
+        setSendDesignModalOpen(true);
+    };
 
+    /** After staff confirms the AI/edited message in the modal. */
+    const submitDesignToCustomer = async (customerMessage) => {
+        if (!selectedOrder) return;
         try {
             setLoading(true);
-            const token = localStorage.getItem('token');
-            // Use shopOrderId if available (for orders created from customer orders)
-            // Ensure we use the ID string even if it's populated as an object
+            const token = localStorage.getItem("token");
             const shopOrderId = selectedOrder.shopOrderId?._id || selectedOrder.shopOrderId;
             const orderId = shopOrderId || selectedOrder._id;
 
-            await axios.post(`${API_BASE_URL}/api/shop-orders/${orderId}/submit-design`, {}, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            // Show a temporary success state
-            const btn = document.getElementById('send-approval-btn');
+            await axios.post(
+                `${API_BASE_URL}/api/shop-orders/${orderId}/submit-design`,
+                { customerMessage: customerMessage || undefined },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            const btn = document.getElementById("send-approval-btn");
             if (btn) {
                 const originalText = btn.innerText;
-                btn.innerHTML = '<span style="display: flex; align-items: center; gap: 4px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> SENT!</span>';
+                btn.innerHTML =
+                    '<span style="display: flex; align-items: center; gap: 4px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> SENT!</span>';
                 btn.style.background = "#059669";
                 setTimeout(() => {
                     if (btn) {
@@ -172,18 +205,24 @@ const OrderWorkspace = () => {
                 }, 3000);
             }
 
-            // Optimistically update the UI to instantly show it
-            const newStatus = "waiting_approval"; // Use backend string
-            setSelectedOrder(prev => ({ ...prev, status: newStatus }));
-            setOrders(prevOrders => prevOrders.map(o => o._id === selectedOrder._id ? { ...o, status: newStatus } : o));
+            const newStatus = "waiting_approval";
+            setSelectedOrder((prev) => (prev ? { ...prev, status: newStatus } : prev));
+            setOrders((prevOrders) =>
+                prevOrders.map((o) => (o._id === selectedOrder._id ? { ...o, status: newStatus } : o))
+            );
 
-            setTimeout(fetchOrders, 1000); // Wait a bit for backend to sync
+            setTimeout(fetchOrders, 1000);
         } catch (err) {
-            console.error('Error submitting design:', err);
+            console.error("Error submitting design:", err);
             alert("Failed to send design for approval: " + (err.response?.data?.message || err.message));
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleConfirmSendFromModal = async (message) => {
+        setSendDesignModalOpen(false);
+        await submitDesignToCustomer(message);
     };
 
     const filteredOrders = orders.filter(order => {
@@ -451,7 +490,7 @@ const OrderWorkspace = () => {
                         {(normalizeStatus(selectedOrder.status) === STATUS.DRAFT || normalizeStatus(selectedOrder.status) === STATUS.REJECTED) && (
                             <button
                                 id="send-approval-btn"
-                                onClick={handleSendForApproval}
+                                onClick={openSendDesignModal}
                                 disabled={loading}
                                 style={{
                                     background: loading ? '#9ca3af' : '#10b981',
@@ -687,6 +726,13 @@ const OrderWorkspace = () => {
                     </div>
                 </div>
             )}
+
+            <SendDesignToCustomerModal
+                isOpen={sendDesignModalOpen}
+                onClose={() => setSendDesignModalOpen(false)}
+                onConfirm={handleConfirmSendFromModal}
+                getPayload={getDesignMessagePayload}
+            />
         </div>
     );
 };

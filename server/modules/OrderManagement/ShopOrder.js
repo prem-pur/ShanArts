@@ -90,6 +90,11 @@ const shopOrderSchema = new mongoose.Schema(
         },
         customerPhone: String,
         rescheduleReason: String,
+        /** Shown in customer portal popup when design is sent for review (staff / AI message). */
+        lastDesignShareMessage: String,
+        lastDesignSharedAt: Date,
+        /** When the customer closed the "message from the studio" popup (hide until next send). */
+        customerDesignMessagePopupAckAt: Date,
     },
     {
         timestamps: true,

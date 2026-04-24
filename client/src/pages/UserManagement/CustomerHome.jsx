@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { API_BASE_URL } from '../../apiBase';
 import AddOrder from '../OrderManagement/AddOrder';
+import CustomerDesignMessagePopup from '../../components/CustomerDesignMessagePopup';
 
 const CustomerHome = () => {
     const navigate = Router.useNavigate();
@@ -69,12 +70,39 @@ const CustomerHome = () => {
     });
     const [profileSaving, setProfileSaving] = useState(false);
     const [profileError, setProfileError] = useState('');
+    /** Shop order with pending "design share" message to show in welcome popup */
+    const [designMessageOrder, setDesignMessageOrder] = useState(null);
+    const [designPopupAckLoading, setDesignPopupAckLoading] = useState(false);
 
     const user = JSON.parse(localStorage.getItem('user') || '{}');
 
     useEffect(() => {
         fetchData();
     }, []);
+
+    /** After orders load: show studio message for waiting_approval if not yet acknowledged for this send. */
+    useEffect(() => {
+        if (loading) return;
+        const shouldShow = (o) => {
+            if (o.status !== 'waiting_approval') return false;
+            const msg = o.lastDesignShareMessage;
+            if (msg == null || !String(msg).trim()) return false;
+            const shared = o.lastDesignSharedAt ? new Date(o.lastDesignSharedAt).getTime() : 0;
+            const ack = o.customerDesignMessagePopupAckAt ? new Date(o.customerDesignMessagePopupAckAt).getTime() : 0;
+            return !ack || shared > ack;
+        };
+        const list = (orders || []).filter(shouldShow);
+        if (list.length === 0) {
+            setDesignMessageOrder(null);
+            return;
+        }
+        list.sort((a, b) => {
+            const tb = b.lastDesignSharedAt ? new Date(b.lastDesignSharedAt).getTime() : 0;
+            const ta = a.lastDesignSharedAt ? new Date(a.lastDesignSharedAt).getTime() : 0;
+            return tb - ta;
+        });
+        setDesignMessageOrder(list[0]);
+    }, [orders, loading]);
 
     useEffect(() => {
         const requestedTab = new URLSearchParams(location.search).get('tab');
@@ -122,6 +150,38 @@ const CustomerHome = () => {
             console.error('Failed to fetch data:', err);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const dismissDesignMessagePopup = async (order, opts = {}) => {
+        const openReview = !!opts.openReview;
+        if (!order) return;
+        setDesignPopupAckLoading(true);
+        try {
+            const token = localStorage.getItem('token');
+            await axios.patch(
+                `${API_BASE_URL}/api/shop-orders/${order._id}/ack-design-message`,
+                {},
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            setDesignMessageOrder(null);
+            await fetchData();
+            if (openReview) {
+                setSelectedOrder(order);
+                const productionOrderRes = await axios.get(`${API_BASE_URL}/api/orders`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                const productionOrder = productionOrderRes.data.find(
+                    (po) => (po.shopOrderId?._id || po.shopOrderId) === order._id
+                );
+                setSelectedProductionOrder(productionOrder || null);
+                setActiveTab('dashboard');
+                setShowApprovalModal(true);
+            }
+        } catch (err) {
+            console.error('ack-design-message failed:', err);
+        } finally {
+            setDesignPopupAckLoading(false);
         }
     };
 
@@ -1448,6 +1508,16 @@ const CustomerHome = () => {
                         }}
                     />
                 )}
+
+                <CustomerDesignMessagePopup
+                    isOpen={!!designMessageOrder}
+                    orderNumber={designMessageOrder?.orderNumber}
+                    jobType={designMessageOrder?.jobType}
+                    message={designMessageOrder?.lastDesignShareMessage || ''}
+                    acknowledging={designPopupAckLoading}
+                    onAcknowledge={() => dismissDesignMessagePopup(designMessageOrder, { openReview: false })}
+                    onReviewDesign={() => dismissDesignMessagePopup(designMessageOrder, { openReview: true })}
+                />
             </main>
         </div>
     );
