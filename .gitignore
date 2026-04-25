@@ -6,6 +6,8 @@ node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+logs/*
+!logs/.gitkeep
 
 # 🔐 Environment variables
 .env
@@ -30,6 +32,14 @@ build/
 # 📁 Uploads (keep folder, ignore files)
 server/public/uploads/*
 !server/public/uploads/.gitkeep
+
+# Design previews (generated at runtime; keep directory)
+server/public/previews/*
+!server/public/previews/.gitkeep
+
+# Tooling caches
+.eslintcache
+**/.eslintcache
 
 # 💻 IDE / Editor
 .vscode/

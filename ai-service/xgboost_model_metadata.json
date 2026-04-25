@@ -1,0 +1,38 @@
+{
+    "model_name": "Tuned XGBoost",
+    "accuracy": 0.8621250871890258,
+    "weighted_f1_score": 0.8561450979125667,
+    "classes": [
+        "High",
+        "Low",
+        "Medium"
+    ],
+    "best_parameters": {
+        "model__subsample": 0.8,
+        "model__reg_lambda": 3,
+        "model__reg_alpha": 1,
+        "model__n_estimators": 500,
+        "model__max_depth": 7,
+        "model__learning_rate": 0.1,
+        "model__gamma": 0.2,
+        "model__colsample_bytree": 0.8
+    },
+    "input_columns": [
+        "Job_Type",
+        "Quantity",
+        "Color_Type (BW / Full Color)",
+        "Material_Type",
+        "Order_Request_Date",
+        "Requested_Deadline_Date",
+        "Current_Queued_Jobs_Count",
+        "Active_Machines_Count",
+        "Total_Machines_Count",
+        "Available_Staff_Count",
+        "Total_Staff_Count",
+        "Priority",
+        "Assigned_Date",
+        "Estimated_End_Date",
+        "Assigned_Machine_Workload (%)",
+        "Assigned_Operator_Workload (%)"
+    ]
+}

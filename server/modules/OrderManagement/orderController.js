@@ -8,6 +8,7 @@ const generateOrderNumber = require('../../utils/generateOrderNumber');
 const aiService = require('../../services/aiService');
 const notificationService = require('../../services/notificationService');
 const scheduleService = require('../../services/scheduleService');
+const { predictAndStoreForOrder } = require('../../services/delayRiskXgbService');
 
 async function syncMachineState(machineId) {
     if (!machineId) return;
@@ -494,6 +495,14 @@ const orderController = {
                 await syncMachineState(assignedMachineId);
             }
 
+            // XGBoost delay-risk prediction (DB-driven features)
+            try {
+                await predictAndStoreForOrder(order._id);
+            } catch (e) {
+                // eslint-disable-next-line no-console
+                console.warn('[assignOrder] delay risk prediction failed:', e?.message || e);
+            }
+
             // Sync with ProductionOrder
             await ProductionOrder.findOneAndUpdate(
                 { shopOrderId: order._id },
@@ -515,7 +524,11 @@ const orderController = {
                 'ShopOrder'
             );
 
-            res.json({ success: true, message: 'Order assigned successfully', order });
+            const refreshed = await ShopOrder.findById(order._id)
+                .populate('customerId', 'name email')
+                .populate('assignedOperatorId', 'name email')
+                .populate('assignedMachineId', 'name type');
+            res.json({ success: true, message: 'Order assigned successfully', order: refreshed || order });
         } catch (error) {
             next(error);
         }
@@ -584,6 +597,14 @@ const orderController = {
                 await syncMachineState(assignedMachineId);
             }
 
+            // XGBoost delay-risk prediction (DB-driven features)
+            try {
+                await predictAndStoreForOrder(order._id);
+            } catch (e) {
+                // eslint-disable-next-line no-console
+                console.warn('[rescheduleOrder] delay risk prediction failed:', e?.message || e);
+            }
+
             // Sync with ProductionOrder
             await ProductionOrder.findOneAndUpdate(
                 { shopOrderId: order._id },
@@ -604,7 +625,11 @@ const orderController = {
                 'ShopOrder'
             );
 
-            res.json({ success: true, message: 'Order rescheduled successfully', order });
+            const refreshed = await ShopOrder.findById(order._id)
+                .populate('customerId', 'name email')
+                .populate('assignedOperatorId', 'name email')
+                .populate('assignedMachineId', 'name type');
+            res.json({ success: true, message: 'Order rescheduled successfully', order: refreshed || order });
         } catch (error) {
             next(error);
         }

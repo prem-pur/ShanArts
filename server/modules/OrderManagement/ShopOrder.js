@@ -71,6 +71,18 @@ const shopOrderSchema = new mongoose.Schema(
             type: String,
             enum: ['on_time', 'at_risk', 'delayed'],
         },
+        /** XGBoost model output (notebook classes): High | Medium | Low */
+        delayRiskLevel: {
+            type: String,
+            enum: ['High', 'Medium', 'Low'],
+        },
+        delayRiskConfidence: Number,
+        delayRiskProbabilities: {
+            High: Number,
+            Medium: Number,
+            Low: Number,
+        },
+        delayRiskPredictedAt: Date,
         materialsUsed: [
             {
                 materialId: {

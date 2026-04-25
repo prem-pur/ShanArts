@@ -1,7 +1,7 @@
 const path = require("path");
 require("dotenv").config({ path: path.join(__dirname, ".env") });
 
-const express = require("express"); // Restart trigger 3
+const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 
@@ -35,6 +35,7 @@ const feedbackRoutes = require('./modules/FeedbackNotificationManagement/routes'
 const notificationRoutes = require('./modules/FeedbackNotificationManagement/notifications');
 const attendanceRoutes = require('./modules/UserManagement/attendanceRoutes');
 const aiPublicRoutes = require('./modules/ai/aiRoutes');
+const mlPredictRoutes = require('./modules/ML/predictRoutes');
 
 app.use("/api/orders", orderRoutes);
 app.use("/api/requests", requestRoutes);
@@ -52,6 +53,7 @@ app.use('/api/feedback', feedbackRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/ai', aiPublicRoutes);
+app.use('/api', mlPredictRoutes);
 
 // Global error handler middleware
 app.use((err, req, res, next) => {
