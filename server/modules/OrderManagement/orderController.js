@@ -9,6 +9,7 @@ const aiService = require('../../services/aiService');
 const notificationService = require('../../services/notificationService');
 const scheduleService = require('../../services/scheduleService');
 const { predictAndStoreForOrder } = require('../../services/delayRiskXgbService');
+const { generateDeadlineUpdateMessage } = require('../../services/deadlineMessageService');
 
 async function syncMachineState(machineId) {
     if (!machineId) return;
@@ -724,6 +725,96 @@ const orderController = {
                 throw new ApiError('Access denied', 403);
             }
             order.customerDesignMessagePopupAckAt = new Date();
+            await order.save();
+            res.json({ success: true, orderId: order._id });
+        } catch (error) {
+            next(error);
+        }
+    },
+
+    /** Admin sets/updates an order deadline and sends an AI-generated message to the customer. */
+    async adminSetDeadline(req, res, next) {
+        try {
+            const { newDeadline } = req.body || {};
+            if (!newDeadline) {
+                throw new ApiError('newDeadline is required', 400);
+            }
+            const d = new Date(newDeadline);
+            if (Number.isNaN(d.getTime())) {
+                throw new ApiError('newDeadline must be a valid date', 400);
+            }
+
+            const order = await ShopOrder.findById(req.params.id).populate('customerId', 'name email');
+            if (!order) {
+                throw new ApiError('Order not found', 404);
+            }
+
+            const previousDeadline = order.deadline || null;
+            order.deadline = d;
+
+            const ctx = {
+                companyName: 'Shan Art Advertising',
+                customerName: order.customerId?.name || 'Valued Customer',
+                orderNumber: order.orderNumber || String(order._id),
+                jobType: order.jobType,
+                quantity: order.quantity,
+                previousDeadline,
+                newDeadline: d,
+                riskLevel: order.delayRiskLevel || 'High',
+            };
+            const { message } = await generateDeadlineUpdateMessage(ctx);
+
+            order.lastAdminDeadlineMessage = message;
+            order.lastAdminDeadlineSetAt = new Date();
+            order.customerAdminDeadlinePopupAckAt = null;
+            await order.save();
+
+            if (order.customerId) {
+                await notificationService.notifyUser(
+                    order.customerId._id || order.customerId,
+                    'deadline_update',
+                    'Order deadline updated',
+                    message,
+                    order._id,
+                    'ShopOrder'
+                );
+            }
+
+            res.json({ success: true, order });
+        } catch (error) {
+            next(error);
+        }
+    },
+
+    /** Customer dismissed the "deadline update" popup (hide until next admin update). */
+    async acknowledgeDeadlineUpdate(req, res, next) {
+        try {
+            const order = await ShopOrder.findById(req.params.id);
+            if (!order) {
+                throw new ApiError('Order not found', 404);
+            }
+            if (order.customerId.toString() !== req.user._id.toString()) {
+                throw new ApiError('Access denied', 403);
+            }
+            order.customerAdminDeadlinePopupAckAt = new Date();
+            await order.save();
+            res.json({ success: true, orderId: order._id });
+        } catch (error) {
+            next(error);
+        }
+    },
+
+    /** Customer dismissed the "delay risk" popup (hide until next system message). */
+    async acknowledgeDelayRiskPopup(req, res, next) {
+        try {
+            const order = await ShopOrder.findById(req.params.id);
+            if (!order) {
+                throw new ApiError('Order not found', 404);
+            }
+            if (order.customerId.toString() !== req.user._id.toString()) {
+                throw new ApiError('Access denied', 403);
+            }
+            order.customerDelayRiskPopupAckAt = new Date();
             await order.save();
             res.json({ success: true, orderId: order._id });
         } catch (error) {

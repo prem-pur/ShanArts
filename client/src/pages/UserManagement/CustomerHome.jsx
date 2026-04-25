@@ -33,6 +33,8 @@ import {
 import { API_BASE_URL } from '../../apiBase';
 import AddOrder from '../OrderManagement/AddOrder';
 import CustomerDesignMessagePopup from '../../components/CustomerDesignMessagePopup';
+import CustomerDeadlineUpdatePopup from '../../components/CustomerDeadlineUpdatePopup';
+import CustomerDelayRiskPopup from '../../components/CustomerDelayRiskPopup';
 import PrintKnowledgeChatbot from '../../components/PrintKnowledgeChatbot';
 
 const CustomerHome = () => {
@@ -81,6 +83,12 @@ const CustomerHome = () => {
     /** Shop order with pending "design share" message to show in welcome popup */
     const [designMessageOrder, setDesignMessageOrder] = useState(null);
     const [designPopupAckLoading, setDesignPopupAckLoading] = useState(false); // used to avoid overlapping ack calls
+    /** Shop order with pending "admin deadline update" message to show in welcome popup */
+    const [deadlineMessageOrder, setDeadlineMessageOrder] = useState(null);
+    const [deadlinePopupAckLoading, setDeadlinePopupAckLoading] = useState(false);
+    /** Shop order with pending "delay risk" message to show in welcome popup */
+    const [delayRiskMessageOrder, setDelayRiskMessageOrder] = useState(null);
+    const [delayRiskPopupAckLoading, setDelayRiskPopupAckLoading] = useState(false);
 
     const user = JSON.parse(localStorage.getItem('user') || '{}');
 
@@ -122,6 +130,52 @@ const CustomerHome = () => {
             return tb - ta;
         });
         setDesignMessageOrder(list[0]);
+    }, [orders, loading]);
+
+    /** After orders load: show admin deadline update popup if not yet acknowledged for this update. */
+    useEffect(() => {
+        if (loading) return;
+        const shouldShow = (o) => {
+            const msg = o.lastAdminDeadlineMessage;
+            if (msg == null || !String(msg).trim()) return false;
+            const sent = o.lastAdminDeadlineSetAt ? new Date(o.lastAdminDeadlineSetAt).getTime() : 0;
+            const ack = o.customerAdminDeadlinePopupAckAt ? new Date(o.customerAdminDeadlinePopupAckAt).getTime() : 0;
+            return !ack || sent > ack;
+        };
+        const list = (orders || []).filter(shouldShow);
+        if (list.length === 0) {
+            setDeadlineMessageOrder(null);
+            return;
+        }
+        list.sort((a, b) => {
+            const tb = b.lastAdminDeadlineSetAt ? new Date(b.lastAdminDeadlineSetAt).getTime() : 0;
+            const ta = a.lastAdminDeadlineSetAt ? new Date(a.lastAdminDeadlineSetAt).getTime() : 0;
+            return tb - ta;
+        });
+        setDeadlineMessageOrder(list[0]);
+    }, [orders, loading]);
+
+    /** After orders load: show medium delay risk alert popup if not yet acknowledged for this send. */
+    useEffect(() => {
+        if (loading) return;
+        const shouldShow = (o) => {
+            const msg = o.lastDelayRiskCustomerMessage;
+            if (msg == null || !String(msg).trim()) return false;
+            const sent = o.lastDelayRiskCustomerMessageAt ? new Date(o.lastDelayRiskCustomerMessageAt).getTime() : 0;
+            const ack = o.customerDelayRiskPopupAckAt ? new Date(o.customerDelayRiskPopupAckAt).getTime() : 0;
+            return !ack || sent > ack;
+        };
+        const list = (orders || []).filter(shouldShow);
+        if (list.length === 0) {
+            setDelayRiskMessageOrder(null);
+            return;
+        }
+        list.sort((a, b) => {
+            const tb = b.lastDelayRiskCustomerMessageAt ? new Date(b.lastDelayRiskCustomerMessageAt).getTime() : 0;
+            const ta = a.lastDelayRiskCustomerMessageAt ? new Date(a.lastDelayRiskCustomerMessageAt).getTime() : 0;
+            return tb - ta;
+        });
+        setDelayRiskMessageOrder(list[0]);
     }, [orders, loading]);
 
     useEffect(() => {
@@ -207,6 +261,50 @@ const CustomerHome = () => {
             console.error('dismissDesignMessagePopup failed:', err);
         } finally {
             setDesignPopupAckLoading(false);
+        }
+    };
+
+    const dismissDeadlineUpdatePopup = async (order) => {
+        if (!order) return;
+        setDeadlineMessageOrder(null);
+        if (deadlinePopupAckLoading) return;
+        setDeadlinePopupAckLoading(true);
+        try {
+            const token = localStorage.getItem('token');
+            axios
+                .patch(
+                    `${API_BASE_URL}/api/shop-orders/${order._id}/ack-deadline-update`,
+                    {},
+                    { headers: { Authorization: `Bearer ${token}` } }
+                )
+                .then(() => fetchData())
+                .catch((err) => console.error('ack-deadline-update failed:', err));
+        } catch (err) {
+            console.error('dismissDeadlineUpdatePopup failed:', err);
+        } finally {
+            setDeadlinePopupAckLoading(false);
+        }
+    };
+
+    const dismissDelayRiskPopup = async (order) => {
+        if (!order) return;
+        setDelayRiskMessageOrder(null);
+        if (delayRiskPopupAckLoading) return;
+        setDelayRiskPopupAckLoading(true);
+        try {
+            const token = localStorage.getItem('token');
+            axios
+                .patch(
+                    `${API_BASE_URL}/api/shop-orders/${order._id}/ack-delay-risk`,
+                    {},
+                    { headers: { Authorization: `Bearer ${token}` } }
+                )
+                .then(() => fetchData())
+                .catch((err) => console.error('ack-delay-risk failed:', err));
+        } catch (err) {
+            console.error('dismissDelayRiskPopup failed:', err);
+        } finally {
+            setDelayRiskPopupAckLoading(false);
         }
     };
 
@@ -1576,6 +1674,22 @@ const CustomerHome = () => {
                     message={designMessageOrder?.lastDesignShareMessage || ''}
                     onAcknowledge={() => dismissDesignMessagePopup(designMessageOrder, { openReview: false })}
                     onReviewDesign={() => dismissDesignMessagePopup(designMessageOrder, { openReview: true })}
+                />
+
+                <CustomerDeadlineUpdatePopup
+                    isOpen={!!deadlineMessageOrder}
+                    orderNumber={deadlineMessageOrder?.orderNumber}
+                    jobType={deadlineMessageOrder?.jobType}
+                    message={deadlineMessageOrder?.lastAdminDeadlineMessage || ''}
+                    onAcknowledge={() => dismissDeadlineUpdatePopup(deadlineMessageOrder)}
+                />
+
+                <CustomerDelayRiskPopup
+                    isOpen={!!delayRiskMessageOrder}
+                    orderNumber={delayRiskMessageOrder?.orderNumber}
+                    jobType={delayRiskMessageOrder?.jobType}
+                    message={delayRiskMessageOrder?.lastDelayRiskCustomerMessage || ''}
+                    onAcknowledge={() => dismissDelayRiskPopup(delayRiskMessageOrder)}
                 />
 
                 {activeTab === 'dashboard' && (

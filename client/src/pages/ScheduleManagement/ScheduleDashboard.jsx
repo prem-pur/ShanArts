@@ -26,6 +26,10 @@ const ScheduleDashboard = () => {
     const [machineStats, setMachineStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [selectedOrder, setSelectedOrder] = useState(null);
+    const [showHighRiskModal, setShowHighRiskModal] = useState(false);
+    const [highRiskOrder, setHighRiskOrder] = useState(null);
+    const [newDeadlineDate, setNewDeadlineDate] = useState('');
+    const [sendingDeadline, setSendingDeadline] = useState(false);
     const [assignment, setAssignment] = useState({
         assignedOperatorId: '',
         assignedMachineId: '',
@@ -127,10 +131,68 @@ const ScheduleDashboard = () => {
             setOperators(presentOperators);
             setMachines(machinesRes.data.data || machinesRes.data);
             setMachineStats(machineSummaryRes.data.data);
+
+            // Auto-popup for HIGH risk orders (once per browser session per order)
+            try {
+                const seenKey = 'shanarts_seen_high_risk_orders_v1';
+                const seen = new Set(JSON.parse(localStorage.getItem(seenKey) || '[]'));
+                // If admin already set/sent a deadline update, treat as handled (don't pop again).
+                const firstHigh = productionOrders.find(
+                    (o) => o.delayRiskLevel === 'High' && !seen.has(o._id) && !o.lastAdminDeadlineSetAt
+                );
+                if (firstHigh) {
+                    setHighRiskOrder(firstHigh);
+                    setNewDeadlineDate(firstHigh.deadline ? String(firstHigh.deadline).slice(0, 10) : '');
+                    setShowHighRiskModal(true);
+                }
+            } catch {
+                // ignore
+            }
         } catch (err) {
             console.error('Failed to fetch scheduling data:', err);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const dismissHighRiskModal = () => {
+        if (highRiskOrder?._id) {
+            try {
+                const seenKey = 'shanarts_seen_high_risk_orders_v1';
+                const seen = new Set(JSON.parse(localStorage.getItem(seenKey) || '[]'));
+                seen.add(highRiskOrder._id);
+                localStorage.setItem(seenKey, JSON.stringify(Array.from(seen)));
+            } catch {
+                // ignore
+            }
+        }
+        setShowHighRiskModal(false);
+        setHighRiskOrder(null);
+        setNewDeadlineDate('');
+    };
+
+    const sendDeadlineUpdateToCustomer = async () => {
+        if (!highRiskOrder?._id) return;
+        if (!newDeadlineDate) {
+            showToast('Please select a new deadline date.', 'warning');
+            return;
+        }
+        setSendingDeadline(true);
+        try {
+            const token = localStorage.getItem('token');
+            await axios.patch(
+                `${API_BASE_URL}/api/shop-orders/${highRiskOrder._id}/admin-set-deadline`,
+                { newDeadline: newDeadlineDate },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            showToast('Deadline update sent to customer.', 'success');
+            dismissHighRiskModal();
+            fetchData();
+        } catch (err) {
+            console.error('admin-set-deadline failed:', err.response?.data || err);
+            showToast(err.response?.data?.message || 'Failed to send deadline update.', 'error');
+        } finally {
+            setSendingDeadline(false);
         }
     };
 
@@ -403,6 +465,121 @@ const ScheduleDashboard = () => {
                     />
                 )}
             </div>
+
+            {showHighRiskModal && highRiskOrder && (
+                <div
+                    role="dialog"
+                    aria-modal="true"
+                    style={{
+                        position: 'fixed',
+                        inset: 0,
+                        zIndex: 100001,
+                        background: 'rgba(6, 8, 16, 0.78)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: 20,
+                        backdropFilter: 'blur(10px)',
+                    }}
+                >
+                    <div
+                        style={{
+                            width: '100%',
+                            maxWidth: 520,
+                            borderRadius: 18,
+                            border: '1px solid var(--border-color)',
+                            background: 'var(--card-bg)',
+                            boxShadow: '0 30px 60px rgba(0,0,0,0.35)',
+                            padding: 18,
+                        }}
+                    >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'flex-start' }}>
+                            <div>
+                                <div style={{ fontSize: 12, fontWeight: 900, color: '#ef4444', letterSpacing: '0.12em' }}>
+                                    HIGH DELAY RISK
+                                </div>
+                                <div style={{ marginTop: 6, fontSize: 18, fontWeight: 900, color: 'var(--text-primary)' }}>
+                                    {highRiskOrder.orderNumber}
+                                </div>
+                                <div style={{ marginTop: 4, fontSize: 12, color: 'var(--text-secondary)' }}>
+                                    {String(highRiskOrder.jobType || '').replace(/_/g, ' ')}
+                                </div>
+                            </div>
+                            <button
+                                onClick={dismissHighRiskModal}
+                                style={{
+                                    border: '1px solid var(--border-color)',
+                                    background: 'var(--surface-muted)',
+                                    color: 'var(--text-secondary)',
+                                    borderRadius: 10,
+                                    padding: '8px 10px',
+                                    cursor: 'pointer',
+                                    fontWeight: 800,
+                                }}
+                            >
+                                Close
+                            </button>
+                        </div>
+
+                        <div style={{ marginTop: 14, fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                            Set an updated deadline. A professional message will be generated automatically (Ollama) and sent to the customer (notification + popup).
+                        </div>
+
+                        <div style={{ marginTop: 14 }}>
+                            <label style={{ display: 'block', fontSize: 12, fontWeight: 800, color: 'var(--text-muted)', marginBottom: 8 }}>
+                                New deadline date
+                            </label>
+                            <input
+                                type="date"
+                                value={newDeadlineDate}
+                                onChange={(e) => setNewDeadlineDate(e.target.value)}
+                                style={{
+                                    width: '100%',
+                                    padding: '12px 12px',
+                                    borderRadius: 12,
+                                    border: '1px solid var(--border-color)',
+                                    background: 'var(--input-bg)',
+                                    color: 'var(--text-primary)',
+                                    fontWeight: 800,
+                                }}
+                            />
+                        </div>
+
+                        <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 16 }}>
+                            <button
+                                onClick={dismissHighRiskModal}
+                                style={{
+                                    padding: '12px 14px',
+                                    borderRadius: 12,
+                                    border: '1px solid var(--border-color)',
+                                    background: 'var(--surface-muted-2)',
+                                    color: 'var(--text-primary)',
+                                    fontWeight: 900,
+                                    cursor: 'pointer',
+                                }}
+                            >
+                                Later
+                            </button>
+                            <button
+                                onClick={sendDeadlineUpdateToCustomer}
+                                disabled={sendingDeadline}
+                                style={{
+                                    padding: '12px 16px',
+                                    borderRadius: 12,
+                                    border: 'none',
+                                    background: '#ef4444',
+                                    color: '#fff',
+                                    fontWeight: 900,
+                                    cursor: sendingDeadline ? 'not-allowed' : 'pointer',
+                                    opacity: sendingDeadline ? 0.7 : 1,
+                                }}
+                            >
+                                {sendingDeadline ? 'Sending…' : 'Set & Send to customer'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

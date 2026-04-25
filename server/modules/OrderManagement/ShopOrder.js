@@ -78,6 +78,18 @@ const shopOrderSchema = new mongoose.Schema(
             Low: Number,
         },
         delayRiskPredictedAt: Date,
+        /** When admins were notified about High delay risk (avoid spamming on re-predict). */
+        delayRiskHighNotifiedAt: Date,
+        /** Customer-facing risk update message (e.g. Medium risk heads-up). */
+        lastDelayRiskCustomerMessage: String,
+        lastDelayRiskCustomerMessageAt: Date,
+        /** When the customer acknowledged the risk popup. */
+        customerDelayRiskPopupAckAt: Date,
+        /** Admin-to-customer deadline update message (shown as popup in customer portal). */
+        lastAdminDeadlineMessage: String,
+        lastAdminDeadlineSetAt: Date,
+        /** When the customer acknowledged the admin deadline update message popup. */
+        customerAdminDeadlinePopupAckAt: Date,
         materialsUsed: [
             {
                 materialId: {
