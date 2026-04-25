@@ -16,7 +16,6 @@ import AdminDashboard from "./pages/UserManagement/AdminDashboard";
 import ScheduleDashboard from "./pages/ScheduleManagement/ScheduleDashboard";
 import OperatorWorkspace from "./pages/InventoryManagement/OperatorWorkspace";
 import SimpleOperatorWorkspace from "./pages/InventoryManagement/SimpleOperatorWorkspace";
-import SystemManagerDashboard from "./pages/FeedbackNotificationManagement/SystemManagerDashboard";
 import FeedbackPage from "./pages/FeedbackNotificationManagement/FeedbackPage";
 import NotificationsPage from "./pages/FeedbackNotificationManagement/NotificationPage";
 import MachineManagement from "./pages/InventoryManagement/MachineManagement";
@@ -34,8 +33,10 @@ function AppContent() {
 
 // These pages get a clean full-screen layout
     if (isHomePage || isCustomerHome || isCustomerDashboard || isStaffLogin) {
+        const isCustomerUI = isCustomerHome || isCustomerDashboard;
+
         return (
-            <div className="App shan-app" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+            <div className={`App shan-app ${isCustomerUI ? 'light-layout' : ''}`} style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
                 <GlobalNotifications />
                 <div style={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
                     <Routes>
@@ -72,7 +73,6 @@ function AppContent() {
                         <Route path="/operator" element={<OperatorWorkspace />} />
                         <Route path="/operator-simple" element={<SimpleOperatorWorkspace />} />
                         <Route path="/machine-management" element={<MachineManagement />} />
-                        <Route path="/system-manager" element={<SystemManagerDashboard />} />
                         <Route path="/feedback" element={<FeedbackPage />} />
                         <Route path="/notifications" element={<NotificationsPage />} />
                     </Routes>

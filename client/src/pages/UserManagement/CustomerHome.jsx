@@ -1011,8 +1011,8 @@ const CustomerHome = () => {
 
     return (
         <div className="shan-page" style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--bg-color)', fontFamily: 'var(--font-sans, sans-serif)' }}>
-            <aside style={{ width: '260px', backgroundColor: 'var(--sidebar-bg)', display: 'flex', flexDirection: 'column', borderRight: '1px solid var(--border-color)' }}>
-                <div style={{ padding: '32px 24px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+            <aside style={{ width: '260px', backgroundColor: 'var(--sidebar-bg)', display: 'flex', flexDirection: 'column', borderRight: '1px solid var(--sidebar-border)' }}>
+                <div style={{ padding: '32px 24px', borderBottom: '1px solid var(--sidebar-border)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                         <div style={{
                             width: '42px',
@@ -1470,7 +1470,7 @@ const CustomerHome = () => {
                                                 type="file"
                                                 accept="image/*,.pdf"
                                                 onChange={e => setPaymentSlip(e.target.files?.[0] || null)}
-                                                style={{ width: '100%', padding: '10px', borderRadius: '12px', border: '1.5px dashed var(--accent-color)', fontSize: '14px', background: '#fffafa' }}
+                                                style={{ width: '100%', padding: '10px', borderRadius: '12px', border: '1.5px dashed var(--accent-color)', fontSize: '14px', background: 'var(--card-bg)' }}
                                             />
                                         </div>
                                         <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>

@@ -31,7 +31,7 @@ const Sidebar = () => {
             </div>
 
             <nav style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-                <SidebarLink to={user.role === 'admin' ? '/admin-dashboard' : user.role === 'staff_operator' ? '/operator' : user.role === 'staff_schedule' ? '/schedule' : user.role === 'staff_designer' ? '/orders' : user.role === 'staff_inventory' ? '/inventory' : user.role === 'staff_system' ? '/system-manager' : user.role === 'staff_finance' ? '/invoices' : '/admin-dashboard'} icon={<Home size={18} />} label="Home" />
+                <SidebarLink to={user.role === 'admin' ? '/admin-dashboard' : user.role === 'staff_operator' ? '/operator' : user.role === 'staff_schedule' ? '/schedule' : user.role === 'staff_designer' ? '/orders' : user.role === 'staff_inventory' ? '/inventory' : user.role === 'staff_system' ? '/feedback' : user.role === 'staff_finance' ? '/invoices' : '/admin-dashboard'} icon={<Home size={18} />} label="Home" />
 
                 {user.role !== 'staff_operator' && (
                     <div style={{ padding: '10px 32px', fontSize: '11px', fontWeight: '800', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '1.5px', marginTop: '16px' }}>Management</div>
@@ -61,9 +61,6 @@ const Sidebar = () => {
                     <SidebarLink to="/invoices" icon={<CreditCard size={18} />} label="Billing" />
                 )}
 
-                {(user.role === 'admin' || user.role === 'staff_system') && (
-                    <SidebarLink to="/system-manager" icon={<Monitor size={18} />} label="System Manager" />
-                )}
 
                 {(user.role === 'admin' || user.role === 'staff_system') && (
                     <SidebarLink to="/feedback" icon={<MessageSquare size={18} />} label="Feedback" />
