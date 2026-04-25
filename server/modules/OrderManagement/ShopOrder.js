@@ -66,11 +66,6 @@ const shopOrderSchema = new mongoose.Schema(
         scheduledEnd: Date,
         estimatedCompletionTime: Number,
         actualCompletionTime: Number,
-        delayRiskScore: Number,
-        delayRiskLabel: {
-            type: String,
-            enum: ['on_time', 'at_risk', 'delayed'],
-        },
         /** XGBoost model output (notebook classes): High | Medium | Low */
         delayRiskLevel: {
             type: String,
