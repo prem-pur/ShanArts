@@ -35,7 +35,7 @@ const feedbackRoutes = require('./modules/FeedbackNotificationManagement/routes'
 const notificationRoutes = require('./modules/FeedbackNotificationManagement/notifications');
 const attendanceRoutes = require('./modules/UserManagement/attendanceRoutes');
 const aiPublicRoutes = require('./modules/ai/aiRoutes');
-const mlPredictRoutes = require('./modules/ML/predictRoutes');
+const predictRoutes = require('./src/routes/predict');
 
 app.use("/api/orders", orderRoutes);
 app.use("/api/requests", requestRoutes);
@@ -53,7 +53,7 @@ app.use('/api/feedback', feedbackRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/ai', aiPublicRoutes);
-app.use('/api', mlPredictRoutes);
+app.use('/api', predictRoutes);
 
 // Global error handler middleware
 app.use((err, req, res, next) => {

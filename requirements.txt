@@ -1,9 +1,12 @@
 fastapi
 uvicorn[standard]
 xgboost
-scikit-learn==1.6.1
+scikit-learn
+imbalanced-learn
 pandas
 numpy
 joblib
 pydantic
 pytest
+httpx
+
