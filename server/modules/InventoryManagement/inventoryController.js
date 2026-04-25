@@ -169,7 +169,7 @@ const inventoryController = {
                     throw new ApiError('Password is required for removing stock', 400);
                 }
                 const user = await User.findById(req.user._id);
-                if (!user || user.passwordHash !== password) {
+                if (!user || !(await user.matchPassword(password))) {
                     throw new ApiError('Invalid password', 401);
                 }
             }
@@ -411,7 +411,7 @@ const inventoryController = {
 
             // Verify the user's password
             const user = await User.findById(req.user._id);
-            if (!user || user.passwordHash !== password) {
+            if (!user || !(await user.matchPassword(password))) {
                 throw new ApiError('Invalid password', 401);
             }
 
