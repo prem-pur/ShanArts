@@ -1,21 +1,21 @@
 {
-    "model_name": "Tuned XGBoost",
-    "accuracy": 0.8621250871890258,
-    "weighted_f1_score": 0.8561450979125667,
+    "model_name": "Tuned XGBoost (SMOTE Balanced, Relabeled Data)",
+    "accuracy": 0.8630837004405286,
+    "weighted_f1_score": 0.8630779923250578,
     "classes": [
         "High",
         "Low",
         "Medium"
     ],
     "best_parameters": {
-        "model__subsample": 0.8,
-        "model__reg_lambda": 3,
-        "model__reg_alpha": 1,
-        "model__n_estimators": 500,
-        "model__max_depth": 7,
-        "model__learning_rate": 0.1,
-        "model__gamma": 0.2,
-        "model__colsample_bytree": 0.8
+        "subsample": 0.9,
+        "reg_lambda": 2,
+        "reg_alpha": 0,
+        "n_estimators": 300,
+        "max_depth": 5,
+        "learning_rate": 0.03,
+        "gamma": 0,
+        "colsample_bytree": 0.8
     },
     "input_columns": [
         "Job_Type",

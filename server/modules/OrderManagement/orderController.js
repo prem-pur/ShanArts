@@ -179,6 +179,36 @@ const orderController = {
                 .sort({ createdAt: -1 })
                 .limit(parseInt(limit, 10));
 
+            // Best-effort: if delay risk wasn't computed yet for scheduled orders, compute for a small subset.
+            // This helps the Schedule UI show values without requiring a reschedule/assign action.
+            try {
+                const candidates = orders
+                    .filter(
+                        (o) =>
+                            !!o?.scheduledStart &&
+                            !!o?.scheduledEnd &&
+                            !o?.delayRiskPredictedAt &&
+                            ['confirmed', 'in_progress', 'printing'].includes(o.status)
+                    )
+                    .slice(0, 10);
+
+                if (candidates.length) {
+                    const updated = await Promise.allSettled(candidates.map((o) => predictAndStoreForOrder(o._id)));
+                    const byId = new Map(
+                        updated
+                            .filter((r) => r.status === 'fulfilled' && r.value)
+                            .map((r) => [String(r.value._id), r.value])
+                    );
+                    for (let i = 0; i < orders.length; i++) {
+                        const repl = byId.get(String(orders[i]._id));
+                        if (repl) orders[i] = repl;
+                    }
+                }
+            } catch (e) {
+                // eslint-disable-next-line no-console
+                console.warn('[getAllOrders] delay risk backfill failed:', e?.message || e);
+            }
+
             res.status(200).json({
                 success: true,
                 count: orders.length,
@@ -495,7 +525,7 @@ const orderController = {
                 await syncMachineState(assignedMachineId);
             }
 
-            // XGBoost delay-risk prediction (DB-driven features)
+            // Delay-risk prediction (stores delayRiskLevel/confidence/probabilities)
             try {
                 await predictAndStoreForOrder(order._id);
             } catch (e) {
@@ -597,7 +627,7 @@ const orderController = {
                 await syncMachineState(assignedMachineId);
             }
 
-            // XGBoost delay-risk prediction (DB-driven features)
+            // Delay-risk prediction (stores delayRiskLevel/confidence/probabilities)
             try {
                 await predictAndStoreForOrder(order._id);
             } catch (e) {
