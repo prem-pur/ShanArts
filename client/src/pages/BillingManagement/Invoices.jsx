@@ -35,7 +35,7 @@ const OutstandingStrip = ({ data }) => {
     if (!data) return null;
     return (
         <div style={{
-            background: 'linear-gradient(135deg, #ff3333 0%, #990000 50%, #cc0000 100%)',
+            background: 'linear-gradient(135deg, #ff5555 0%, #e53935 100%)',
             borderRadius: '16px', 
             padding: '24px', 
             marginBottom: '32px',
