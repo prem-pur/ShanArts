@@ -72,9 +72,21 @@ const CustomerHome = () => {
     const [profileError, setProfileError] = useState('');
     /** Shop order with pending "design share" message to show in welcome popup */
     const [designMessageOrder, setDesignMessageOrder] = useState(null);
-    const [designPopupAckLoading, setDesignPopupAckLoading] = useState(false);
+    const [designPopupAckLoading, setDesignPopupAckLoading] = useState(false); // used to avoid overlapping ack calls
 
     const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+    // Guard: customer portal must only be used by customer accounts.
+    useEffect(() => {
+        const role = (user?.role || '').toString();
+        if (role && role !== 'customer') {
+            alert('This account is not a customer account. Please sign in using the correct portal.');
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            navigate('/customer-dashboard');
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     useEffect(() => {
         fetchData();
@@ -156,16 +168,21 @@ const CustomerHome = () => {
     const dismissDesignMessagePopup = async (order, opts = {}) => {
         const openReview = !!opts.openReview;
         if (!order) return;
+        // Close popup immediately so UI never feels stuck.
+        setDesignMessageOrder(null);
+        if (designPopupAckLoading) return;
         setDesignPopupAckLoading(true);
         try {
             const token = localStorage.getItem('token');
-            await axios.patch(
-                `${API_BASE_URL}/api/shop-orders/${order._id}/ack-design-message`,
-                {},
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-            setDesignMessageOrder(null);
-            await fetchData();
+            // Fire-and-forget acknowledge (do not block UI on a slow/failing request)
+            axios
+                .patch(
+                    `${API_BASE_URL}/api/shop-orders/${order._id}/ack-design-message`,
+                    {},
+                    { headers: { Authorization: `Bearer ${token}` } }
+                )
+                .then(() => fetchData())
+                .catch((err) => console.error('ack-design-message failed:', err));
             if (openReview) {
                 setSelectedOrder(order);
                 const productionOrderRes = await axios.get(`${API_BASE_URL}/api/orders`, {
@@ -179,7 +196,7 @@ const CustomerHome = () => {
                 setShowApprovalModal(true);
             }
         } catch (err) {
-            console.error('ack-design-message failed:', err);
+            console.error('dismissDesignMessagePopup failed:', err);
         } finally {
             setDesignPopupAckLoading(false);
         }
@@ -353,6 +370,11 @@ const CustomerHome = () => {
     };
 
     const handleApproval = async (action) => {
+        const role = (JSON.parse(localStorage.getItem('user') || '{}')?.role || '').toString();
+        if (role && role !== 'customer') {
+            alert('Access denied: This action is only available for customer accounts.');
+            return;
+        }
         if (action === 'reject') {
             if (!rejectionReason.trim()) {
                 alert("Please provide a rejection reason.");
@@ -1514,7 +1536,6 @@ const CustomerHome = () => {
                     orderNumber={designMessageOrder?.orderNumber}
                     jobType={designMessageOrder?.jobType}
                     message={designMessageOrder?.lastDesignShareMessage || ''}
-                    acknowledging={designPopupAckLoading}
                     onAcknowledge={() => dismissDesignMessagePopup(designMessageOrder, { openReview: false })}
                     onReviewDesign={() => dismissDesignMessagePopup(designMessageOrder, { openReview: true })}
                 />

@@ -10,10 +10,15 @@ const ORDER_COLORS = {
     no_slot: { bg: '#fff7ed', text: '#f59e0b', border: '#f59e0b' },
 };
 
-const WeeklyTimeline = ({ machines, orders }) => {
-    const today = new Date();
+const RISK_BORDER = {
+    High: '#ef4444',
+    Medium: '#f59e0b',
+    Low: '#10b981',
+};
 
-    const weekDays = useMemo(() => {
+const WeeklyTimeline = ({ machines, orders }) => {
+    const { weekDays, today } = useMemo(() => {
+        const today = new Date();
         const days = [];
         const startOfWeek = new Date(today);
         const day = today.getDay();
@@ -25,7 +30,7 @@ const WeeklyTimeline = ({ machines, orders }) => {
             d.setDate(startOfWeek.getDate() + i);
             days.push(d);
         }
-        return days;
+        return { weekDays: days, today };
     }, []);
 
     const weekStart = weekDays[0];
@@ -205,9 +210,15 @@ const WeeklyTimeline = ({ machines, orders }) => {
                                         finalBorder = '2px solid #000000'; // Specific black border for rescheduled
                                     }
 
+                                    // Delay-risk border hint (only when not urgent/rescheduled)
+                                    const risk = order.delayRiskLevel;
+                                    if (!isUrgent && !isRescheduled && risk && RISK_BORDER[risk]) {
+                                        finalBorder = `2px solid ${RISK_BORDER[risk]}`;
+                                    }
+
                                     return (
                                         <div key={order._id}
-                                             title={`#${order.orderNumber} | ${order.jobType || ''} | ${new Date(order.scheduledStart).toLocaleString()}${isUrgent ? ' | URGENT' : ''}${isRescheduled ? ' | RESCHEDULED' : ''}`}
+                                             title={`#${order.orderNumber} | ${order.jobType || ''} | ${new Date(order.scheduledStart).toLocaleString()}${isUrgent ? ' | URGENT' : ''}${isRescheduled ? ' | RESCHEDULED' : ''}${order.delayRiskLevel ? ` | RISK: ${order.delayRiskLevel}` : ''}`}
                                              style={{
                                                  position: 'absolute',
                                                  top: '8px', height: '32px',

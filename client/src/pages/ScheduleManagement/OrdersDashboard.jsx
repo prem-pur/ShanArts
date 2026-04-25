@@ -12,6 +12,42 @@ const STATUS_CONFIG = {
 const thStyle = { padding: '16px', color: '#64748b', fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.8px', borderBottom: '1px solid #f1f5f9' };
 const tdStyle = { padding: '20px 16px', fontSize: '14px', borderBottom: '1px solid #f8fafc' };
 
+const getRiskBadge = (order) => {
+    const lvl = order?.delayRiskLevel;
+    if (!lvl) return null;
+    const cfg = {
+        High: { bg: 'rgba(239, 68, 68, 0.12)', color: '#ef4444', border: 'rgba(239, 68, 68, 0.35)' },
+        Medium: { bg: 'rgba(245, 158, 11, 0.14)', color: '#f59e0b', border: 'rgba(245, 158, 11, 0.35)' },
+        Low: { bg: 'rgba(16, 185, 129, 0.12)', color: '#10b981', border: 'rgba(16, 185, 129, 0.35)' },
+    }[lvl];
+    if (!cfg) return null;
+    const conf = typeof order.delayRiskConfidence === 'number'
+        ? `${Math.round(order.delayRiskConfidence * 100)}%`
+        : null;
+    return (
+        <span
+            title={conf ? `${lvl} (${conf})` : lvl}
+            style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 10px',
+                borderRadius: '99px',
+                fontSize: '11px',
+                fontWeight: '900',
+                background: cfg.bg,
+                color: cfg.color,
+                border: `1px solid ${cfg.border}`,
+                letterSpacing: '0.04em',
+                textTransform: 'uppercase',
+                whiteSpace: 'nowrap',
+            }}
+        >
+            {lvl}{conf ? ` • ${conf}` : ''}
+        </span>
+    );
+};
+
 
 
 const Icons = {
@@ -58,11 +94,6 @@ const OrdersDashboard = ({
                              showToast
                          }) => {
     const [sortBy, setSortBy] = useState('default'); // 'default', 'timeline', 'priority'
-
-    const awaiting = orders.filter(o => o.status === 'scheduled').length;
-    const assigned = orders.filter(o => o.status === 'confirmed').length;
-    const printing = orders.filter(o => o.status === 'in_progress').length;
-    const done = orders.filter(o => o.status === 'completed').length;
 
     // Sorting logic: prioritize machine_maintenance and scheduled (unassigned), demote completed
     const getStatusPriority = (status) => {
@@ -234,6 +265,7 @@ const OrdersDashboard = ({
                                     <th style={thStyle}>Process</th>
                                     <th style={thStyle}>Qty</th>
                                     <th style={thStyle}>Status</th>
+                                    <th style={thStyle}>Delay risk</th>
                                     <th style={thStyle}>Assignee</th>
                                     <th style={thStyle}>Machine</th>
                                     <th style={thStyle}>Timeline</th>
@@ -284,6 +316,9 @@ const OrdersDashboard = ({
                                                     <span style={{ background: cfg.bg, color: cfg.color, padding: '6px 16px', borderRadius: '99px', fontSize: '11px', fontWeight: '800' }}>
                                                         {cfg.label}
                                                     </span>
+                                            </td>
+                                            <td style={tdStyle}>
+                                                {getRiskBadge(order) || <span style={{ color: '#94a3b8', fontWeight: '700', fontSize: '12px' }}>—</span>}
                                             </td>
                                             <td style={{ ...tdStyle, fontWeight: '700', color: opName === 'Unassigned' ? '#94a3b8' : '#334155' }}>{opName}</td>
                                             <td style={{ ...tdStyle, fontWeight: '700', color: '#334155' }}>{machineName}</td>

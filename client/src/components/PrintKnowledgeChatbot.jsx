@@ -129,7 +129,7 @@ const PrintKnowledgeChatbot = () => {
                             <div className="pk-chat-empty">
                                 <BookOpen size={40} className="pk-chat-empty-icon" aria-hidden />
                                 <p>Try one of these, or type your own:</p>
-                                <ul className="pk-chat-samples" role="list">
+                                <ul className="pk-chat-samples">
                                     {SAMPLE_QUESTIONS.map((q) => (
                                         <li key={q}>
                                             <button

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   MapPin, Phone, Clock, Printer, Package, BarChart2, Users,
   FileText, Layers, ChevronRight, Zap, Shield, Star, ArrowRight,
-  TrendingUp, CheckCircle, Bell, Settings, LogIn, Play, X, MessageCircle
+  TrendingUp, CheckCircle, Bell, Settings, LogIn, X, MessageCircle
 } from 'lucide-react';
 import AiCopywritingAssistant from './AiCopywritingAssistant';
 import PrintKnowledgeChatbot from './PrintKnowledgeChatbot';
@@ -233,7 +233,6 @@ const statusStyle = (color) => ({
 const Home = () => {
   const navigate = useNavigate();
   const [count, setCount] = useState({ orders: 0, clients: 0, years: 0, uptime: 0 });
-  const [activeFeature, setActiveFeature] = useState(null);
   const [navScrolled, setNavScrolled] = useState(false);
   const [launchModal, setLaunchModal] = useState(false);
 
@@ -488,7 +487,7 @@ const Home = () => {
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1px', background: 'rgba(255,255,255,0.06)', borderRadius: '24px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.06)' }}>
           {features.map((f, i) => (
-            <div key={i} className="feature-card-h scroll-reveal" onMouseEnter={() => setActiveFeature(i)} onMouseLeave={() => setActiveFeature(null)}
+            <div key={i} className="feature-card-h scroll-reveal"
               style={{ background: '#0C0E14', padding: '34px', cursor: 'pointer', position: 'relative', overflow: 'hidden' }}>
               {/* Feature image strip */}
               <div style={{ height: '130px', borderRadius: '12px', overflow: 'hidden', marginBottom: '22px', position: 'relative' }}>

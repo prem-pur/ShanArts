@@ -41,11 +41,6 @@ const OperatorsDashboard = ({ operators, orders, machineStats, onBack }) => {
         return op.name.toLowerCase().includes(term) || (op.role || '').toLowerCase().includes(term);
     });
 
-    const awaiting = orders.filter(o => o.status === 'scheduled').length;
-    const assigned = orders.filter(o => o.status === 'confirmed').length;
-    const printing = orders.filter(o => o.status === 'in_progress').length;
-    const done = orders.filter(o => o.status === 'completed').length;
-
     return (
         <div style={{ marginBottom: '32px' }}>
 

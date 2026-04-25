@@ -11,7 +11,6 @@ export default function CustomerDesignMessagePopup({
     message,
     onAcknowledge,
     onReviewDesign,
-    acknowledging,
 }) {
     if (!isOpen) return null;
 
@@ -89,13 +88,12 @@ export default function CustomerDesignMessagePopup({
                     <button
                         type="button"
                         onClick={() => onAcknowledge()}
-                        disabled={acknowledging}
                         style={{
                             background: "var(--surface-muted)",
                             border: "1px solid var(--border-color)",
                             borderRadius: 10,
                             padding: 8,
-                            cursor: acknowledging ? "not-allowed" : "pointer",
+                            cursor: "pointer",
                             color: "var(--text-secondary)",
                             display: "flex",
                             flexShrink: 0,
@@ -146,8 +144,7 @@ export default function CustomerDesignMessagePopup({
                         <button
                             type="button"
                             onClick={() => onAcknowledge()}
-                            disabled={acknowledging}
-                            style={btnSecondary(acknowledging)}
+                            style={btnSecondary(false)}
                         >
                             Got it
                         </button>
@@ -155,8 +152,7 @@ export default function CustomerDesignMessagePopup({
                             <button
                                 type="button"
                                 onClick={() => onReviewDesign()}
-                                disabled={acknowledging}
-                                style={btnPrimary(acknowledging)}
+                                style={btnPrimary(false)}
                             >
                                 <ImageIcon size={16} style={{ marginRight: 6 }} />
                                 Review design

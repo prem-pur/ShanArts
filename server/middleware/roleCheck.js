@@ -4,7 +4,9 @@ const roleCheck = (allowedRoles) => {
             return res.status(401).json({ message: 'User not authenticated' });
         }
 
-        if (!allowedRoles.includes(req.user.role)) {
+        const userRole = (req.user.role || '').toString().toLowerCase();
+        const normalizedAllowed = (allowedRoles || []).map((r) => (r || '').toString().toLowerCase());
+        if (!normalizedAllowed.includes(userRole)) {
             return res.status(403).json({ message: 'Access denied: Insufficient permissions' });
         }
 
