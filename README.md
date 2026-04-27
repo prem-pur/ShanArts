@@ -1,5 +1,7 @@
 # SHANARTS — Printing Management System
 
+**Academic context**: This repository is part of the **SLIIT IT2021-AIML module project**.
+
 Production-grade management system for **Shan Art Advertising** covering customer orders, scheduling, inventory, billing, feedback/notifications, and AI-assisted workflows.
 
 ## Key features
