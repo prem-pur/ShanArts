@@ -46,6 +46,231 @@ const ROLE_LABELS = {
     admin: 'Administrator',
 };
 
+const BRAND = {
+    companyName: 'Shan Art Advertising',
+    // Uses the existing CRA public asset: `client/public/logo.png`
+    logoUrl: '/logo.png',
+};
+
+const loadImage = (src) =>
+    new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = src;
+    });
+
+async function generateStaffQrCardPng({
+    qrDataUrl,
+    staffName,
+    staffId,
+    staffRole,
+}) {
+    const width = 900;
+    const height = 540;
+    const scale = Math.min(2, Math.max(1, Math.floor(window.devicePixelRatio || 1)));
+
+    const canvas = document.createElement('canvas');
+    canvas.width = width * scale;
+    canvas.height = height * scale;
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('Canvas not supported');
+    ctx.scale(scale, scale);
+
+    // Background (soft gradient)
+    const bg = ctx.createLinearGradient(0, 0, width, height);
+    bg.addColorStop(0, '#0f172a');
+    bg.addColorStop(0.55, '#111827');
+    bg.addColorStop(1, '#1f2937');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, width, height);
+
+    // Card
+    const cardX = 60;
+    const cardY = 50;
+    const cardW = width - 120;
+    const cardH = height - 100;
+    const r = 28;
+
+    // Shadow
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,0.45)';
+    ctx.shadowBlur = 30;
+    ctx.shadowOffsetY = 16;
+    ctx.fillStyle = '#ffffff';
+    roundRect(ctx, cardX, cardY, cardW, cardH, r);
+    ctx.fill();
+    ctx.restore();
+
+    // Card border
+    ctx.strokeStyle = 'rgba(15, 23, 42, 0.08)';
+    ctx.lineWidth = 2;
+    roundRect(ctx, cardX, cardY, cardW, cardH, r);
+    ctx.stroke();
+
+    // Header area
+    const headerH = 120;
+    const headerGrad = ctx.createLinearGradient(cardX, cardY, cardX + cardW, cardY + headerH);
+    headerGrad.addColorStop(0, '#ef4444');
+    headerGrad.addColorStop(1, '#b91c1c');
+    ctx.fillStyle = headerGrad;
+    roundRect(ctx, cardX, cardY, cardW, headerH, r);
+    ctx.fill();
+    // square bottom edge of header
+    ctx.fillRect(cardX, cardY + headerH - r, cardW, r);
+
+    // Logo (image if exists, else fallback circle)
+    const logoBox = 86;
+    const logoX = cardX + 34;
+    const logoY = cardY + 28;
+
+    let logoDrawn = false;
+    try {
+        const logoImg = await loadImage(BRAND.logoUrl);
+        // Draw in a white rounded container (contain + sharp)
+        const pad = 12;
+        const boxX = logoX;
+        const boxY = logoY;
+        const boxW = logoBox;
+        const boxH = logoBox;
+
+        ctx.save();
+        ctx.fillStyle = 'rgba(255,255,255,0.96)';
+        roundRect(ctx, boxX, boxY, boxW, boxH, 18);
+        ctx.fill();
+        ctx.restore();
+
+        // High quality resampling
+        ctx.save();
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+
+        const targetW = boxW - pad * 2;
+        const targetH = boxH - pad * 2;
+        const scale = Math.min(targetW / logoImg.width, targetH / logoImg.height);
+        const drawW = Math.max(1, Math.floor(logoImg.width * scale));
+        const drawH = Math.max(1, Math.floor(logoImg.height * scale));
+        const dx = boxX + Math.floor((boxW - drawW) / 2);
+        const dy = boxY + Math.floor((boxH - drawH) / 2);
+        ctx.drawImage(logoImg, dx, dy, drawW, drawH);
+        ctx.restore();
+
+        logoDrawn = true;
+    } catch {
+        // fallback below
+    }
+
+    if (!logoDrawn) {
+        ctx.save();
+        ctx.fillStyle = 'rgba(255,255,255,0.95)';
+        ctx.beginPath();
+        ctx.arc(logoX + logoBox / 2, logoY + logoBox / 2, logoBox / 2 + 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#111827';
+        ctx.font = '800 22px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('SA', logoX + logoBox / 2, logoY + logoBox / 2);
+        ctx.restore();
+    }
+
+    // Company name + badge label
+    ctx.save();
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '900 26px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial';
+    ctx.textBaseline = 'top';
+    ctx.fillText(BRAND.companyName, logoX + logoBox + 24, cardY + 30);
+    ctx.globalAlpha = 0.92;
+    ctx.font = '700 14px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial';
+    ctx.fillText('Staff QR ID', logoX + logoBox + 24, cardY + 66);
+    ctx.restore();
+
+    // Content split
+    const contentX = cardX + 34;
+    const contentY = cardY + headerH + 28;
+
+    // Left: staff info
+    ctx.save();
+    ctx.fillStyle = '#0f172a';
+    ctx.font = '900 34px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial';
+    ctx.textBaseline = 'top';
+    const safeName = String(staffName || '').trim() || 'Staff Member';
+    ctx.fillText(safeName, contentX, contentY);
+
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.75)';
+    ctx.font = '700 16px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial';
+    const safeRole = String(staffRole || '').trim();
+    if (safeRole) {
+        ctx.fillText(safeRole, contentX, contentY + 46);
+    }
+
+    // ID pill
+    const idText = String(staffId || '').trim() || '—';
+    const pillY = contentY + 84;
+    const pillPaddingX = 16;
+    ctx.font = '900 18px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial';
+    const pillTextW = ctx.measureText(idText).width;
+    const pillW = pillTextW + pillPaddingX * 2 + 78;
+    const pillH = 42;
+    const pillX = contentX;
+
+    ctx.fillStyle = '#0f172a';
+    roundRect(ctx, pillX, pillY, pillW, pillH, 999);
+    ctx.fill();
+
+    ctx.fillStyle = 'rgba(255,255,255,0.82)';
+    ctx.font = '800 12px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial';
+    ctx.fillText('STAFF ID', pillX + 16, pillY + 10);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '900 18px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial';
+    ctx.fillText(idText, pillX + 16, pillY + 22);
+    ctx.restore();
+
+    // Right: QR block
+    const qrBoxSize = 260;
+    const qrBoxX = cardX + cardW - 34 - qrBoxSize;
+    const qrBoxY = contentY + 10;
+
+    ctx.save();
+    ctx.fillStyle = '#f8fafc';
+    roundRect(ctx, qrBoxX - 16, qrBoxY - 16, qrBoxSize + 32, qrBoxSize + 32, 22);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(15, 23, 42, 0.10)';
+    ctx.lineWidth = 2;
+    roundRect(ctx, qrBoxX - 16, qrBoxY - 16, qrBoxSize + 32, qrBoxSize + 32, 22);
+    ctx.stroke();
+    ctx.restore();
+
+    const qrImg = await loadImage(qrDataUrl);
+    ctx.drawImage(qrImg, qrBoxX, qrBoxY, qrBoxSize, qrBoxSize);
+
+    // Footer hint
+    ctx.save();
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.70)';
+    ctx.font = '700 13px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText('Scan at the attendance reader', contentX, cardY + cardH - 22);
+    ctx.restore();
+
+    return canvas.toDataURL('image/png');
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+    const radius = Math.min(r, w / 2, h / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    ctx.arcTo(x + w, y, x + w, y + h, radius);
+    ctx.arcTo(x + w, y + h, x, y + h, radius);
+    ctx.arcTo(x, y + h, x, y, radius);
+    ctx.arcTo(x, y, x + w, y, radius);
+    ctx.closePath();
+}
+
 const AdminDashboard = () => {
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('register'); // 'register' | 'attendance' | 'merchantQR'
@@ -98,6 +323,33 @@ const AdminDashboard = () => {
     const [staffListLoading, setStaffListLoading] = useState(false);
 
     const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+    const downloadStaffQrCard = useCallback(async ({ qrCode, name, merchantCode, role }) => {
+        if (!qrCode) return;
+        try {
+            const png = await generateStaffQrCardPng({
+                qrDataUrl: qrCode,
+                staffName: name,
+                staffId: merchantCode,
+                staffRole: ROLE_LABELS[role] || role,
+            });
+            const a = document.createElement('a');
+            a.href = png;
+            a.download = `staff_qr_${String(name || 'staff').replace(/\s+/g, '_')}_${String(merchantCode || '').replace(/\s+/g, '')}.png`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        } catch (e) {
+            console.error('Failed to generate QR card', e);
+            // Fallback: download raw QR if the card generation fails
+            const a = document.createElement('a');
+            a.href = qrCode;
+            a.download = `qr_${String(name || 'staff').replace(/\s+/g, '_')}.png`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+    }, []);
 
     const managementLinks = [
         { name: 'Orders', path: '/orders', icon: <ClipboardList size={24} color="var(--accent-color)" strokeWidth={2.25} /> },
@@ -582,13 +834,13 @@ const AdminDashboard = () => {
                             <p style={{ color: 'var(--accent-color)', fontSize: '14px', fontWeight: '800', marginBottom: '24px' }}>Code: {newQR.merchantCode}</p>
                             <img src={newQR.qrCode} alt="Staff QR Code" style={{ width: '220px', height: '220px', borderRadius: '12px', border: '2px solid var(--border-color)', padding: '12px', background: '#fafafa' }} />
                             <p style={{ color: 'var(--text-secondary)', fontSize: '12px', marginTop: '16px', textAlign: 'center' }}>Scan this QR at the attendance reader to mark presence.</p>
-                            <a
-                                href={newQR.qrCode}
-                                download={`qr_${newQR.name.replace(/\s/g, '_')}.png`}
-                                style={{ marginTop: '16px', padding: '10px 24px', borderRadius: '10px', background: 'var(--text-primary)', color: 'var(--bg-color)', fontWeight: '700', fontSize: '13px', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}
+                            <button
+                                type="button"
+                                onClick={() => downloadStaffQrCard(newQR)}
+                                style={{ marginTop: '16px', padding: '10px 24px', borderRadius: '10px', background: 'var(--text-primary)', color: 'var(--bg-color)', fontWeight: '700', fontSize: '13px', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px', border: 'none', cursor: 'pointer' }}
                             >
-                                <Download size={16} /> Download QR
-                            </a>
+                                <Download size={16} /> Download QR Card
+                            </button>
                         </div>
                     )}
                 </div>
@@ -767,13 +1019,13 @@ const AdminDashboard = () => {
 
                             {/* Action Buttons */}
                             <div style={{ display: 'flex', gap: '10px', width: '100%', flexWrap: 'wrap', justifyContent: 'center' }}>
-                                <a
-                                    href={merchantQRResult.qrCode}
-                                    download={`qr_${merchantQRResult.name.replace(/\s/g, '_')}_${merchantQRResult.merchantCode}.png`}
-                                    style={{ flex: '1', minWidth: '130px', textAlign: 'center', padding: '10px 16px', borderRadius: '10px', background: 'var(--text-primary)', color: 'var(--bg-color)', fontWeight: '700', fontSize: '13px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                                <button
+                                    type="button"
+                                    onClick={() => downloadStaffQrCard(merchantQRResult)}
+                                    style={{ flex: '1', minWidth: '130px', textAlign: 'center', padding: '10px 16px', borderRadius: '10px', background: 'var(--text-primary)', color: 'var(--bg-color)', fontWeight: '700', fontSize: '13px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', border: 'none', cursor: 'pointer' }}
                                 >
-                                    <Download size={16} /> Download QR
-                                </a>
+                                    <Download size={16} /> Download QR Card
+                                </button>
                                 <button
                                     onClick={() => setShowMerchantDetails(!showMerchantDetails)}
                                     style={{ flex: '1', minWidth: '130px', padding: '10px 16px', borderRadius: '10px', border: '1.5px solid var(--accent-color)', background: showMerchantDetails ? 'var(--accent-color)' : 'var(--card-bg)', color: showMerchantDetails ? '#fff' : 'var(--accent-color)', fontWeight: '700', fontSize: '13px', cursor: 'pointer', transition: '0.2s' }}
@@ -948,7 +1200,13 @@ const AdminDashboard = () => {
                                     <div style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
                                         <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>QR Code</div>
                                         <img src={scannedProfile.qrCode} alt="staff qr" style={{ width: '100px', height: '100px', borderRadius: '8px', border: '1.5px solid var(--border-color)', padding: '6px', background: '#fafafa' }} />
-                                        <a href={scannedProfile.qrCode} download={`qr_${scannedProfile.name?.replace(/\\s/g,'_')}.png`} style={{ padding: '8px 20px', borderRadius: '8px', background: 'var(--text-primary)', color: 'var(--bg-color)', fontWeight: '700', fontSize: '12px', textDecoration: 'none' }}>⬇️ Download QR</a>
+                                        <button
+                                            type="button"
+                                            onClick={() => downloadStaffQrCard(scannedProfile)}
+                                            style={{ padding: '8px 20px', borderRadius: '8px', background: 'var(--text-primary)', color: 'var(--bg-color)', fontWeight: '700', fontSize: '12px', border: 'none', cursor: 'pointer' }}
+                                        >
+                                            ⬇️ Download QR Card
+                                        </button>
                                     </div>
                                 )}
                             </div>
