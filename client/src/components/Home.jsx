@@ -164,7 +164,7 @@ const features = [
     title: 'Inventory Control',
     desc: 'Monitor paper stock, ink levels, and materials with smart alerts. Never run out mid-job with automated reorder thresholds.',
     tag: 'Stock Module',
-    img: 'https://images.unsplash.com/photo-1586075010923-2dd457033c4f?w=400&q=80',
+    img: 'https://images.unsplash.com/photo-1542744094-3a31f272c490?auto=format&fit=crop&w=400&q=80',
   },
   {
     icon: <Users size={22} />,
