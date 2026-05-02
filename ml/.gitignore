@@ -1,6 +1,7 @@
-# Python / ML — local secrets and caches (use repo-root `env.example` for ML var hints)
+# Python / ML — local secrets and caches (ML var hints live in repo-root env.example; that file has no secrets)
 .env
 .env.*
+*.env
 __pycache__/
 *.py[cod]
 .pytest_cache/

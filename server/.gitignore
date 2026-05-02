@@ -1,3 +1,4 @@
-# Local secrets — copy `server/env.example` → `.env` (this file is gitignored).
+# Local secrets — copy `server/env.example` → `.env` (gitignored). Do not commit real values.
 .env
 .env.*
+*.env
