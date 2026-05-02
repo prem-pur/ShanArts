@@ -1,0 +1,4 @@
+# Local secrets — copy `server/.env.example` → `.env` (root .gitignore already ignores `.env` here).
+.env
+.env.*
+!.env.example
