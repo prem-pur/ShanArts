@@ -1,7 +1,14 @@
-# 📦 Node modules
-node_modules/
+# =============================================================================
+# Single repo-wide .gitignore (client / server / ml — no nested .gitignore files)
+# =============================================================================
 
-# 🧾 Logs
+# --- Node (root + workspaces) ---
+node_modules/
+client/.pnp
+client/.pnp.js
+.pnp.js
+
+# --- Logs ---
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -9,9 +16,8 @@ yarn-error.log*
 logs/*
 !logs/.gitkeep
 
-# 🔐 Environment / secrets — do NOT commit files that hold real values.
-# Safe to commit (templates only, no secrets): env.example, client/env.example, server/env.example
-# Never commit: .env, .env.*, *.env with secrets, .pem in env paths, etc.
+# --- Environment / secrets (never commit real values) ---
+# Templates only (safe): env.example, client/env.example, server/env.example
 .env
 .env.*
 .env.local
@@ -20,56 +26,52 @@ logs/*
 .env.production
 .env.test
 .env.staging
-server/.env
 client/.env
-ml/.env
 client/.env.development
+server/.env
+ml/.env
 **/.env
 **/.env.*
 .envrc
 .direnv/
 *.env
 
-# 🐍 Python
+# --- Python / ML ---
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
+.pytest_cache/
+.ipynb_checkpoints/
 env/
 venv/
 .venv/
 *.egg-info/
 
-# 🏗 Build outputs
+# --- Build & coverage ---
 dist/
 build/
+coverage/
 
-# 📁 Uploads (keep folder, ignore files)
+# --- Uploads & generated previews (keep dirs) ---
 server/public/uploads/*
 !server/public/uploads/.gitkeep
-
-# Design previews (generated at runtime; keep directory)
 server/public/previews/*
 !server/public/previews/.gitkeep
 
-# Tooling caches
+# --- Tooling & IDE ---
 .eslintcache
 **/.eslintcache
-
-# 💻 IDE / Editor
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# 🧹 OS files
+# --- OS ---
 .DS_Store
 Thumbs.db
 
-# 📦 Archives
+# --- Archives & misc ---
 *.tgz
-
-# 🧪 Coverage
-coverage/
