@@ -164,7 +164,7 @@ const features = [
     title: 'Inventory Control',
     desc: 'Monitor paper stock, ink levels, and materials with smart alerts. Never run out mid-job with automated reorder thresholds.',
     tag: 'Stock Module',
-    img: 'https://images.unsplash.com/photo-1586075010923-2dd457033c4f?w=400&q=80',
+    img: 'https://images.unsplash.com/photo-1542744094-3a31f272c490?auto=format&fit=crop&w=400&q=80',
   },
   {
     icon: <Users size={22} />,
@@ -315,29 +315,22 @@ const Home = () => {
         borderBottom: navScrolled ? '1px solid rgba(255,255,255,0.07)' : '1px solid transparent',
         transition: 'all 0.35s ease',
       }}>
-        {/* Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{
-            width: '42px', height: '42px', borderRadius: '12px', overflow: 'hidden',
-            border: '2px solid rgba(255,51,51,0.4)',
-            background: 'linear-gradient(135deg, #ff3333 0%, #990000 100%)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            flexShrink: 0,
-          }}>
-            <img
-              src="/logo.png"
-              alt="Shan Art Logo"
-              onError={(e) => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }}
-              style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '10px' }}
-            />
-            <div style={{ display: 'none', width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' }}>
-              <Printer size={18} color="#fff" />
-            </div>
-          </div>
-          <div>
-            <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: '15px', letterSpacing: '0.06em', color: '#ffffff' }}>SHAN ART</div>
-            <div style={{ fontSize: '11px', color: '#666666', letterSpacing: '0.08em', fontWeight: 500 }}>ADVERTISING</div>
-          </div>
+        {/* Logo: PNG includes its own white panel — avoid a second outer white chip */}
+        <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', flexShrink: 0 }} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+          <img
+            src="/logo.png?v=7"
+            alt="Shan Art Advertising"
+            style={{
+              display: 'block',
+              width: 'auto',
+              height: 'auto',
+              maxHeight: '48px',
+              maxWidth: 'min(236px, 56vw)',
+              objectFit: 'contain',
+              borderRadius: '10px',
+              boxShadow: '0 4px 28px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.08)',
+            }}
+          />
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -393,14 +386,23 @@ const Home = () => {
 
 
 
-        {/* Logo in hero */}
-        <div className="animate-1" style={{ marginBottom: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ width: '90px', height: '90px', borderRadius: '22px', overflow: 'hidden', border: '2px solid rgba(255,51,51,0.35)', background: 'linear-gradient(135deg, #111111 0%, #222222 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 60px rgba(255,51,51,0.25)' }}>
-            <img src="/logo.png" alt="Shan Art" onError={(e) => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '20px' }} />
-            <div style={{ display: 'none', width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' }}>
-              <Printer size={36} color="#ff3333" />
-            </div>
-          </div>
+        {/* Logo in hero — glow on image only (no nested white frame) */}
+        <div className="animate-1" style={{ marginBottom: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'visible' }}>
+          <img
+            src="/logo.png?v=7"
+            alt="Shan Art Advertising"
+            style={{
+              display: 'block',
+              width: 'auto',
+              height: 'auto',
+              maxHeight: 'clamp(96px, 20vw, 128px)',
+              maxWidth: 'min(488px, 94vw)',
+              objectFit: 'contain',
+              borderRadius: '20px',
+              boxShadow:
+                '0 0 64px rgba(255,255,255,0.14), 0 0 100px rgba(255,51,51,0.22), 0 16px 48px rgba(0,0,0,0.55)',
+            }}
+          />
         </div>
 
         <h1 className="animate-2" style={{ fontSize: 'clamp(2.6rem, 6.5vw, 4.6rem)', fontWeight: 800, lineHeight: 1.08, marginBottom: '28px', letterSpacing: '-0.03em', maxWidth: '900px', fontFamily: "'Space Grotesk', sans-serif" }}>
@@ -522,7 +524,39 @@ const Home = () => {
         </div>
       </section>
 
+      {/* ── CTA BANNER ── */}
+      <div style={{ margin: '0 2rem 100px', background: 'linear-gradient(135deg, rgba(255,51,51,0.16) 0%, rgba(204,0,0,0.1) 100%)', border: '1px solid rgba(255,51,51,0.28)', borderRadius: '28px', padding: '72px 48px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 55% 90% at 50% 50%, rgba(153,0,0,0.07) 0%, transparent 100%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', top: 0, left: 0, width: '60px', height: '60px', borderTop: '2px solid rgba(255,51,51,0.3)', borderLeft: '2px solid rgba(255,51,51,0.3)', borderRadius: '28px 0 0 0' }} />
+        <div style={{ position: 'absolute', bottom: 0, right: 0, width: '60px', height: '60px', borderBottom: '2px solid rgba(255,51,51,0.3)', borderRight: '2px solid rgba(255,51,51,0.3)', borderRadius: '0 0 28px 0' }} />
 
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
+          <img
+            src="/logo.png?v=7"
+            alt="Shan Art Advertising"
+            style={{
+              display: 'block',
+              width: 'auto',
+              height: 'auto',
+              maxHeight: '56px',
+              maxWidth: 'min(336px, 88vw)',
+              objectFit: 'contain',
+              borderRadius: '14px',
+              boxShadow: '0 6px 36px rgba(0,0,0,0.45), 0 0 64px rgba(255,51,51,0.18)',
+            }}
+          />
+        </div>
+        <h2 style={{ fontSize: 'clamp(1.8rem, 3vw, 2.4rem)', fontWeight: 800, color: '#ffffff', marginBottom: '16px', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '-0.02em' }}>Ready to streamline your print shop?</h2>
+        <p style={{ fontSize: '16px', color: '#666666', marginBottom: '36px', maxWidth: '460px', margin: '0 auto 36px', lineHeight: 1.7 }}>
+          Log in to manage orders, check inventory, and serve clients faster — all in one place.
+        </p>
+        <div style={{ display: 'flex', gap: '14px', justifyContent: 'center', flexWrap: 'wrap' }}>
+          <button className="btn-primary-h glow-btn" onClick={() => navigate('/customer-dashboard')}
+            style={{ background: 'linear-gradient(135deg, #ff3333, #990000)', color: '#fff', border: 'none', padding: '15px 32px', borderRadius: '12px', fontSize: '15px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '9px', transition: 'all 0.25s', fontFamily: 'inherit', boxShadow: '0 0 40px rgba(255,51,51,0.4)' }}>
+            Place an Order <ArrowRight size={16} />
+          </button>
+        </div>
+      </div>
 
       {/* ── ABOUT ── */}
       <section id="about" style={{ padding: '0 2rem 100px', maxWidth: '1150px', margin: '0 auto' }}>
@@ -587,12 +621,21 @@ const Home = () => {
       <footer style={{ borderTop: '1px solid rgba(255,255,255,0.06)', padding: '56px 2.5rem 36px', background: 'rgba(0,0,0,0.3)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '40px', maxWidth: '1150px', margin: '0 auto' }}>
           <div style={{ maxWidth: '280px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-              <div style={{ width: '38px', height: '38px', borderRadius: '10px', overflow: 'hidden', border: '1.5px solid rgba(255,51,51,0.3)', background: '#111111' }}>
-                <img src="/logo.png" alt="Shan Art" onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                <div style={{ display: 'none', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' }}><Printer size={16} color="#ff3333" /></div>
-              </div>
-              <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: '14px', color: '#ffffff', letterSpacing: '0.06em' }}>SHAN ART ADVERTISING</div>
+            <div style={{ marginBottom: '16px' }}>
+              <img
+                src="/logo.png?v=7"
+                alt="Shan Art Advertising"
+                style={{
+                  display: 'block',
+                  width: 'auto',
+                  height: 'auto',
+                  maxHeight: '52px',
+                  maxWidth: 'min(268px, 88vw)',
+                  objectFit: 'contain',
+                  borderRadius: '12px',
+                  boxShadow: '0 4px 28px rgba(0,0,0,0.45)',
+                }}
+              />
             </div>
             <p style={{ fontSize: '13px', color: 'var(--text-secondary, #999999)', lineHeight: 1.8 }}>Your partner in premium brand elevation and precision advertising — Anuradhapura, Sri Lanka.</p>
           </div>
