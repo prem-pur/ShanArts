@@ -12,6 +12,8 @@ const STATUS_CONFIG = {
 const thStyle = { padding: '16px', color: 'var(--text-secondary)', fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.8px', borderBottom: '1px solid var(--border-color)' };
 const tdStyle = { padding: '20px 16px', fontSize: '14px', borderBottom: '1px solid var(--surface-muted)' };
 
+const SCHEDULED_FOR_RISK = ['scheduled', 'confirmed', 'in_progress', 'printing', 'machine_maintenance'];
+
 const getRiskBadge = (order) => {
     const lvl = order?.delayRiskLevel;
     if (!lvl) return null;
@@ -48,7 +50,38 @@ const getRiskBadge = (order) => {
     );
 };
 
-
+const getDelayRiskCell = (order) => {
+    const badge = getRiskBadge(order);
+    if (badge) return badge;
+    if (
+        order?.scheduledStart &&
+        order?.scheduledEnd &&
+        SCHEDULED_FOR_RISK.includes(order.status)
+    ) {
+        return (
+            <span
+                title="Risk is computed by the ML service when you open this list or after assign/reschedule. Refresh if it stays pending."
+                style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    padding: '6px 10px',
+                    borderRadius: '99px',
+                    fontSize: '11px',
+                    fontWeight: '800',
+                    background: 'rgba(148, 163, 184, 0.15)',
+                    color: '#64748b',
+                    border: '1px solid rgba(148, 163, 184, 0.35)',
+                    letterSpacing: '0.04em',
+                    textTransform: 'uppercase',
+                    whiteSpace: 'nowrap',
+                }}
+            >
+                Pending
+            </span>
+        );
+    }
+    return <span style={{ color: '#94a3b8', fontWeight: '700', fontSize: '12px' }}>—</span>;
+};
 
 const Icons = {
     Back: () => (
@@ -318,7 +351,7 @@ const OrdersDashboard = ({
                                                     </span>
                                             </td>
                                             <td style={tdStyle}>
-                                                {getRiskBadge(order) || <span style={{ color: '#94a3b8', fontWeight: '700', fontSize: '12px' }}>—</span>}
+                                                {getDelayRiskCell(order)}
                                             </td>
                                             <td style={{ ...tdStyle, fontWeight: '700', color: opName === 'Unassigned' ? '#94a3b8' : '#334155' }}>{opName}</td>
                                             <td style={{ ...tdStyle, fontWeight: '700', color: '#334155' }}>{machineName}</td>

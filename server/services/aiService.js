@@ -4,6 +4,7 @@ const path = require('path');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { Document, Packer, Paragraph, TextRun, HeadingLevel } = require('docx');
 const config = require('../config/env');
+const { isOllamaSubscriptionError } = require('../utils/ollamaApiErrors');
 
 const UPLOADS_BASE = path.join(__dirname, '../../public/uploads');
 const AI_EXPORTS_DIR = path.join(UPLOADS_BASE, 'ai-exports');
@@ -355,6 +356,11 @@ function ollamaConnectionError(base, model, e) {
         ? e.response.data
         : (e.response?.data?.error || e.response?.data?.message || '');
     if (status === 401 || status === 403) {
+        if (isOllamaSubscriptionError(String(bodyMsg))) {
+            const err = new Error('SUBSCRIPTION_REQUIRED');
+            err.status = 403;
+            throw err;
+        }
         const err = new Error(
             `Ollama API access denied (${status}). Set OLLAMA_API_KEY in server/.env (Bearer for https://ollama.com). ` +
                 'If the host is not ollama.com, try OLLAMA_API_AUTH=x-api-key. ' +
@@ -370,11 +376,13 @@ function ollamaConnectionError(base, model, e) {
     throw err;
 }
 
-async function analyzeWithOllama(imagePath) {
+/**
+ * One vision model: /api/chat then /api/generate fallbacks (same as previous single-model flow).
+ * @param {string} base64
+ * @param {string} model
+ */
+async function analyzeWithOllamaOneModel(base64, model) {
     const base = config.OLLAMA_BASE_URL;
-    const model = config.OLLAMA_VISION_MODEL;
-    const buffer = await fs.promises.readFile(imagePath);
-    const base64 = buffer.toString('base64');
     const prompt = buildPrintingItemPrompt();
 
     let outText = '';
@@ -397,6 +405,39 @@ async function analyzeWithOllama(imagePath) {
 
     const parsed = parseJsonFromModelText(outText) || {};
     return finalizeAnalysisResult(parsed, outText);
+}
+
+async function analyzeWithOllama(imagePath) {
+    const buffer = await fs.promises.readFile(imagePath);
+    const base64 = buffer.toString('base64');
+    const tryList =
+        typeof config.getOllamaVisionModelTryList === 'function'
+            ? config.getOllamaVisionModelTryList()
+            : [config.OLLAMA_VISION_MODEL].filter(Boolean);
+
+    for (let i = 0; i < tryList.length; i++) {
+        const model = tryList[i];
+        try {
+            // eslint-disable-next-line no-await-in-loop
+            return await analyzeWithOllamaOneModel(base64, model);
+        } catch (err) {
+            if (err.message === 'SUBSCRIPTION_REQUIRED' && i < tryList.length - 1) {
+                // eslint-disable-next-line no-console
+                console.warn(`[aiService] Ollama vision model "${model}" requires a subscription on this plan; trying next model…`);
+                continue;
+            }
+            if (err.message === 'SUBSCRIPTION_REQUIRED') {
+                const e2 = new Error(
+                    'No Ollama Cloud vision model in the try list worked on your plan. Set OLLAMA_VISION_MODEL, ' +
+                        'OLLAMA_VISION_MODEL_CLOUD_FALLBACK, or OLLAMA_VISION_MODEL_CLOUD_FALLBACK_2 in server/.env to ids from ' +
+                        'https://ollama.com/api/tags, use AI_VISION_PROVIDER=gemini with GEMINI_API_KEY, or local Ollama with `ollama pull llava`.'
+                );
+                e2.status = 502;
+                throw e2;
+            }
+            throw err;
+        }
+    }
 }
 const aiService = {
     async analyzePrintingItem(imagePath, mimeType) {

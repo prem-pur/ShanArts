@@ -1,6 +1,7 @@
 const axios = require('axios');
 const config = require('../config/env');
 const { getOllamaRequestHeaders } = require('./aiService');
+const { ollamaErrorText, isOllamaSubscriptionError } = require('../utils/ollamaApiErrors');
 
 const OLLAMA_OPTIONS = { temperature: 0.75, num_predict: 1200, top_p: 0.9 };
 const CHAT_TIMEOUT_MS = 120000;
@@ -65,49 +66,48 @@ Keep total length short to medium. Make it ready for a designer to set type for 
 
 const SYSTEM_PREAMBLE = `You are a senior copywriter for SHAN ART ADVERTISING, a premium print and signage studio. You write crisp, on-brand copy for flyers, cards, posters, and banners. You always follow the user's requested format.`;
 
+function mapOllamaRequestError(e, model) {
+    if (e.code === 'ECONNREFUSED' || e.code === 'ENOTFOUND') {
+        const err = new Error(
+            `Cannot reach Ollama at ${config.OLLAMA_BASE_URL}. Set OLLAMA_BASE_URL in server/.env, run Ollama, and pull a text model (e.g. ollama pull llama3).`
+        );
+        err.status = 503;
+        return err;
+    }
+    const status = e.response && e.response.status;
+    const body = ollamaErrorText(e);
+    if (isOllamaSubscriptionError(body)) {
+        const err = new Error(
+            'SUBSCRIPTION_REQUIRED' // sentinel; caller may retry another model
+        );
+        err.status = 402;
+        err._ollamaBody = body;
+        return err;
+    }
+    if (status === 404 || /not found/i.test(String(body))) {
+        const err = new Error(
+            `Ollama model "${model}" was not found on ${config.OLLAMA_BASE_URL}. ` +
+                'Set OLLAMA_TEXT_MODEL in server/.env to an id from GET /api/tags on that host. ' +
+                'Local: `ollama pull llama3` then OLLAMA_TEXT_MODEL=llama3.'
+        );
+        err.status = 502;
+        return err;
+    }
+    const err = new Error(body || e.message || `Ollama request failed. Check OLLAMA_TEXT_MODEL and try: ollama pull ${model}`);
+    err.status = 502;
+    return err;
+}
+
 /**
- * @param {object} p
- * @param {string} p.prompt
- * @param {string} p.contentType
- * @param {string} p.tone
+ * One model attempt: /api/chat then /api/generate if empty.
  * @returns {Promise<string>}
  */
-async function generateMarketingCopy(p) {
-    const model = config.OLLAMA_TEXT_MODEL;
-    if (!model) {
-        const err = new Error('OLLAMA_TEXT_MODEL is not set in environment.');
-        err.status = 503;
-        throw err;
-    }
-    const userBlock = buildUserInstruction(p.contentType, p.tone, p.prompt);
-
+async function generateMarketingCopyWithModel(model, userBlock) {
     let out = '';
     try {
         out = await ollamaChat(model, SYSTEM_PREAMBLE, userBlock);
     } catch (e) {
-        if (e.code === 'ECONNREFUSED' || e.code === 'ENOTFOUND') {
-            const err = new Error(
-                `Cannot reach Ollama at ${config.OLLAMA_BASE_URL}. Set OLLAMA_BASE_URL in server/.env, run Ollama, and pull a text model (e.g. ollama pull llama3).`
-            );
-            err.status = 503;
-            throw err;
-        }
-        const status = e.response && e.response.status;
-        const body = (e.response && e.response.data && (e.response.data.error || e.response.data.message)) || '';
-        if (status === 404 || /not found/i.test(String(body))) {
-            const err = new Error(
-                `Ollama model "${model}" was not found on ${config.OLLAMA_BASE_URL}. ` +
-                    'Set OLLAMA_TEXT_MODEL in server/.env to a model id from your host (e.g. run GET /api/tags, or on ollama.com try gemini-3-flash-preview or gpt-oss:20b). ' +
-                    'For local Ollama: ollama pull llama3 && OLLAMA_TEXT_MODEL=llama3.'
-            );
-            err.status = 502;
-            throw err;
-        }
-        const err = new Error(
-            body || e.message || `Ollama request failed. Check OLLAMA_TEXT_MODEL and try: ollama pull ${model}`
-        );
-        err.status = 502;
-        throw err;
+        throw mapOllamaRequestError(e, model);
     }
 
     if (!out || !String(out).trim()) {
@@ -115,17 +115,8 @@ async function generateMarketingCopy(p) {
             const singlePrompt = `${SYSTEM_PREAMBLE}\n\n${userBlock}`;
             out = await ollamaGenerate(model, singlePrompt);
         } catch (e) {
-            const b = e.response && e.response.data && e.response.data.error;
-            if (e.response && e.response.status === 404) {
-                const err2 = new Error(
-                    `Ollama model "${model}" not found. Set OLLAMA_TEXT_MODEL to a valid text model for ${config.OLLAMA_BASE_URL}.`
-                );
-                err2.status = 502;
-                throw err2;
-            }
-            const err = new Error(b || e.message || 'Ollama returned no text');
-            err.status = 502;
-            throw err;
+            const mapped = mapOllamaRequestError(e, model);
+            throw mapped;
         }
     }
 
@@ -136,6 +127,47 @@ async function generateMarketingCopy(p) {
     }
 
     return String(out).trim();
+}
+
+/**
+ * @param {object} p
+ * @param {string} p.prompt
+ * @param {string} p.contentType
+ * @param {string} p.tone
+ * @returns {Promise<string>}
+ */
+async function generateMarketingCopy(p) {
+    const userBlock = buildUserInstruction(p.contentType, p.tone, p.prompt);
+    const tryList =
+        typeof config.getOllamaTextModelTryList === 'function'
+            ? config.getOllamaTextModelTryList()
+            : [config.OLLAMA_TEXT_MODEL].filter(Boolean);
+    if (!tryList.length) {
+        const err = new Error('OLLAMA_TEXT_MODEL is not set in environment.');
+        err.status = 503;
+        throw err;
+    }
+
+    for (let i = 0; i < tryList.length; i++) {
+        const model = tryList[i];
+        try {
+            return await generateMarketingCopyWithModel(model, userBlock);
+        } catch (err) {
+            if (err.message === 'SUBSCRIPTION_REQUIRED' && i < tryList.length - 1) {
+                continue;
+            }
+            if (err.message === 'SUBSCRIPTION_REQUIRED') {
+                const e2 = new Error(
+                    'No Ollama Cloud model in the try list worked on your plan. Set OLLAMA_TEXT_MODEL and/or ' +
+                        'OLLAMA_TEXT_MODEL_CLOUD_FALLBACK in server/.env to ids from https://ollama.com/api/tags (with your API key), ' +
+                        'or use local Ollama: OLLAMA_BASE_URL=http://127.0.0.1:11434 and OLLAMA_TEXT_MODEL=llama3 after `ollama pull llama3`.'
+                );
+                e2.status = 502;
+                throw e2;
+            }
+            throw err;
+        }
+    }
 }
 
 module.exports = { generateMarketingCopy, buildUserInstruction, CONTENT_TYPE_HINTS };

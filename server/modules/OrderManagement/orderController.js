@@ -180,26 +180,41 @@ const orderController = {
                 .sort({ createdAt: -1 })
                 .limit(parseInt(limit, 10));
 
-            // Best-effort: if delay risk wasn't computed yet for scheduled orders, compute for a small subset.
-            // This helps the Schedule UI show values without requiring a reschedule/assign action.
+            // Best-effort: fill delay-risk for queued production orders so Schedule UI shows badges without a reschedule.
             try {
+                const schedStatuses = ['scheduled', 'confirmed', 'in_progress', 'printing', 'machine_maintenance'];
                 const candidates = orders
                     .filter(
                         (o) =>
                             !!o?.scheduledStart &&
                             !!o?.scheduledEnd &&
-                            !o?.delayRiskPredictedAt &&
-                            ['confirmed', 'in_progress', 'printing'].includes(o.status)
+                            schedStatuses.includes(o.status) &&
+                            (!o.delayRiskPredictedAt || !o.delayRiskLevel)
                     )
-                    .slice(0, 10);
+                    .sort((a, b) => {
+                        const missA = !a.delayRiskLevel ? 0 : 1;
+                        const missB = !b.delayRiskLevel ? 0 : 1;
+                        if (missA !== missB) return missA - missB;
+                        const rank = (s) => (['confirmed', 'in_progress', 'printing'].includes(s) ? 0 : 1);
+                        const r = rank(a.status) - rank(b.status);
+                        if (r !== 0) return r;
+                        return new Date(b.scheduledStart) - new Date(a.scheduledStart);
+                    })
+                    .slice(0, 50);
 
                 if (candidates.length) {
-                    const updated = await Promise.allSettled(candidates.map((o) => predictAndStoreForOrder(o._id)));
-                    const byId = new Map(
-                        updated
-                            .filter((r) => r.status === 'fulfilled' && r.value)
-                            .map((r) => [String(r.value._id), r.value])
+                    const updated = await Promise.all(
+                        candidates.map(async (o) => {
+                            try {
+                                return await predictAndStoreForOrder(o._id, { backfill: true });
+                            } catch (e) {
+                                // eslint-disable-next-line no-console
+                                console.warn('[getAllOrders] delay risk backfill skip', String(o._id), e?.message || e);
+                                return null;
+                            }
+                        })
                     );
+                    const byId = new Map(updated.filter(Boolean).map((doc) => [String(doc._id), doc]));
                     for (let i = 0; i < orders.length; i++) {
                         const repl = byId.get(String(orders[i]._id));
                         if (repl) orders[i] = repl;

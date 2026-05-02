@@ -31,6 +31,18 @@ function clamp01(x) {
     return Math.max(0, Math.min(1, x));
 }
 
+/** Map sklearn / API variants to canonical High | Medium | Low */
+function normalizeRiskLabel(raw) {
+    const t = String(raw ?? '').trim();
+    if (!t) return undefined;
+    if (['High', 'Medium', 'Low'].includes(t)) return t;
+    const low = t.toLowerCase();
+    if (low === 'high') return 'High';
+    if (low === 'medium') return 'Medium';
+    if (low === 'low') return 'Low';
+    return undefined;
+}
+
 function workloadPctFromCount(count) {
     const c = Number(count) || 0;
     // Simple heuristic: 0→0, 1→35, 2→70, 3+→100
@@ -86,29 +98,35 @@ async function buildPayload(order) {
 /**
  * Predict delay risk for a ShopOrder (using DB context) and store on the order.
  * This is called after assign/reschedule so scheduledStart/scheduledEnd/machine/operator exist.
+ * @param {string} orderId
+ * @param {{ backfill?: boolean }} [opts] If `backfill: true`, skip strict /health probe (still fails if POST /predict fails).
  */
-async function predictAndStoreForOrder(orderId) {
+async function predictAndStoreForOrder(orderId, opts = {}) {
+    const backfill = Boolean(opts.backfill);
     const order = await ShopOrder.findById(orderId).populate('customerId', 'name');
     if (!order) return null;
 
     // Only predict when schedule exists (the model expects these dates)
     if (!order.scheduledStart || !order.scheduledEnd) return null;
 
-    const ok = await mlService.checkModelHealth();
-    if (!ok) {
-        const err = new Error('ML server unavailable');
-        err.status = 503;
-        throw err;
+    if (!backfill) {
+        const ok = await mlService.checkModelHealth();
+        if (!ok) {
+            const err = new Error('ML server unavailable');
+            err.status = 503;
+            throw err;
+        }
     }
 
     const payload = await buildPayload(order);
     const res = await mlService.predict(payload);
 
-    const label = String(res?.delay_risk_label || '').trim();
+    const labelRaw = String(res?.delay_risk_label || '').trim();
+    const label = normalizeRiskLabel(labelRaw);
     const confidence = clamp01(Number(res?.confidence));
     const probabilities = res?.probabilities && typeof res.probabilities === 'object' ? res.probabilities : {};
 
-    order.delayRiskLevel = ['High', 'Medium', 'Low'].includes(label) ? label : undefined;
+    order.delayRiskLevel = label;
     order.delayRiskConfidence = Number.isFinite(confidence) ? confidence : undefined;
     order.delayRiskProbabilities = {
         High: Number(probabilities.High ?? 0),

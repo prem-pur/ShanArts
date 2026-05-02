@@ -7,6 +7,70 @@ dotenv.config({ path: path.join(__dirname, '..', '.env') });
 const DEFAULT_GEMINI_MODEL = 'gemini-2.0-flash';
 
 /** Map legacy 1.5 model ids (404 on v1beta) to a current model so old server/.env lines still work */
+function isOllamaCloudHost(baseUrl) {
+    return /ollama\.com/i.test(String(baseUrl || ''));
+}
+
+/**
+ * Text model for Ollama chat/copy. If unset: local default `llama3`; Ollama Cloud default `gpt-oss:20b-cloud`
+ * (smaller cloud model — override with OLLAMA_TEXT_MODEL / OLLAMA_DEFAULT_CLOUD_TEXT_MODEL if your plan differs).
+ */
+function resolveOllamaTextModel() {
+    const explicit = (process.env.OLLAMA_TEXT_MODEL || '').trim();
+    if (explicit) return explicit;
+    const base = (process.env.OLLAMA_BASE_URL || 'http://127.0.0.1:11434').trim().replace(/\/$/, '');
+    if (isOllamaCloudHost(base)) {
+        return (process.env.OLLAMA_DEFAULT_CLOUD_TEXT_MODEL || 'gpt-oss:20b-cloud').trim() || 'gpt-oss:20b-cloud';
+    }
+    return 'llama3';
+}
+
+/**
+ * For Ollama Cloud text features (copywriting, print knowledge): try models in order until one works.
+ * On “subscription required”, the next id is attempted. Optional third: OLLAMA_TEXT_MODEL_CLOUD_FALLBACK_2.
+ */
+function getOllamaTextModelTryList() {
+    const primary = resolveOllamaTextModel();
+    const base = (process.env.OLLAMA_BASE_URL || '').trim().replace(/\/$/, '');
+    if (!isOllamaCloudHost(base)) return [primary];
+    const fb = (process.env.OLLAMA_TEXT_MODEL_CLOUD_FALLBACK || 'gpt-oss:20b-cloud').trim();
+    const fb2 = (process.env.OLLAMA_TEXT_MODEL_CLOUD_FALLBACK_2 || '').trim();
+    const list = [];
+    for (const m of [primary, fb, fb2]) {
+        if (m && !list.includes(m)) list.push(m);
+    }
+    return list.length ? list : [primary];
+}
+
+/**
+ * Vision / multimodal model for Ollama (image → text). If unset: local `llava`; cloud default from OLLAMA_DEFAULT_CLOUD_VISION_MODEL or qwen2.5-vl:7b.
+ */
+function resolveOllamaVisionModel() {
+    const explicit = (process.env.OLLAMA_VISION_MODEL || '').trim();
+    if (explicit) return explicit;
+    const base = (process.env.OLLAMA_BASE_URL || 'http://127.0.0.1:11434').trim().replace(/\/$/, '');
+    if (isOllamaCloudHost(base)) {
+        return (process.env.OLLAMA_DEFAULT_CLOUD_VISION_MODEL || 'qwen2.5-vl:7b').trim() || 'qwen2.5-vl:7b';
+    }
+    return 'llava';
+}
+
+/**
+ * Image features (Process with AI / extraction): try vision models on subscription errors (Ollama Cloud).
+ */
+function getOllamaVisionModelTryList() {
+    const primary = resolveOllamaVisionModel();
+    const base = (process.env.OLLAMA_BASE_URL || '').trim().replace(/\/$/, '');
+    if (!isOllamaCloudHost(base)) return [primary];
+    const fb = (process.env.OLLAMA_VISION_MODEL_CLOUD_FALLBACK || 'gemma3:4b').trim();
+    const fb2 = (process.env.OLLAMA_VISION_MODEL_CLOUD_FALLBACK_2 || '').trim();
+    const list = [];
+    for (const m of [primary, fb, fb2]) {
+        if (m && !list.includes(m)) list.push(m);
+    }
+    return list.length ? list : [primary];
+}
+
 function resolveGeminiModel() {
     const raw = (process.env.GEMINI_MODEL || DEFAULT_GEMINI_MODEL).trim();
     const m = raw || DEFAULT_GEMINI_MODEL;
@@ -51,14 +115,15 @@ module.exports = {
      * How to send OLLAMA_API_KEY: `bearer` (default, Ollama Cloud) or `x-api-key` (some self-hosted / reverse proxies).
      */
     OLLAMA_API_AUTH: (process.env.OLLAMA_API_AUTH || 'bearer').trim().toLowerCase(),
-    /** Vision model id on the server (e.g. llava, or a cloud model name from your host’s catalog) */
-    OLLAMA_VISION_MODEL: (process.env.OLLAMA_VISION_MODEL || 'llava').trim(),
+    /** Vision model for Ollama image APIs — resolved (local llava vs cloud default unless OLLAMA_VISION_MODEL is set). */
+    OLLAMA_VISION_MODEL: resolveOllamaVisionModel(),
+    getOllamaVisionModelTryList,
     /**
-     * Text model for public “AI Copywriting Assistant” (no images). Must exist on this Ollama host
-     * (list: GET {OLLAMA_BASE_URL}/api/tags). ollama.com often has no `llama3` — use e.g. gemini-3-flash-preview or gpt-oss:20b.
-     * Local Ollama: ollama pull llama3 then set OLLAMA_TEXT_MODEL=llama3
+     * Text model for Ollama (copywriting, staff messages, etc.). Resolved by resolveOllamaTextModel():
+     * explicit OLLAMA_TEXT_MODEL, else cloud → OLLAMA_DEFAULT_CLOUD_TEXT_MODEL or gpt-oss:20b-cloud, else local llama3.
      */
-    OLLAMA_TEXT_MODEL: (process.env.OLLAMA_TEXT_MODEL || 'gemini-3-flash-preview').trim(),
+    OLLAMA_TEXT_MODEL: resolveOllamaTextModel(),
+    getOllamaTextModelTryList,
     FILE_UPLOAD_PATH: process.env.FILE_UPLOAD_PATH || './public/uploads',
     NODE_ENV: process.env.NODE_ENV || 'development',
 };

@@ -109,7 +109,7 @@ const ScheduleDashboard = () => {
             const token = localStorage.getItem('token');
             const headers = { 'Authorization': `Bearer ${token}` };
             const [ordersRes, staffRes, machinesRes, machineSummaryRes, attendanceRes] = await Promise.all([
-                axios.get(`${API_BASE_URL}/api/shop-orders`, { headers }),
+                axios.get(`${API_BASE_URL}/api/shop-orders?limit=200`, { headers }),
                 axios.get(`${API_BASE_URL}/api/auth/staff?role=staff_operator`, { headers }),
                 axios.get(`${API_BASE_URL}/api/machines`, { headers }),
                 axios.get(`${API_BASE_URL}/api/machines/status/summary`, { headers }),
