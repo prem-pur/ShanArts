@@ -198,14 +198,22 @@ const features = [
     tag: 'Security',
     img: 'https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=400&q=80',
   },
+  {
+    icon: <TrendingUp size={22} />,
+    bg: 'rgba(255,255,255,0.08)', color: '#999999',
+    title: 'Delay Prediction',
+    desc: 'Proprietary ML model analyzes machine workload and staff availability to predict job delays with 94% accuracy.',
+    tag: 'AI-powered',
+    img: '/delay_prediction.png',
+  },
 ];
 
 const jobs = [
-  { id: '#J-0451', name: 'Banner 6×3 ft — City Pharmacy', qty: '3 pcs', status: 'Printing', color: "red" },
-  { id: '#J-0452', name: 'Business Cards — Nimal & Co.', qty: '500 pcs', status: 'Ready', color: 'red' },
-  { id: '#J-0453', name: 'Flex Board — Siyane Hardware', qty: '1 pc', status: 'Pending', color: 'grey' },
-  { id: '#J-0454', name: 'Brochures A5 — Star Academy', qty: '200 pcs', status: 'Ready', color: 'red' },
-  { id: '#J-0455', name: 'Stickers Roll — Food Corner', qty: '50 m', status: 'Printing', color: "red" },
+  { id: '#J-0451', name: 'Banner 6×3 ft — City Pharmacy', qty: '3 pcs', status: 'Printing', color: "red", risk: 'Low' },
+  { id: '#J-0452', name: 'Business Cards — Nimal & Co.', qty: '500 pcs', status: 'Ready', color: 'red', risk: 'Low' },
+  { id: '#J-0453', name: 'Flex Board — Siyane Hardware', qty: '1 pc', status: 'Pending', color: 'grey', risk: 'Medium' },
+  { id: '#J-0454', name: 'Brochures A5 — Star Academy', qty: '200 pcs', status: 'Ready', color: 'red', risk: 'Low' },
+  { id: '#J-0455', name: 'Stickers Roll — Food Corner', qty: '50 m', status: 'Printing', color: "red", risk: 'High' },
 ];
 
 const services = [
@@ -501,62 +509,6 @@ const Home = () => {
         </div>
       </section>
 
-      {/* ── LIVE DASHBOARD PREVIEW ── */}
-      <section style={{ padding: '0 2rem 100px', maxWidth: '1150px', margin: '0 auto' }}>
-        <div className="scroll-reveal">
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255,51,51,0.1)', border: '1px solid rgba(255,51,51,0.2)', color: '#ff3333', fontSize: '12px', fontWeight: 600, padding: '5px 14px', borderRadius: '100px', marginBottom: '16px', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-            <BarChart2 size={11} /> Live Overview
-          </div>
-          <h2 style={{ fontSize: 'clamp(1.8rem, 3.2vw, 2.6rem)', fontWeight: 800, letterSpacing: '-0.025em', color: '#ffffff', fontFamily: "'Space Grotesk', sans-serif", marginBottom: '12px' }}>Your operations at a glance</h2>
-          <p style={{ fontSize: '16px', color: '#666666', lineHeight: 1.7, maxWidth: '480px', marginBottom: '40px' }}>Real-time job board and metrics — updated as your team works.</p>
-        </div>
-
-        <div className="scroll-reveal" style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '22px', padding: '28px', overflow: 'hidden', backdropFilter: 'blur(8px)' }}>
-          {/* Dashboard header */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '28px', paddingBottom: '18px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div className="live-dot" style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ff3333', boxShadow: '0 0 8px #ff3333' }} />
-              <span style={{ fontSize: '15px', fontWeight: 700, color: '#ffffff', fontFamily: "'Space Grotesk', sans-serif" }}>
-                Dashboard — Today, {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })}
-              </span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ fontSize: '12px', color: '#666666', background: 'rgba(255,51,51,0.08)', padding: '4px 10px', borderRadius: '6px', border: '1px solid rgba(255,51,51,0.15)' }}>Live preview</span>
-            </div>
-          </div>
-
-          {/* Metrics */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '14px', marginBottom: '24px' }}>
-            {[
-              { val: '23', label: "Today's Jobs", change: '+4 from yesterday', color: '#ff3333' },
-              { val: 'Rs 84,200', label: 'Revenue Today', change: '+12% this week', color: '#ff3333' },
-              { val: '7', label: 'Jobs In Queue', change: '3 urgent', color: '#999999' },
-              { val: '98%', label: 'On-Time Rate', change: 'This month', color: '#ffffff' },
-            ].map((m, i) => (
-              <div key={i} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px', padding: '18px 16px', borderTop: `2px solid ${m.color}33` }}>
-                <div style={{ fontSize: '22px', fontWeight: 800, color: '#ffffff', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '-0.02em', marginBottom: '5px' }}>{m.val}</div>
-                <div style={{ fontSize: '12px', color: '#666666', letterSpacing: '0.03em', marginBottom: '8px' }}>{m.label}</div>
-                <div style={{ fontSize: '11px', color: '#ff3333', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600 }}>
-                  <TrendingUp size={10} />{m.change}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Job rows */}
-          <div>
-            <div style={{ fontSize: '11px', color: '#666666', marginBottom: '14px', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600 }}>Recent Jobs</div>
-            {jobs.map((j, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', padding: '11px 0', borderBottom: i < jobs.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none', gap: '14px', fontSize: '13px' }}>
-                <span style={{ fontFamily: "'Space Grotesk', sans-serif", color: '#ff3333', fontSize: '12px', fontWeight: 600, minWidth: '70px' }}>{j.id}</span>
-                <span style={{ flex: 1, color: '#999999' }}>{j.name}</span>
-                <span style={{ color: '#666666', fontSize: '12px', fontFamily: "'Space Grotesk', sans-serif" }}>{j.qty}</span>
-                <span style={statusStyle(j.color)}>{j.status}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* ── AI SECTION ── */}
       <section id="ai-copywriting" style={{ padding: '0 2rem 100px', maxWidth: '1150px', margin: '0 auto' }}>
@@ -575,7 +527,6 @@ const Home = () => {
       {/* ── CTA BANNER ── */}
       <div style={{ margin: '0 2rem 100px', background: 'linear-gradient(135deg, rgba(255,51,51,0.16) 0%, rgba(204,0,0,0.1) 100%)', border: '1px solid rgba(255,51,51,0.28)', borderRadius: '28px', padding: '72px 48px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 55% 90% at 50% 50%, rgba(153,0,0,0.07) 0%, transparent 100%)', pointerEvents: 'none' }} />
-        {/* Decorative corner accents */}
         <div style={{ position: 'absolute', top: 0, left: 0, width: '60px', height: '60px', borderTop: '2px solid rgba(255,51,51,0.3)', borderLeft: '2px solid rgba(255,51,51,0.3)', borderRadius: '28px 0 0 0' }} />
         <div style={{ position: 'absolute', bottom: 0, right: 0, width: '60px', height: '60px', borderBottom: '2px solid rgba(255,51,51,0.3)', borderRight: '2px solid rgba(255,51,51,0.3)', borderRadius: '0 0 28px 0' }} />
 
@@ -604,7 +555,6 @@ const Home = () => {
             style={{ background: 'linear-gradient(135deg, #ff3333, #990000)', color: '#fff', border: 'none', padding: '15px 32px', borderRadius: '12px', fontSize: '15px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '9px', transition: 'all 0.25s', fontFamily: 'inherit', boxShadow: '0 0 40px rgba(255,51,51,0.4)' }}>
             Place an Order <ArrowRight size={16} />
           </button>
-
         </div>
       </div>
 

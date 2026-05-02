@@ -90,6 +90,9 @@ const UpcomingJobs = ({ orders }) => {
                             ? new Date(job.scheduledStart).toLocaleDateString([], { month: 'short', day: 'numeric' })
                             : (job.deadline ? new Date(job.deadline).toLocaleDateString([], { month: 'short', day: 'numeric' }) : 'No Date');
 
+                        const riskLvl = job.delayRiskLevel;
+                        const riskColor = riskLvl === 'High' ? '#ef4444' : riskLvl === 'Medium' ? '#f59e0b' : '#10b981';
+
                         return (
                             <div key={job._id} style={{
                                 display: 'flex',
@@ -97,7 +100,7 @@ const UpcomingJobs = ({ orders }) => {
                                 justifyContent: 'space-between',
                                 gap: '16px'
                             }}>
-                                <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                                <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flex: 1 }}>
                                     {/* Left Status Bar */}
                                     <div style={{
                                         width: '4px',
@@ -106,7 +109,7 @@ const UpcomingJobs = ({ orders }) => {
                                         borderRadius: '4px'
                                     }} />
 
-                                    <div>
+                                    <div style={{ flex: 1 }}>
                                         <div style={{
                                             fontWeight: '800',
                                             fontSize: '15px',
@@ -114,9 +117,22 @@ const UpcomingJobs = ({ orders }) => {
                                             marginBottom: '2px',
                                             display: 'flex',
                                             alignItems: 'center',
-                                            gap: '6px'
+                                            gap: '8px'
                                         }}>
                                             {machineName} — {jobType}
+                                            {riskLvl && (
+                                              <span style={{ 
+                                                fontSize: '10px', 
+                                                color: riskColor, 
+                                                background: `${riskColor}15`, 
+                                                padding: '2px 8px', 
+                                                borderRadius: '4px',
+                                                border: `1px solid ${riskColor}33`,
+                                                fontWeight: '900'
+                                              }}>
+                                                {riskLvl} RISK
+                                              </span>
+                                            )}
                                         </div>
                                         <div style={{
                                             fontSize: '12px',

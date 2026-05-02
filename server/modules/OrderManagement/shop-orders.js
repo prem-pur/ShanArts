@@ -14,6 +14,24 @@ router.patch(
     roleCheck(['customer']),
     orderController.acknowledgeDesignMessage
 );
+router.patch(
+    '/:id/admin-set-deadline',
+    auth,
+    roleCheck(['admin', 'staff_schedule']),
+    orderController.adminSetDeadline
+);
+router.patch(
+    '/:id/ack-deadline-update',
+    auth,
+    roleCheck(['customer']),
+    orderController.acknowledgeDeadlineUpdate
+);
+router.patch(
+    '/:id/ack-delay-risk',
+    auth,
+    roleCheck(['customer']),
+    orderController.acknowledgeDelayRiskPopup
+);
 router.post(
     '/convert-ai',
     auth,

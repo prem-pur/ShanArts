@@ -2,6 +2,8 @@ const ShopOrder = require('../modules/OrderManagement/ShopOrder');
 const Machine = require('../modules/InventoryManagement/Machine');
 const User = require('../modules/UserManagement/User');
 const mlService = require('../src/services/mlService');
+const notificationService = require('./notificationService');
+const { generateRiskAlertCustomerMessage } = require('./riskAlertMessageService');
 
 function toIsoDate(d) {
     try {
@@ -86,7 +88,7 @@ async function buildPayload(order) {
  * This is called after assign/reschedule so scheduledStart/scheduledEnd/machine/operator exist.
  */
 async function predictAndStoreForOrder(orderId) {
-    const order = await ShopOrder.findById(orderId);
+    const order = await ShopOrder.findById(orderId).populate('customerId', 'name');
     if (!order) return null;
 
     // Only predict when schedule exists (the model expects these dates)
@@ -114,6 +116,62 @@ async function predictAndStoreForOrder(orderId) {
         Low: Number(probabilities.Low ?? 0),
     };
     order.delayRiskPredictedAt = new Date();
+
+    // Notify admins once when risk becomes High
+    if (order.delayRiskLevel === 'High' && !order.delayRiskHighNotifiedAt) {
+        try {
+            await notificationService.notifyAdmins(
+                'delay_risk_high',
+                `High delay risk: ${order.orderNumber}`,
+                `Order #${order.orderNumber} has HIGH delay risk. Please review schedule and update the customer if needed.`,
+                order._id,
+                'ShopOrder',
+                { delayRiskLevel: order.delayRiskLevel, confidence: order.delayRiskConfidence }
+            );
+            order.delayRiskHighNotifiedAt = new Date();
+        } catch (e) {
+            // eslint-disable-next-line no-console
+            console.warn('[delayRiskXgbService] notifyAdmins failed:', e?.message || e);
+        }
+    }
+
+    // Notify customer on Medium risk (once per new prediction)
+    if (order.delayRiskLevel === 'Medium') {
+        const sent = order.lastDelayRiskCustomerMessageAt ? new Date(order.lastDelayRiskCustomerMessageAt).getTime() : 0;
+        const predAt = order.delayRiskPredictedAt ? new Date(order.delayRiskPredictedAt).getTime() : 0;
+        if (!sent || predAt > sent) {
+            try {
+                const ctx = {
+                    companyName: 'Shan Art Advertising',
+                    customerName: order.customerId?.name || 'Valued Customer',
+                    orderNumber: order.orderNumber || String(order._id),
+                    jobType: order.jobType,
+                    quantity: order.quantity,
+                    deadline: order.deadline,
+                    riskLevel: 'Medium',
+                    confidence: order.delayRiskConfidence,
+                };
+                const { message } = await generateRiskAlertCustomerMessage(ctx);
+                order.lastDelayRiskCustomerMessage = message;
+                order.lastDelayRiskCustomerMessageAt = new Date();
+                order.customerDelayRiskPopupAckAt = null;
+                if (order.customerId) {
+                    await notificationService.notifyUser(
+                        order.customerId._id || order.customerId,
+                        'delay_risk_medium',
+                        'Schedule update',
+                        message,
+                        order._id,
+                        'ShopOrder'
+                    );
+                }
+            } catch (e) {
+                // eslint-disable-next-line no-console
+                console.warn('[delayRiskXgbService] customer Medium notify failed:', e?.message || e);
+            }
+        }
+    }
+
     await order.save();
 
     return order;

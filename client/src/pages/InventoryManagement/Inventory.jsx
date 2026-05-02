@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { API_BASE_URL } from '../../apiBase';
 import QRCodeDisplay from './QRCodeDisplay';
+import { generateMaterialQrCardPng } from './QRCodeDisplay';
 import QRScanner from './QRScanner';
 import AddMaterialModal from './AddMaterialModal';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Cell } from 'recharts';
@@ -401,10 +402,28 @@ const Inventory = () => {
                         
                         <div style={{ display: 'flex', gap: '12px' }}>
                             <button
-                                onClick={() => {
-                                    const link = document.createElement('a'); link.href = newlyCreatedMaterial.qrCode;
-                                    link.download = `qr-${newlyCreatedMaterial.name.replace(/\s+/g, '-')}.png`;
-                                    document.body.appendChild(link); link.click(); document.body.removeChild(link);
+                                onClick={async () => {
+                                    if (!newlyCreatedMaterial?.qrCode) return;
+                                    try {
+                                        const png = await generateMaterialQrCardPng({
+                                            qrDataUrl: newlyCreatedMaterial.qrCode,
+                                            material: newlyCreatedMaterial,
+                                        });
+                                        const link = document.createElement('a');
+                                        link.href = png;
+                                        link.download = `material_qr_${String(newlyCreatedMaterial?.name || 'material').replace(/\s+/g, '-')}.png`;
+                                        document.body.appendChild(link);
+                                        link.click();
+                                        document.body.removeChild(link);
+                                    } catch (e) {
+                                        console.error('Failed to generate material QR card', e);
+                                        const link = document.createElement('a');
+                                        link.href = newlyCreatedMaterial.qrCode;
+                                        link.download = `qr-${newlyCreatedMaterial.name.replace(/\s+/g, '-')}.png`;
+                                        document.body.appendChild(link);
+                                        link.click();
+                                        document.body.removeChild(link);
+                                    }
                                 }}
                                 style={{ flex: 1, padding: '14px', borderRadius: '12px', border: 'none', background: '#ef4444', color: '#fff', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
                             >

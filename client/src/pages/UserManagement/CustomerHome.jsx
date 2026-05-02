@@ -15,17 +15,27 @@ import {
     Lock,
     User,
     LogOut,
-    Image,
+    Image as ImageIcon,
     XCircle,
     Star,
     ChevronDown,
     MapPin,
     Smartphone,
-    Download
+    Download,
+    X,
+    MessageCircle,
+    ChevronRight,
+    Phone,
+    Clock,
+    Zap,
+    Printer
 } from 'lucide-react';
 import { API_BASE_URL } from '../../apiBase';
 import AddOrder from '../OrderManagement/AddOrder';
 import CustomerDesignMessagePopup from '../../components/CustomerDesignMessagePopup';
+import CustomerDeadlineUpdatePopup from '../../components/CustomerDeadlineUpdatePopup';
+import CustomerDelayRiskPopup from '../../components/CustomerDelayRiskPopup';
+import PrintKnowledgeChatbot from '../../components/PrintKnowledgeChatbot';
 
 const CustomerHome = () => {
     const navigate = Router.useNavigate();
@@ -73,6 +83,12 @@ const CustomerHome = () => {
     /** Shop order with pending "design share" message to show in welcome popup */
     const [designMessageOrder, setDesignMessageOrder] = useState(null);
     const [designPopupAckLoading, setDesignPopupAckLoading] = useState(false); // used to avoid overlapping ack calls
+    /** Shop order with pending "admin deadline update" message to show in welcome popup */
+    const [deadlineMessageOrder, setDeadlineMessageOrder] = useState(null);
+    const [deadlinePopupAckLoading, setDeadlinePopupAckLoading] = useState(false);
+    /** Shop order with pending "delay risk" message to show in welcome popup */
+    const [delayRiskMessageOrder, setDelayRiskMessageOrder] = useState(null);
+    const [delayRiskPopupAckLoading, setDelayRiskPopupAckLoading] = useState(false);
 
     const user = JSON.parse(localStorage.getItem('user') || '{}');
 
@@ -114,6 +130,52 @@ const CustomerHome = () => {
             return tb - ta;
         });
         setDesignMessageOrder(list[0]);
+    }, [orders, loading]);
+
+    /** After orders load: show admin deadline update popup if not yet acknowledged for this update. */
+    useEffect(() => {
+        if (loading) return;
+        const shouldShow = (o) => {
+            const msg = o.lastAdminDeadlineMessage;
+            if (msg == null || !String(msg).trim()) return false;
+            const sent = o.lastAdminDeadlineSetAt ? new Date(o.lastAdminDeadlineSetAt).getTime() : 0;
+            const ack = o.customerAdminDeadlinePopupAckAt ? new Date(o.customerAdminDeadlinePopupAckAt).getTime() : 0;
+            return !ack || sent > ack;
+        };
+        const list = (orders || []).filter(shouldShow);
+        if (list.length === 0) {
+            setDeadlineMessageOrder(null);
+            return;
+        }
+        list.sort((a, b) => {
+            const tb = b.lastAdminDeadlineSetAt ? new Date(b.lastAdminDeadlineSetAt).getTime() : 0;
+            const ta = a.lastAdminDeadlineSetAt ? new Date(a.lastAdminDeadlineSetAt).getTime() : 0;
+            return tb - ta;
+        });
+        setDeadlineMessageOrder(list[0]);
+    }, [orders, loading]);
+
+    /** After orders load: show medium delay risk alert popup if not yet acknowledged for this send. */
+    useEffect(() => {
+        if (loading) return;
+        const shouldShow = (o) => {
+            const msg = o.lastDelayRiskCustomerMessage;
+            if (msg == null || !String(msg).trim()) return false;
+            const sent = o.lastDelayRiskCustomerMessageAt ? new Date(o.lastDelayRiskCustomerMessageAt).getTime() : 0;
+            const ack = o.customerDelayRiskPopupAckAt ? new Date(o.customerDelayRiskPopupAckAt).getTime() : 0;
+            return !ack || sent > ack;
+        };
+        const list = (orders || []).filter(shouldShow);
+        if (list.length === 0) {
+            setDelayRiskMessageOrder(null);
+            return;
+        }
+        list.sort((a, b) => {
+            const tb = b.lastDelayRiskCustomerMessageAt ? new Date(b.lastDelayRiskCustomerMessageAt).getTime() : 0;
+            const ta = a.lastDelayRiskCustomerMessageAt ? new Date(a.lastDelayRiskCustomerMessageAt).getTime() : 0;
+            return tb - ta;
+        });
+        setDelayRiskMessageOrder(list[0]);
     }, [orders, loading]);
 
     useEffect(() => {
@@ -199,6 +261,50 @@ const CustomerHome = () => {
             console.error('dismissDesignMessagePopup failed:', err);
         } finally {
             setDesignPopupAckLoading(false);
+        }
+    };
+
+    const dismissDeadlineUpdatePopup = async (order) => {
+        if (!order) return;
+        setDeadlineMessageOrder(null);
+        if (deadlinePopupAckLoading) return;
+        setDeadlinePopupAckLoading(true);
+        try {
+            const token = localStorage.getItem('token');
+            axios
+                .patch(
+                    `${API_BASE_URL}/api/shop-orders/${order._id}/ack-deadline-update`,
+                    {},
+                    { headers: { Authorization: `Bearer ${token}` } }
+                )
+                .then(() => fetchData())
+                .catch((err) => console.error('ack-deadline-update failed:', err));
+        } catch (err) {
+            console.error('dismissDeadlineUpdatePopup failed:', err);
+        } finally {
+            setDeadlinePopupAckLoading(false);
+        }
+    };
+
+    const dismissDelayRiskPopup = async (order) => {
+        if (!order) return;
+        setDelayRiskMessageOrder(null);
+        if (delayRiskPopupAckLoading) return;
+        setDelayRiskPopupAckLoading(true);
+        try {
+            const token = localStorage.getItem('token');
+            axios
+                .patch(
+                    `${API_BASE_URL}/api/shop-orders/${order._id}/ack-delay-risk`,
+                    {},
+                    { headers: { Authorization: `Bearer ${token}` } }
+                )
+                .then(() => fetchData())
+                .catch((err) => console.error('ack-delay-risk failed:', err));
+        } catch (err) {
+            console.error('dismissDelayRiskPopup failed:', err);
+        } finally {
+            setDelayRiskPopupAckLoading(false);
         }
     };
 
@@ -607,6 +713,19 @@ const CustomerHome = () => {
                                                 {order.deadline && <div style={{ fontSize: '11px', color: 'var(--accent-color)', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '4px' }}><Calendar size={12} /> Needed: {new Date(order.deadline).toLocaleDateString()}</div>}
                                             </div>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                                {order.delayRiskLevel && (
+                                                  <span style={{
+                                                    padding: '4px 10px',
+                                                    borderRadius: '8px',
+                                                    fontSize: '10px',
+                                                    fontWeight: '900',
+                                                    background: order.delayRiskLevel === 'High' ? 'rgba(255,51,51,0.1)' : order.delayRiskLevel === 'Medium' ? 'rgba(245,158,11,0.1)' : 'rgba(16,185,129,0.1)',
+                                                    color: order.delayRiskLevel === 'High' ? '#ff3333' : order.delayRiskLevel === 'Medium' ? '#f59e0b' : '#10b981',
+                                                    border: `1px solid ${order.delayRiskLevel === 'High' ? 'rgba(255,51,51,0.2)' : order.delayRiskLevel === 'Medium' ? 'rgba(245,158,11,0.2)' : 'rgba(16,185,129,0.2)'}`,
+                                                  }}>
+                                                    {order.delayRiskLevel} RISK
+                                                  </span>
+                                                )}
                                                 {order.status === 'waiting_approval' ? (
                                                     <button
                                                         onClick={() => {
@@ -714,6 +833,7 @@ const CustomerHome = () => {
                             <tr style={{ textAlign: 'left', borderBottom: '2px solid var(--border-color)' }}>
                                 <th style={{ padding: '16px', color: 'var(--text-secondary)', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase' }}>Order Details</th>
                                 <th style={{ padding: '16px', color: 'var(--text-secondary)', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase' }}>Type</th>
+                                <th style={{ padding: '16px', color: 'var(--text-secondary)', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase' }}>Delay Risk</th>
                                 <th style={{ padding: '16px', color: 'var(--text-secondary)', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase' }}>Status</th>
                                 <th style={{ padding: '16px', color: 'var(--text-secondary)', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase' }}>Needed By</th>
                                 <th style={{ padding: '16px', color: 'var(--text-secondary)', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase' }}>Date</th>
@@ -726,6 +846,22 @@ const CustomerHome = () => {
                                         {order.orderNumber}
                                     </td>
                                     <td style={{ padding: '16px' }}>{order.jobType.toUpperCase()}</td>
+                                    <td style={{ padding: '16px' }}>
+                                      {order.delayRiskLevel ? (
+                                        <span style={{ 
+                                          fontSize: '11px', 
+                                          fontWeight: '800',
+                                          padding: '4px 10px',
+                                          borderRadius: '6px',
+                                          background: order.delayRiskLevel === 'High' ? 'rgba(255,51,51,0.1)' : order.delayRiskLevel === 'Medium' ? 'rgba(245,158,11,0.1)' : 'rgba(16,185,129,0.1)',
+                                          color: order.delayRiskLevel === 'High' ? '#ff3333' : order.delayRiskLevel === 'Medium' ? '#f59e0b' : '#10b981',
+                                        }}>
+                                          {order.delayRiskLevel}
+                                        </span>
+                                      ) : (
+                                        <span style={{ color: 'var(--text-secondary)', fontSize: '11px' }}>—</span>
+                                      )}
+                                    </td>
                                     <td style={{ padding: '16px' }}>
                                             <span style={{ padding: '4px 12px', borderRadius: '99px', fontSize: '11px', fontWeight: '800', background: order.status === 'completed' ? 'var(--surface-muted-2)' : 'var(--surface-muted-2)', color: order.status === 'completed' ? '#ff3333' : 'var(--text-secondary)' }}>
                                                 {order.status.replace(/_/g, ' ')}
@@ -1157,7 +1293,7 @@ const CustomerHome = () => {
                                     />
                                 ) : (
                                     <div style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '40px' }}>
-                                        <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'center' }}><Image size={60} strokeWidth={1} /></div>
+                                        <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'center' }}><ImageIcon size={60} strokeWidth={1} /></div>
                                         <div style={{ fontWeight: '600' }}>Design preview not yet available</div>
                                         <div style={{ fontSize: '12px', marginTop: '4px' }}>The designer may still be working on the design.</div>
                                     </div>
@@ -1536,6 +1672,62 @@ const CustomerHome = () => {
                     onAcknowledge={() => dismissDesignMessagePopup(designMessageOrder, { openReview: false })}
                     onReviewDesign={() => dismissDesignMessagePopup(designMessageOrder, { openReview: true })}
                 />
+
+                <CustomerDeadlineUpdatePopup
+                    isOpen={!!deadlineMessageOrder}
+                    orderNumber={deadlineMessageOrder?.orderNumber}
+                    jobType={deadlineMessageOrder?.jobType}
+                    message={deadlineMessageOrder?.lastAdminDeadlineMessage || ''}
+                    onAcknowledge={() => dismissDeadlineUpdatePopup(deadlineMessageOrder)}
+                />
+
+                <CustomerDelayRiskPopup
+                    isOpen={!!delayRiskMessageOrder}
+                    orderNumber={delayRiskMessageOrder?.orderNumber}
+                    jobType={delayRiskMessageOrder?.jobType}
+                    message={delayRiskMessageOrder?.lastDelayRiskCustomerMessage || ''}
+                    onAcknowledge={() => dismissDelayRiskPopup(delayRiskMessageOrder)}
+                />
+
+                {activeTab === 'dashboard' && (
+                  <div style={{ marginTop: '80px', borderTop: '1px solid var(--border-color)', paddingTop: '60px' }}>
+                    {/* ── CHATBOT SECTION ── */}
+                    <section style={{ marginBottom: '100px' }}>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255,51,51,0.1)', border: '1px solid rgba(255,51,51,0.2)', color: '#ff3333', fontSize: '11px', fontWeight: 800, padding: '5px 14px', borderRadius: '100px', marginBottom: '16px', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                        <Bell size={11} /> Support
+                      </div>
+                      <h2 style={{ fontSize: '28px', fontWeight: 900, color: 'var(--text-primary)', marginBottom: '12px' }}>Print knowledge assistant</h2>
+                      <p style={{ fontSize: '15px', color: 'var(--text-secondary)', lineHeight: 1.7, maxWidth: '460px', marginBottom: '32px' }}>Ask anything about print specs, materials, or turnaround times.</p>
+                      <div style={{ background: 'var(--card-bg)', borderRadius: '24px', padding: '12px', border: '1px solid var(--border-color)', boxShadow: '0 10px 40px rgba(0,0,0,0.04)' }}>
+                        <PrintKnowledgeChatbot />
+                      </div>
+                    </section>
+
+                    {/* ── ABOUT SECTION ── */}
+                    <section style={{ marginBottom: '60px' }}>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255,51,51,0.1)', border: '1px solid rgba(255,51,51,0.2)', color: '#ff3333', fontSize: '11px', fontWeight: 800, padding: '5px 14px', borderRadius: '100px', marginBottom: '16px', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                        <Star size={11} /> About Us
+                      </div>
+                      <h2 style={{ fontSize: '28px', fontWeight: 900, color: 'var(--text-primary)', marginBottom: '12px' }}>Shan Art Advertising</h2>
+                      <p style={{ fontSize: '15px', color: 'var(--text-secondary)', lineHeight: 1.7, maxWidth: '480px', marginBottom: '32px' }}>Premium printing and advertising solutions since 2012, serving Anuradhapura and beyond.</p>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
+                        {[
+                          { icon: <MapPin size={18} />, title: 'Our Location', content: <><p style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: 1.7 }}>8CF3+2G8, Anuradhapura</p><a href="https://www.google.com/maps/search/?api=1&query=8CF3+2G8,Anuradhapura" target="_blank" rel="noopener noreferrer" style={{ color: '#ff3333', fontSize: '13px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px', marginTop: '8px' }}>View on Maps <ChevronRight size={12} /></a></> },
+                          { icon: <Phone size={18} />, title: 'Contact Us', content: <><a href="tel:0777234505" style={{ color: '#ff3333', fontSize: '14px', textDecoration: 'none', display: 'block' }}>077 723 4505</a><a href="mailto:shanart2012@gmail.com" style={{ color: 'var(--text-secondary)', fontSize: '13px', textDecoration: 'none', display: 'block', marginTop: '6px' }}>shanart2012@gmail.com</a></> },
+                          { icon: <Clock size={18} />, title: 'Business Hours', content: <><p style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: 1.7 }}>Mon – Fri: 8:30 AM – 6:00 PM</p><p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginTop: '6px', opacity: 0.7 }}>Saturday: 9:00 AM – 2:00 PM</p></> },
+                          { icon: <CheckCircle size={18} />, title: 'Why Choose Us', content: <p style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: 1.7 }}>12+ years of precision printing, 320+ satisfied clients, and a team that treats every job like their own.</p> },
+                        ].map((card, i) => (
+                          <div key={i} style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: '18px', padding: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
+                            <div style={{ width: '40px', height: '40px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,51,51,0.1)', color: '#ff3333', marginBottom: '16px' }}>{card.icon}</div>
+                            <div style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '8px' }}>{card.title}</div>
+                            {card.content}
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+                  </div>
+                )}
             </main>
         </div>
     );
