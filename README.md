@@ -1,59 +1,44 @@
-# SHANARTS — Printing Management System
+# ShanArts — Printing management system
 
-**Academic context**: This repository is part of the **SLIIT IT2021-AIML module project**.
+Full-stack app for **Shan Art Advertising**: orders, scheduling, inventory, billing, notifications, and optional **ML-based job delay risk** (XGBoost + FastAPI).
 
-Production-grade management system for **Shan Art Advertising** covering customer orders, scheduling, inventory, billing, feedback/notifications, and AI-assisted workflows.
+_SLIIT IT2021-AIML module project._
 
-## Key features
+## Stack
 
-- **Order lifecycle**: customer order intake → design workflow → approval → scheduling → production → completion
-- **Schedule manager**: assign operators/machines, timeline view, conflict checks
-- **Delay risk prediction (XGBoost)**: FastAPI model server + risk badges in Schedule UI
-- **Automated notifications**: admin + customer notifications stored in MongoDB
-- **AI customer messages (Ollama)**:
-  - design sending message generator (staff → customer)
-  - delay-risk and deadline communications (admin → customer)
+| Layer | Technology |
+|--------|------------|
+| Frontend | React (CRA), port **3000** |
+| API | Node.js, Express, MongoDB, JWT — port **5001** |
+| ML | FastAPI + scikit-learn / XGBoost — port **8000** (localhost) |
+| Optional | PM2 (`ecosystem.config.js`) |
 
-## Tech stack
-
-- **Frontend**: React (Create React App)
-- **Backend**: Node.js + Express + MongoDB (Mongoose) + JWT auth
-- **ML service**: FastAPI + scikit-learn + XGBoost (local only, `127.0.0.1:8000`)
-- **Process manager (optional)**: PM2 (`ecosystem.config.js`)
-
-## Repository structure
+## Repo layout
 
 ```
-ShanArts/
-├── client/                 # React app (port 3000)
-├── server/                 # Express API (port 5001)
-├── ml/                     # FastAPI model server (port 8000)
-│   ├── saved_model/        # Model artifacts (4 files)
-│   └── model_server.py
-├── ecosystem.config.js     # PM2 processes: ml-server + node-app
-└── requirements.txt        # Python deps for ML server
+client/     React UI
+server/     Express API + uploads
+ml/         Model server (saved_model/, model_server.py)
 ```
 
 ## Prerequisites
 
-- Node.js + npm
-- MongoDB (local or Atlas)
-- Python 3.10+ recommended for ML server
+Node.js + npm, MongoDB, Python 3.10+ (for ML).
 
-## Setup
+## Quick start
 
-### Install dependencies
+**1. Dependencies**
 
 ```bash
 npm run install-all
 py -m pip install -r requirements.txt
 ```
 
-### Environment variables
+**2. Config (local only — never commit these)**
 
-Do **not** commit `server/.env`, `client/.env.development`, or any file that holds real secrets. Create these files locally (they are listed in `.gitignore`).
+Create `server/.env` and `client/.env.development` (both are gitignored). Minimal examples:
 
-#### `server/.env` (backend — create under `server/`)
+`server/.env` — required core:
 
 ```env
 PORT=5001
@@ -61,109 +46,50 @@ MONGO_URI=mongodb://127.0.0.1:27017/printing_db
 JWT_SECRET=change-me-in-production
 JWT_EXPIRES_IN=7d
 GOOGLE_CLIENT_ID=
-
-# Optional: Google Sign-In / Gemini (see server/config/env.js)
-GEMINI_API_KEY=
-GEMINI_MODEL=gemini-2.0-flash
-GEMINI_FALLBACK_MODEL=
-
-AI_VISION_PROVIDER=ollama
-OLLAMA_BASE_URL=http://127.0.0.1:11434
-OLLAMA_API_KEY=
-OLLAMA_API_AUTH=bearer
-OLLAMA_VISION_MODEL=llava
-OLLAMA_TEXT_MODEL=llama3
-
 NODE_ENV=development
 FILE_UPLOAD_PATH=./public/uploads
-
-# ML / delay predictor (optional — localhost FastAPI)
-ML_SERVER_URL=http://127.0.0.1:8000
-ML_MODEL_PATH=./ml/saved_model/best_xgboost_delay_model.pkl
-ML_LABEL_ENCODER_PATH=./ml/saved_model/label_encoder.pkl
-ML_FEATURE_ENGINEER_PATH=./ml/saved_model/feature_engineer.pkl
-ML_PREPROCESSOR_PATH=./ml/saved_model/preprocessor.pkl
-ML_TIMEOUT_MS=5000
 ```
 
-#### `client/.env.development` (frontend — create under `client/`)
+`server/.env` — optional (Google AI, Ollama, ML paths): see `server/config/env.js` for names and defaults. For delay prediction, add e.g. `ML_SERVER_URL`, `ML_MODEL_PATH`, `ML_LABEL_ENCODER_PATH`, `ML_FEATURE_ENGINEER_PATH`, `ML_PREPROCESSOR_PATH`, `ML_TIMEOUT_MS`.
+
+`client/.env.development`:
 
 ```env
 REACT_APP_GOOGLE_CLIENT_ID=
 REACT_APP_API_BASE_URL=http://localhost:5001
 ```
 
-Use the same `GOOGLE_CLIENT_ID` value as `GOOGLE_CLIENT_ID` in `server/.env`. Adjust `REACT_APP_API_BASE_URL` if your API port differs.
+Use the same Google client ID string as `GOOGLE_CLIENT_ID` on the server.
 
-For optional AI/Ollama tuning, see **`server/config/env.js`**.
-
-## Run (development)
-
-### Frontend
+**3. Run**
 
 ```bash
-cd client
-npm start
-```
+# Terminal A — API
+cd server && npm run dev
 
-### Backend
+# Terminal B — UI
+cd client && npm start
 
-```bash
-cd server
-npm run dev
-```
-
-### ML server
-
-```bash
-# from repository root
+# Terminal C — ML (from repo root)
 py -m uvicorn ml.model_server:app --host 127.0.0.1 --port 8000
 ```
 
-## Run with PM2 (recommended for local “all-in-one”)
+**All-in-one (optional):** `pm2 start ecosystem.config.js`
 
-```bash
-pm2 start ecosystem.config.js
-pm2 status
-```
+## URLs
 
-## Service URLs
+| Service | URL |
+|---------|-----|
+| App | http://localhost:3000 |
+| API health | http://127.0.0.1:5001/api/health |
+| ML health | http://127.0.0.1:8000/health |
 
-- **Frontend**: `http://localhost:3000`
-- **Backend**: `http://127.0.0.1:5001/api/health`
-- **ML**: `http://127.0.0.1:8000/health`
+## Delay risk (summary)
 
-## Delay risk flow (Schedule Manager)
+Schedule Manager calls the ML service; results are stored on `ShopOrder` (`delayRiskLevel`, confidence, probabilities, timestamp). **High** risk notifies admins and can trigger deadline updates and customer messaging; **Medium** notifies customers. Message copy can use Ollama when configured.
 
-Risk is stored on `ShopOrder`:
+## API surface
 
-- `delayRiskLevel` (`High|Medium|Low`)
-- `delayRiskConfidence`
-- `delayRiskProbabilities`
-- `delayRiskPredictedAt`
+REST under `/api` (auth, shop orders, inventory, billing, predictions, etc.). Inspect `server` routes and controllers for the full list.
 
-### High risk
-
-- Admins receive a notification when risk becomes **High**.
-- Admin can set a new deadline; the system:
-  - generates a customer message (Ollama)
-  - sends a customer notification
-  - shows a customer popup until acknowledged
-
-### Medium risk
-
-- Customer receives a “schedule update” notification and popup (Ollama-generated).
-
-## Useful API endpoints (high level)
-
-- `POST /api/auth/login`
-- `GET /api/shop-orders` (staff)
-- `GET /api/shop-orders/my` (customer)
-- `PATCH /api/shop-orders/:id/assign`
-- `PATCH /api/shop-orders/:id/reschedule`
-- `POST /api/predict` (proxy to ML server)
-- `PATCH /api/shop-orders/:id/admin-set-deadline` (admin/staff_schedule)
-- `PATCH /api/shop-orders/:id/ack-design-message` (customer)
-- `PATCH /api/shop-orders/:id/ack-deadline-update` (customer)
-- `PATCH /api/shop-orders/:id/ack-delay-risk` (customer)
-
+Other docs in repo: `GIT_SETUP.md`, `TEAM_BRANCHES.md`.
