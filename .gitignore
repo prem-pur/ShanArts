@@ -9,11 +9,17 @@ yarn-error.log*
 logs/*
 !logs/.gitkeep
 
-# 🔐 Environment variables
+# 🔐 Environment variables — never commit real secrets (only *.env.example templates belong in Git)
 .env
 .env.local
 .env.*.local
-# CRA dev-only (copy client/.env.example → client/.env.development; do not commit secrets)
+.env.development
+.env.production
+.env.staging
+server/.env
+client/.env
+ml/.env
+# CRA dev-only (copy client/.env.example → client/.env.development)
 client/.env.development
 
 # 🐍 Python
