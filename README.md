@@ -32,7 +32,7 @@ ShanArts/
 │   └── model_server.py
 ├── ecosystem.config.js     # PM2 processes: ml-server + node-app
 ├── requirements.txt        # Python deps for ML server
-└── .env.example
+└── env.example
 ```
 
 ## Prerequisites
@@ -52,10 +52,11 @@ py -m pip install -r requirements.txt
 
 ### Environment variables
 
-- Copy `.env.example` → `.env` (repo root) and adjust as needed.
+- Copy `env.example` to `server/.env` (or merge lines into your existing `server/.env`) and adjust as needed. That file is **not** committed.
+- Frontend: copy `client/env.example` → `client/.env.development` for local `npm start` (also not committed).
 - Backend reads `server/.env` for Mongo/JWT/etc.
 
-Key ML variables (see `.env.example`):
+Key ML variables (see `env.example` in the repo root):
 
 - `ML_SERVER_URL=http://127.0.0.1:8000`
 - `ML_MODEL_PATH=./ml/saved_model/best_xgboost_delay_model.pkl`

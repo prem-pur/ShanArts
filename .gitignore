@@ -9,8 +9,8 @@ yarn-error.log*
 logs/*
 !logs/.gitkeep
 
-# 🔐 Environment variables — never commit real secrets.
-# Only `*.env.example` files are templates and may be committed.
+# 🔐 Environment variables — never commit real secrets (no `.env*` files in Git).
+# Committed templates use plain names: `env.example`, `client/env.example`, `server/env.example`.
 .env
 .env.local
 .env.*.local
@@ -23,11 +23,7 @@ ml/.env
 client/.env.development
 .envrc
 .direnv/
-# Any other `.env.*` variant (still allow committed templates below)
 .env.*
-!.env.example
-!client/.env.example
-!server/.env.example
 
 # 🐍 Python
 __pycache__/

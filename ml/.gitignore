@@ -1,0 +1,12 @@
+# Python / ML — local secrets and caches (use repo-root `env.example` for ML var hints)
+.env
+.env.*
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ipynb_checkpoints/
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
