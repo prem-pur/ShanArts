@@ -89,9 +89,12 @@ const CustomerAuthScreen = () => {
     const envGoogleId = (process.env.REACT_APP_GOOGLE_CLIENT_ID || '').trim();
     const [googleClientId, setGoogleClientId] = useState(envGoogleId);
     const [oauthLoading, setOauthLoading] = useState(!envGoogleId);
+    /** Set when /oauth-config fails (usually API not running); empty string when server returned no id. */
+    const [oauthFetchError, setOauthFetchError] = useState(null);
 
     useEffect(() => {
         if (envGoogleId) {
+            setOauthFetchError(null);
             return;
         }
         let cancelled = false;
@@ -99,11 +102,16 @@ const CustomerAuthScreen = () => {
             try {
                 const { data } = await axios.get(`${API_BASE_URL}/api/auth/oauth-config`);
                 if (!cancelled) {
-                    setGoogleClientId((data.googleClientId || '').trim());
+                    const id = (data.googleClientId || '').trim();
+                    setGoogleClientId(id);
+                    setOauthFetchError(null);
                 }
-            } catch {
+            } catch (err) {
                 if (!cancelled) {
                     setGoogleClientId('');
+                    setOauthFetchError(
+                        `Could not reach the API at ${API_BASE_URL}. Start the server, or set REACT_APP_GOOGLE_CLIENT_ID in client/.env.development and restart npm start.`,
+                    );
                 }
             } finally {
                 if (!cancelled) {
@@ -202,22 +210,20 @@ const CustomerAuthScreen = () => {
                 border: '1px solid var(--border-color)'
             }}>
                 <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-                    <div style={{
-                        width: '72px',
-                        height: '72px',
-                        backgroundColor: 'var(--accent-color)',
-                        borderRadius: '16px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        margin: '0 auto 24px',
-                        color: '#fff',
-                        fontSize: '32px',
-                        fontWeight: '900',
-                        boxShadow: '0 4px 20px var(--accent-glow)'
-                    }}>
-                        {isLogin ? 'LG' : 'RG'}
-                    </div>
+                    <img
+                        src={`${process.env.PUBLIC_URL || ''}/logo.png?v=7`}
+                        alt="Shan Art Advertising"
+                        style={{
+                            display: 'block',
+                            margin: '0 auto 24px',
+                            maxHeight: '76px',
+                            width: 'auto',
+                            maxWidth: 'min(300px, 100%)',
+                            objectFit: 'contain',
+                            borderRadius: '14px',
+                            boxShadow: '0 8px 32px rgba(0,0,0,0.35)',
+                        }}
+                    />
                     <h2 style={{ fontSize: '32px', fontWeight: '900', color: 'var(--text-primary)', marginBottom: '12px' }}>
                         {isLogin ? 'Welcome Back' : 'Create Account'}
                     </h2>
@@ -517,6 +523,22 @@ const CustomerAuthScreen = () => {
                                 disabled={loading || googleLoading}
                             />
                         </GoogleOAuthProvider>
+                    ) : oauthFetchError ? (
+                        <p
+                            style={{
+                                margin: 0,
+                                minHeight: 40,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: '#9ca3af',
+                                fontSize: '13px',
+                                textAlign: 'center',
+                                lineHeight: 1.5,
+                            }}
+                        >
+                            {oauthFetchError}
+                        </p>
                     ) : (
                         <p
                             style={{
@@ -542,7 +564,9 @@ const CustomerAuthScreen = () => {
                             >
                                 GOOGLE_CLIENT_ID
                             </code>{' '}
-                            to the server .env file and restart the API.
+                            to <code style={{ fontSize: '12px', background: 'var(--surface-muted-2)', padding: '2px 6px', borderRadius: '4px' }}>server/.env</code> or{' '}
+                            <code style={{ fontSize: '12px', background: 'var(--surface-muted-2)', padding: '2px 6px', borderRadius: '4px' }}>REACT_APP_GOOGLE_CLIENT_ID</code> to{' '}
+                            <code style={{ fontSize: '12px', background: 'var(--surface-muted-2)', padding: '2px 6px', borderRadius: '4px' }}>client/.env.development</code>, then restart.
                         </p>
                     )}
                 </div>

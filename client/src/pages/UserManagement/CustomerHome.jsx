@@ -300,7 +300,7 @@ const CustomerHome = () => {
             const doc = new jsPDF();
             const pageWidth = doc.internal.pageSize.getWidth();
 
-            const logoDataUrl = await loadImageAsDataUrl(`${process.env.PUBLIC_URL}/logo.png`);
+            const logoDataUrl = await loadImageAsDataUrl(`${process.env.PUBLIC_URL}/logo.png?v=7`);
             doc.addImage(logoDataUrl, 'PNG', 14, 10, 56, 28);
 
             doc.setFontSize(18);
@@ -1013,24 +1013,21 @@ const CustomerHome = () => {
         <div className="shan-page" style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--bg-color)', fontFamily: 'var(--font-sans, sans-serif)' }}>
             <aside style={{ width: '260px', backgroundColor: 'var(--sidebar-bg)', display: 'flex', flexDirection: 'column', borderRight: '1px solid var(--sidebar-border)' }}>
                 <div style={{ padding: '32px 24px', borderBottom: '1px solid var(--sidebar-border)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                        <div style={{
-                            width: '42px',
-                            height: '42px',
-                            background: 'linear-gradient(135deg, #ff3333 0%, #990000 100%)',
-                            borderRadius: '12px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: '#fff',
-                            fontWeight: '900',
-                            fontSize: '22px',
-                            boxShadow: '0 4px 20px rgba(255, 51, 51, 0.4)'
-                        }}>SH</div>
-                        <div style={{ display: 'flex', flexDirection: 'column' }}>
-                            <div style={{ color: '#fff', fontWeight: '900', fontSize: '20px', lineHeight: 1.1, letterSpacing: '0.5px' }}>SHAN</div>
-                            <div style={{ color: 'var(--accent-color)', fontWeight: '800', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '1.2px', marginTop: '2px' }}>Art Advertising</div>
-                        </div>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <img
+                            src="/logo.png?v=7"
+                            alt="Shan Art Advertising"
+                            style={{
+                                display: 'block',
+                                width: 'auto',
+                                height: 'auto',
+                                maxWidth: '100%',
+                                maxHeight: '52px',
+                                objectFit: 'contain',
+                                borderRadius: '10px',
+                                boxShadow: '0 6px 28px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.06)',
+                            }}
+                        />
                     </div>
                 </div>
 

@@ -17,16 +17,21 @@ const Sidebar = () => {
             overflowY: 'auto' 
         }}>
             <div style={{ padding: '32px 24px', borderBottom: '1px solid rgba(255,255,255,0.05)', marginBottom: '16px', flexShrink: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }} onClick={() => navigate(user.role === 'admin' ? '/admin-dashboard' : '/')}>
+                <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={() => navigate(user.role === 'admin' ? '/admin-dashboard' : '/')}>
                     <img
-                        src="/logo.png"
-                        alt="SHAN Logo"
-                        style={{ width: '45px', height: '45px', objectFit: 'contain', borderRadius: '4px' }}
+                        src="/logo.png?v=7"
+                        alt="Shan Art Advertising"
+                        style={{
+                            display: 'block',
+                            width: 'auto',
+                            height: 'auto',
+                            maxWidth: '100%',
+                            maxHeight: '52px',
+                            objectFit: 'contain',
+                            borderRadius: '10px',
+                            boxShadow: '0 6px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06)',
+                        }}
                     />
-                    <div>
-                        <div style={{ color: '#fff', fontWeight: '900', fontSize: '20px', letterSpacing: '-0.5px', lineHeight: 1 }}>SHAN</div>
-                        <div style={{ color: 'var(--text-secondary)', fontWeight: '700', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '1px' }}>Art Advertising</div>
-                    </div>
                 </div>
             </div>
 

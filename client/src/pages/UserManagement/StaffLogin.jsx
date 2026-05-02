@@ -102,22 +102,20 @@ const StaffLogin = () => {
                 border: '1px solid var(--border-color)'
             }}>
                 <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-                    <div style={{
-                        width: '64px',
-                        height: '64px',
-                        background: 'linear-gradient(135deg, #ff3333 0%, #990000 100%)',
-                        borderRadius: '16px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        margin: '0 auto 20px',
-                        color: '#fff',
-                        fontSize: '28px',
-                        fontWeight: '900',
-                        boxShadow: '0 8px 28px var(--accent-glow)'
-                    }}>
-                        SP
-                    </div>
+                    <img
+                        src={`${process.env.PUBLIC_URL || ''}/logo.png?v=7`}
+                        alt="Shan Art Advertising"
+                        style={{
+                            display: 'block',
+                            margin: '0 auto 20px',
+                            maxHeight: '72px',
+                            width: 'auto',
+                            maxWidth: 'min(280px, 100%)',
+                            objectFit: 'contain',
+                            borderRadius: '14px',
+                            boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+                        }}
+                    />
                     <h2 style={{ fontSize: '28px', fontWeight: '900', color: 'var(--text-primary)', marginBottom: '8px' }}>
                         {isForgotMode ? 'Identity Verification' : 'Staff Portal'}
                     </h2>
