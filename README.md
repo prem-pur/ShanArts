@@ -31,8 +31,7 @@ ShanArts/
 │   ├── saved_model/        # Model artifacts (4 files)
 │   └── model_server.py
 ├── ecosystem.config.js     # PM2 processes: ml-server + node-app
-├── requirements.txt        # Python deps for ML server
-└── env.example
+└── requirements.txt        # Python deps for ML server
 ```
 
 ## Prerequisites
@@ -52,24 +51,51 @@ py -m pip install -r requirements.txt
 
 ### Environment variables
 
-- Copy `env.example` to `server/.env` (or merge lines into your existing `server/.env`) and adjust as needed. That file is **not** committed.
-- Frontend: copy `client/env.example` → `client/.env.development` for local `npm start` (also not committed).
-- Backend reads `server/.env` for Mongo/JWT/etc.
+Do **not** commit `server/.env`, `client/.env.development`, or any file that holds real secrets. Create these files locally (they are listed in `.gitignore`).
 
-Key ML variables (see `env.example` in the repo root):
+#### `server/.env` (backend — create under `server/`)
 
-- `ML_SERVER_URL=http://127.0.0.1:8000`
-- `ML_MODEL_PATH=./ml/saved_model/best_xgboost_delay_model.pkl`
-- `ML_LABEL_ENCODER_PATH=./ml/saved_model/label_encoder.pkl`
-- `ML_FEATURE_ENGINEER_PATH=./ml/saved_model/feature_engineer.pkl`
-- `ML_PREPROCESSOR_PATH=./ml/saved_model/preprocessor.pkl`
-- `ML_TIMEOUT_MS=5000`
+```env
+PORT=5001
+MONGO_URI=mongodb://127.0.0.1:27017/printing_db
+JWT_SECRET=change-me-in-production
+JWT_EXPIRES_IN=7d
+GOOGLE_CLIENT_ID=
 
-Ollama variables (backend `server/config/env.js`):
+# Optional: Google Sign-In / Gemini (see server/config/env.js)
+GEMINI_API_KEY=
+GEMINI_MODEL=gemini-2.0-flash
+GEMINI_FALLBACK_MODEL=
 
-- `OLLAMA_BASE_URL` (default `http://127.0.0.1:11434` or your host)
-- `OLLAMA_TEXT_MODEL` (model name available on that host)
-- `OLLAMA_API_KEY` (only if your host requires it)
+AI_VISION_PROVIDER=ollama
+OLLAMA_BASE_URL=http://127.0.0.1:11434
+OLLAMA_API_KEY=
+OLLAMA_API_AUTH=bearer
+OLLAMA_VISION_MODEL=llava
+OLLAMA_TEXT_MODEL=llama3
+
+NODE_ENV=development
+FILE_UPLOAD_PATH=./public/uploads
+
+# ML / delay predictor (optional — localhost FastAPI)
+ML_SERVER_URL=http://127.0.0.1:8000
+ML_MODEL_PATH=./ml/saved_model/best_xgboost_delay_model.pkl
+ML_LABEL_ENCODER_PATH=./ml/saved_model/label_encoder.pkl
+ML_FEATURE_ENGINEER_PATH=./ml/saved_model/feature_engineer.pkl
+ML_PREPROCESSOR_PATH=./ml/saved_model/preprocessor.pkl
+ML_TIMEOUT_MS=5000
+```
+
+#### `client/.env.development` (frontend — create under `client/`)
+
+```env
+REACT_APP_GOOGLE_CLIENT_ID=
+REACT_APP_API_BASE_URL=http://localhost:5001
+```
+
+Use the same `GOOGLE_CLIENT_ID` value as `GOOGLE_CLIENT_ID` in `server/.env`. Adjust `REACT_APP_API_BASE_URL` if your API port differs.
+
+For optional AI/Ollama tuning, see **`server/config/env.js`**.
 
 ## Run (development)
 
@@ -90,7 +116,7 @@ npm run dev
 ### ML server
 
 ```bash
-cd D:/PrintingSystem/ShanArts
+# from repository root
 py -m uvicorn ml.model_server:app --host 127.0.0.1 --port 8000
 ```
 

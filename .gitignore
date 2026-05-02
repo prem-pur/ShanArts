@@ -17,7 +17,7 @@ logs/*
 !logs/.gitkeep
 
 # --- Environment / secrets (never commit real values) ---
-# Templates only (safe): env.example, client/env.example, server/env.example
+# Variable names and examples live in README.md only — do not re-add template files.
 .env
 .env.*
 .env.local
@@ -26,6 +26,7 @@ logs/*
 .env.production
 .env.test
 .env.staging
+.env.example
 client/.env
 client/.env.development
 server/.env
@@ -35,6 +36,7 @@ ml/.env
 .envrc
 .direnv/
 *.env
+env.example
 
 # --- Python / ML ---
 __pycache__/
