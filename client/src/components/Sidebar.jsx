@@ -55,6 +55,11 @@ const Sidebar = ({ mode = 'desktop', drawerOpen = false, onDrawerClose, onLogout
     if (isDrawer) onDrawerClose?.();
   };
 
+  /**
+   * Desktop: CSS grid keeps logo / scrollable nav / logout in stable rows.
+   * Mobile drawer: flex + **absolute** logout bar so the button never sits under the
+   * viewport (common flex/overflow bug on WebKit with overlay drawers).
+   */
   const shellStyle = isDrawer
     ? {
         position: 'absolute',
@@ -72,17 +77,19 @@ const Sidebar = ({ mode = 'desktop', drawerOpen = false, onDrawerClose, onLogout
         flexDirection: 'column',
         borderRight: '1px solid rgba(255,255,255,0.05)',
         overflow: 'hidden',
-        height: '100%',
+        minHeight: 0,
+        maxHeight: '100%',
       }
     : {
         width: 260,
         flexShrink: 0,
         alignSelf: 'stretch',
         backgroundColor: 'var(--sidebar-bg)',
-        display: 'flex',
-        flexDirection: 'column',
+        display: 'grid',
+        gridTemplateRows: 'auto minmax(0, 1fr) auto',
         minHeight: 0,
         height: '100%',
+        maxHeight: '100%',
         borderRight: '1px solid rgba(255,255,255,0.05)',
         overflow: 'hidden',
       };
@@ -112,10 +119,14 @@ const Sidebar = ({ mode = 'desktop', drawerOpen = false, onDrawerClose, onLogout
         style={{
           display: 'flex',
           flexDirection: 'column',
-          flex: 1,
+          ...(isDrawer ? { flex: 1 } : {}),
           minHeight: 0,
           overflowY: 'auto',
+          overflowX: 'hidden',
           WebkitOverflowScrolling: 'touch',
+          ...(isDrawer
+            ? { paddingBottom: 'calc(92px + env(safe-area-inset-bottom, 0px))' }
+            : {}),
         }}
       >
         <SidebarLink
@@ -176,7 +187,17 @@ const Sidebar = ({ mode = 'desktop', drawerOpen = false, onDrawerClose, onLogout
           padding: '18px 20px',
           paddingBottom: 'max(18px, env(safe-area-inset-bottom, 0px))',
           borderTop: '1px solid rgba(255,255,255,0.05)',
-          flexShrink: 0,
+          backgroundColor: 'var(--sidebar-bg)',
+          ...(isDrawer
+            ? {
+                position: 'absolute',
+                left: 0,
+                right: 0,
+                bottom: 0,
+                boxShadow: '0 -10px 28px rgba(0,0,0,0.35)',
+                zIndex: 4,
+              }
+            : {}),
         }}
       >
         <button
