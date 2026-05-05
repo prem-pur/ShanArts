@@ -1,13 +1,19 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
 import { Bell } from 'lucide-react';
 import { API_BASE_URL } from '../apiBase';
+import { useMatchMedia } from '../hooks/useMatchMedia';
+
+/** Routes that use the customer-style shell (no staff mobile top bar). */
+const CUSTOMER_SHELL_PATHS = new Set(['/', '/customer-home', '/customer-dashboard', '/staff-login']);
 
 const GlobalNotifications = () => {
     const navigate = useNavigate();
     const location = useLocation();
+    const staffCompact = useMatchMedia('(max-width: 900px)');
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [notifications, setNotifications] = useState([]);
@@ -86,8 +92,12 @@ const GlobalNotifications = () => {
 
     if (!token || !user.role || isPublicRoute) return null;
 
-    return (
-        <div className="global-notification-shell">
+    const staffMobileTopBar = staffCompact && !CUSTOMER_SHELL_PATHS.has(location.pathname);
+
+    const shell = (
+        <div
+            className={`global-notification-shell${staffMobileTopBar ? ' global-notification-shell--staff-mobile' : ''}`}
+        >
             <button
                 type="button"
                 className="global-notification-bell"
@@ -135,6 +145,10 @@ const GlobalNotifications = () => {
             )}
         </div>
     );
+
+    if (typeof document === 'undefined') return null;
+
+    return createPortal(shell, document.body);
 };
 
 export default GlobalNotifications;

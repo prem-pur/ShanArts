@@ -1358,7 +1358,19 @@ body {
   position: fixed;
   top: 16px;
   right: 24px;
-  z-index: 1300;
+  z-index: 2500;
+}
+
+/* Staff mobile top bar (z-index 210): portal lifts the shell, but keep bell aligned to the bar */
+.global-notification-shell--staff-mobile {
+  top: max(5px, env(safe-area-inset-top, 0px));
+  right: max(10px, env(safe-area-inset-right, 0px));
+}
+
+.global-notification-shell--staff-mobile .global-notification-bell {
+  width: 42px;
+  height: 42px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
 }
 
 .global-notification-bell {

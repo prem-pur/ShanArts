@@ -71,8 +71,8 @@ const Sidebar = ({ mode = 'desktop', drawerOpen = false, onDrawerClose, onLogout
         display: 'flex',
         flexDirection: 'column',
         borderRight: '1px solid rgba(255,255,255,0.05)',
-        overflowY: 'auto',
-        WebkitOverflowScrolling: 'touch',
+        overflow: 'hidden',
+        height: '100%',
       }
     : {
         width: 260,
@@ -84,8 +84,7 @@ const Sidebar = ({ mode = 'desktop', drawerOpen = false, onDrawerClose, onLogout
         minHeight: 0,
         height: '100%',
         borderRight: '1px solid rgba(255,255,255,0.05)',
-        overflowY: 'auto',
-        WebkitOverflowScrolling: 'touch',
+        overflow: 'hidden',
       };
 
   return (
@@ -109,7 +108,16 @@ const Sidebar = ({ mode = 'desktop', drawerOpen = false, onDrawerClose, onLogout
         </div>
       </div>
 
-      <nav style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+      <nav
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          flex: 1,
+          minHeight: 0,
+          overflowY: 'auto',
+          WebkitOverflowScrolling: 'touch',
+        }}
+      >
         <SidebarLink
           onNavigate={closeIfDrawer}
           to={
@@ -163,7 +171,14 @@ const Sidebar = ({ mode = 'desktop', drawerOpen = false, onDrawerClose, onLogout
         {Boolean(user.role) && <SidebarLink onNavigate={closeIfDrawer} to="/notifications" icon={<Bell size={18} />} label="Notifications" />}
       </nav>
 
-      <div style={{ padding: '18px 20px', borderTop: '1px solid rgba(255,255,255,0.05)', marginTop: 'auto', flexShrink: 0 }}>
+      <div
+        style={{
+          padding: '18px 20px',
+          paddingBottom: 'max(18px, env(safe-area-inset-bottom, 0px))',
+          borderTop: '1px solid rgba(255,255,255,0.05)',
+          flexShrink: 0,
+        }}
+      >
         <button
           type="button"
           onClick={logout}
