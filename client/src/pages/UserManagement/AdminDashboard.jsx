@@ -35,6 +35,7 @@ import {
     Camera
 } from 'lucide-react';
 import { API_BASE_URL } from '../../apiBase';
+import { useMatchMedia } from '../../hooks/useMatchMedia';
 
 const ROLE_LABELS = {
     staff_designer: 'Designer',
@@ -273,6 +274,8 @@ function roundRect(ctx, x, y, w, h, r) {
 
 const AdminDashboard = () => {
     const navigate = useNavigate();
+    const isCompact = useMatchMedia('(max-width: 900px)');
+    const isNarrowPhone = useMatchMedia('(max-width: 540px)');
     const [activeTab, setActiveTab] = useState('register'); // 'register' | 'attendance' | 'merchantQR'
     const [staffData, setStaffData] = useState({
         name: '',
@@ -682,15 +685,17 @@ const AdminDashboard = () => {
         color: status === 'present' ? '#16a34a' : '#dc2626',
     });
 
+    const adminNavGridCols = isNarrowPhone ? 'repeat(2, minmax(0, 1fr))' : isCompact ? 'repeat(3, minmax(0, 1fr))' : 'repeat(6, minmax(0, 1fr))';
+
     return (
-        <div className="shan-page" style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto', fontFamily: 'var(--font-sans, sans-serif)', color: 'var(--text-primary)' }}>
-            <header style={{ marginBottom: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="shan-page" style={{ padding: isCompact ? 'clamp(14px, 4vw, 24px)' : '40px', maxWidth: '1200px', margin: '0 auto', fontFamily: 'var(--font-sans, sans-serif)', color: 'var(--text-primary)', boxSizing: 'border-box', width: '100%', overflowX: 'hidden' }}>
+            <header style={{ marginBottom: isCompact ? '28px' : '40px', display: 'flex', justifyContent: 'space-between', alignItems: isCompact ? 'flex-start' : 'center', flexWrap: 'wrap', gap: '16px' }}>
                 <div>
-                    <h1 style={{ fontSize: '32px', fontWeight: '900', color: 'var(--text-primary)', letterSpacing: '-1px' }}>SYSTEM CENTRAL</h1>
+                    <h1 style={{ fontSize: isCompact ? 'clamp(1.25rem, 4vw, 1.75rem)' : '32px', fontWeight: '900', color: 'var(--text-primary)', letterSpacing: '-1px' }}>SYSTEM CENTRAL</h1>
                     <p style={{ color: 'var(--text-secondary)', fontSize: '16px', margin: 0 }}>Overview, staff management & attendance.</p>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    <div style={{ textAlign: 'right' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginLeft: isCompact ? 0 : undefined }}>
+                    <div style={{ textAlign: isCompact ? 'left' : 'right' }}>
                         <div style={{ fontWeight: '800', color: 'var(--text-primary)', fontSize: '15px' }}>{user.name}</div>
                         <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Administrator</div>
                     </div>
@@ -699,7 +704,7 @@ const AdminDashboard = () => {
             </header>
 
             {/* Navigation Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '16px', marginBottom: '40px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: adminNavGridCols, gap: '16px', marginBottom: '40px' }}>
                 {managementLinks.map(link => (
                     <div
                         key={link.path}
@@ -741,7 +746,7 @@ const AdminDashboard = () => {
 
             {/* ── Register Staff Tab ── */}
             {activeTab === 'register' && (
-                <div style={{ display: 'grid', gridTemplateColumns: newQR ? '1fr 1fr' : '1fr', gap: '32px', maxWidth: newQR ? '900px' : '480px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: newQR && !isCompact ? '1fr 1fr' : '1fr', gap: isCompact ? '24px' : '32px', maxWidth: newQR ? '900px' : '480px', width: '100%' }}>
                     {/* Form */}
                     <div style={{ background: 'var(--card-bg)', padding: '40px', borderRadius: '20px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)' }}>
                         <h2 style={{ fontSize: '20px', fontWeight: '900', color: 'var(--text-primary)', marginBottom: '8px' }}>Register Staff Member</h2>
@@ -848,7 +853,7 @@ const AdminDashboard = () => {
 
             {/* ── Attendance Scanner Tab ── */}
             {activeTab === 'attendance' && (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.6fr', gap: '32px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isCompact ? '1fr' : '1fr 1.6fr', gap: isCompact ? '24px' : '32px', width: '100%' }}>
                     {/* Scanner Panel */}
                     <div style={{ background: 'var(--card-bg)', padding: '32px', borderRadius: '20px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)' }}>
                         <h2 style={{ fontSize: '20px', fontWeight: '900', color: 'var(--text-primary)', marginBottom: '8px' }}>QR Attendance Reader</h2>
@@ -942,7 +947,7 @@ const AdminDashboard = () => {
 
             {/* ── Merchant QR Lookup Tab ── */}
             {activeTab === 'merchantQR' && (
-                <div style={{ display: 'grid', gridTemplateColumns: merchantQRResult ? '1fr 1fr' : '1fr', gap: '32px', maxWidth: merchantQRResult ? '860px' : '480px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: merchantQRResult && !isCompact ? '1fr 1fr' : '1fr', gap: isCompact ? '24px' : '32px', maxWidth: merchantQRResult ? '860px' : '480px', width: '100%' }}>
                     {/* Search Panel */}
                     <div style={{ background: 'var(--card-bg)', padding: '40px', borderRadius: '20px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)' }}>
                         <div style={{ fontSize: '36px', marginBottom: '12px', textAlign: 'center', display: 'flex', justifyContent: 'center' }}><Search size={48} /></div>
@@ -1062,7 +1067,7 @@ const AdminDashboard = () => {
 
             {/* ── Staff Profile Scan Tab ── */}
             {activeTab === 'profileScan' && (
-                <div style={{ display: 'grid', gridTemplateColumns: scannedProfile ? '1fr 1.4fr' : '1fr', gap: '32px', maxWidth: scannedProfile ? '900px' : '480px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: scannedProfile && !isCompact ? '1fr 1.4fr' : '1fr', gap: isCompact ? '24px' : '32px', maxWidth: scannedProfile ? '900px' : '480px', width: '100%' }}>
                     {/* Scanner Panel */}
                     <div style={{ background: 'var(--card-bg)', padding: '32px', borderRadius: '20px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)' }}>
                         <h2 style={{ fontSize: '20px', fontWeight: '900', color: 'var(--text-primary)', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}><User size={20} /> Staff Profile Scanner</h2>
@@ -1232,7 +1237,7 @@ const AdminDashboard = () => {
                     ) : customers.length === 0 ? (
                         <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>No customers found.</div>
                     ) : (
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 260px), 1fr))', gap: '16px' }}>
                             {customers.map(c => (
                                 <div key={c._id} style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: '20px', borderRadius: '16px', border: '1px solid var(--border-color)', background: 'var(--surface-muted-2)', boxShadow: 'var(--shadow-sm)' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -1270,7 +1275,7 @@ const AdminDashboard = () => {
                     ) : staffList.length === 0 ? (
                         <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>No staff members found.</div>
                     ) : (
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '16px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))', gap: '16px' }}>
                             {staffList.map(s => (
                                 <div key={s._id} style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: '20px', borderRadius: '16px', border: '1px solid var(--border-color)', background: 'var(--surface-muted-2)', boxShadow: 'var(--shadow-sm)' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1 }}>

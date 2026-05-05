@@ -197,17 +197,19 @@ const CustomerAuthScreen = () => {
             alignItems: 'center',
             justifyContent: 'center',
             backgroundColor: 'var(--bg-color)',
-            padding: '20px',
-            fontFamily: 'var(--font-sans, "Outfit", sans-serif)'
+            padding: 'clamp(14px, 4vw, 24px)',
+            fontFamily: 'var(--font-sans, "Outfit", sans-serif)',
+            boxSizing: 'border-box',
         }}>
             <div style={{
                 width: '100%',
                 maxWidth: '450px',
                 backgroundColor: 'var(--card-bg)',
                 borderRadius: '20px',
-                padding: '48px',
+                padding: 'clamp(22px, 5vw, 48px)',
                 boxShadow: '0 20px 50px rgba(0,0,0,0.45)',
-                border: '1px solid var(--border-color)'
+                border: '1px solid var(--border-color)',
+                boxSizing: 'border-box',
             }}>
                 <div style={{ textAlign: 'center', marginBottom: '40px' }}>
                     <img

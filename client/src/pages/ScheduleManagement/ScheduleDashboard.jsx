@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useMatchMedia } from '../../hooks/useMatchMedia';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { 
@@ -18,6 +19,8 @@ import { useToast, ToastContainer } from './Toast';
 
 const ScheduleDashboard = () => {
     const navigate = useNavigate();
+    const isCompact = useMatchMedia('(max-width: 900px)');
+    const isPhone = useMatchMedia('(max-width: 540px)');
     const { toasts, showToast, removeToast } = useToast();
     const [activeView, setActiveView] = useState('overview'); // overview, orders, operators
     const [orders, setOrders] = useState([]);
@@ -51,7 +54,9 @@ const ScheduleDashboard = () => {
             gap: '20px',
             boxShadow: '0 4px 20px rgba(15, 23, 42, 0.04)',
             transition: 'transform 0.2s ease',
-            flex: 1
+            flex: '1 1 auto',
+            minWidth: 0,
+            width: '100%',
         }}>
             <div style={{
                 width: '56px',
@@ -320,8 +325,11 @@ const ScheduleDashboard = () => {
             minHeight: '100vh',
             backgroundColor: 'var(--bg-color)',
             fontFamily: 'var(--font-sans, sans-serif)',
-            padding: '28px 36px',
-            color: 'var(--text-primary)'
+            padding: isCompact ? 'clamp(14px, 4vw, 24px)' : '28px 36px',
+            color: 'var(--text-primary)',
+            boxSizing: 'border-box',
+            maxWidth: '100%',
+            overflowX: 'hidden',
         }}>
             <ToastContainer toasts={toasts} onRemove={removeToast} />
             <style>{`
@@ -329,10 +337,10 @@ const ScheduleDashboard = () => {
             `}</style>
 
             {/* Header section managed like OrderList */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
-                <div>
-                  <h1 style={{ fontSize: '26px', fontWeight: '800', color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.5px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <Calendar size={28} color="var(--accent-color)" /> Schedule Management
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: isCompact ? 'flex-start' : 'center', flexWrap: 'wrap', gap: '16px', marginBottom: isCompact ? '28px' : '40px' }}>
+                <div style={{ minWidth: 0 }}>
+                  <h1 style={{ fontSize: isCompact ? 'clamp(1.1rem, 4vw, 1.45rem)' : '26px', fontWeight: '800', color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.5px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <Calendar size={isCompact ? 24 : 28} color="var(--accent-color)" /> Schedule Management
                   </h1>
                   <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginTop: '6px', fontWeight: '500' }}>
                       Production Central Control Dashboard
@@ -341,6 +349,7 @@ const ScheduleDashboard = () => {
 
                 <div style={{
                     display: 'flex',
+                    flexWrap: 'wrap',
                     background: 'var(--card-bg)',
                     padding: '4px',
                     borderRadius: '12px',
@@ -395,7 +404,12 @@ const ScheduleDashboard = () => {
                 {activeView === 'overview' ? (
                     <>
                         {/* Stats Bar */}
-                        <div style={{ display: 'flex', gap: '20px', marginBottom: '32px' }}>
+                        <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: isPhone ? 'minmax(0, 1fr)' : isCompact ? 'repeat(2, minmax(0, 1fr))' : 'repeat(4, minmax(0, 1fr))',
+                            gap: '20px',
+                            marginBottom: '32px',
+                        }}>
                             <StatCard
                                  label="Awaiting"
                                  value={orders.filter(o => o.status === 'scheduled').length}
@@ -427,7 +441,7 @@ const ScheduleDashboard = () => {
                         {/* Two Column: Timeline + Upcoming Jobs */}
                         <div style={{
                             display: 'grid',
-                            gridTemplateColumns: '1fr 380px',
+                            gridTemplateColumns: isCompact ? 'minmax(0, 1fr)' : 'minmax(0, 1fr) minmax(280px, 380px)',
                             gap: '32px',
                             alignItems: 'start'
                         }}>

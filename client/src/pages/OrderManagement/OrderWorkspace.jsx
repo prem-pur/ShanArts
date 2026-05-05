@@ -19,6 +19,7 @@ import DesignEditor from "./DesignEditor";
 import SendDesignToCustomerModal from "../../components/SendDesignToCustomerModal";
 import { API_BASE_URL } from "../../apiBase";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useMatchMedia } from "../../hooks/useMatchMedia";
 
 const STATUS = {
     DRAFT: "Draft",
@@ -33,6 +34,7 @@ const STATUS = {
 const OrderWorkspace = () => {
     const navigate = useNavigate();
     const location = useLocation();
+    const isCompact = useMatchMedia("(max-width: 900px)");
     const [orders, setOrders] = useState([]);
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [showEditor, setShowEditor] = useState(false);
@@ -232,11 +234,13 @@ const OrderWorkspace = () => {
         if (!searchTerm.trim()) return true;
         const term = searchTerm.toLowerCase();
         return (order.customerName || "").toLowerCase().includes(term);
-    });    const renderOrderList = () => {
+    });
+
+    const renderOrderList = () => {
         const newOrdersCount = orders.filter(order => order.status === 'Draft' || order.status === 'pending_design').length;
 
         return (
-            <div style={{ padding: '24px 40px', maxWidth: '1400px', margin: '0 auto', animation: 'fadeIn 0.4s ease-out', minHeight: '100vh' }}>
+            <div style={{ padding: isCompact ? "clamp(14px, 4vw, 22px)" : "24px 40px", maxWidth: "1400px", margin: "0 auto", animation: "fadeIn 0.4s ease-out", minHeight: "100vh", boxSizing: "border-box", width: "100%", overflowX: "hidden" }}>
                 {/* Red Notification Banner */}
                 {newOrdersCount > 0 && (
                     <div style={{
@@ -247,6 +251,8 @@ const OrderWorkspace = () => {
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',
+                        flexWrap: 'wrap',
+                        gap: '12px',
                         border: '1px solid rgba(255, 51, 51, 0.2)'
                     }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -328,7 +334,7 @@ const OrderWorkspace = () => {
                     ))}
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 260px), 1fr))", gap: "16px" }}>
                     {filteredOrders.map(order => {
                         const status = normalizeStatus(order.status);
                         const isApproved = status === STATUS.APPROVED;
@@ -448,8 +454,8 @@ const OrderWorkspace = () => {
         if (!selectedOrder) return null;
 
         return (
-            <div style={{ padding: '24px 40px', maxWidth: '1400px', margin: '0 auto', animation: 'fadeIn 0.4s ease-out' }}>
-                <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', paddingBottom: '12px', borderBottom: '1px solid #e5e7eb' }}>
+            <div style={{ padding: isCompact ? "clamp(14px, 4vw, 22px)" : "24px 40px", maxWidth: "1400px", margin: "0 auto", animation: "fadeIn 0.4s ease-out", boxSizing: "border-box", width: "100%", overflowX: "hidden" }}>
+                <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px", marginBottom: "20px", paddingBottom: "12px", borderBottom: "1px solid #e5e7eb" }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                         <button onClick={() => navigate('/design-workspace')} style={{ width: '32px', height: '32px', borderRadius: '50%', border: 'none', background: 'var(--card-bg)', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>
                             <ChevronLeft size={18} strokeWidth={3} />
@@ -462,7 +468,7 @@ const OrderWorkspace = () => {
                                     const found = orders.find(o => o._id === e.target.value);
                                     if (found) setSelectedOrder(found);
                                 }}
-                                style={{ fontSize: '18px', fontWeight: '900', color: 'var(--text-primary)', border: 'none', background: 'transparent', cursor: 'pointer', outline: 'none', maxWidth: '280px', fontFamily: "'Inter', sans-serif" }}
+                                style={{ fontSize: isCompact ? "16px" : "18px", fontWeight: "900", color: "var(--text-primary)", border: "none", background: "transparent", cursor: "pointer", outline: "none", maxWidth: isCompact ? "min(100vw - 120px, 280px)" : "280px", fontFamily: "'Inter', sans-serif" }}
                             >
                                 {orders.map(o => (
                                     <option key={o._id} value={o._id}>{o.customerName || 'Untitled'}</option>
@@ -486,7 +492,7 @@ const OrderWorkspace = () => {
                             </span>
                         </div>
                     </div>
-                    <div style={{ display: 'flex', gap: '8px' }}>
+                    <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", justifyContent: "flex-end" }}>
                         {(normalizeStatus(selectedOrder.status) === STATUS.DRAFT || normalizeStatus(selectedOrder.status) === STATUS.REJECTED) && (
                             <button
                                 id="send-approval-btn"
@@ -519,7 +525,7 @@ const OrderWorkspace = () => {
                     </div>
                 </header>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px' }}>
+                <div style={{ display: "grid", gridTemplateColumns: isCompact ? "1fr" : "minmax(0, 2fr) minmax(0, 1fr)", gap: "20px" }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                         <div style={{ background: 'var(--card-bg)', padding: '20px', borderRadius: '16px', border: '1.5px solid #d1d5db', boxShadow: 'var(--shadow-sm)' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>

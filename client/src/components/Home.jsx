@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   MapPin, Phone, Clock, Printer, Package, BarChart2, Users,
   FileText, Layers, ChevronRight, Zap, Shield, Star, ArrowRight,
-  TrendingUp, CheckCircle, Bell, Settings, LogIn, X, MessageCircle
+  TrendingUp, CheckCircle, Bell, LogIn, X, MessageCircle, Menu,
 } from 'lucide-react';
 import AiCopywritingAssistant from './AiCopywritingAssistant';
 import PrintKnowledgeChatbot from './PrintKnowledgeChatbot';
@@ -93,6 +93,11 @@ const GLOBAL_CSS = `
   ::-webkit-scrollbar-track { background: #0A0C10; }
   ::-webkit-scrollbar-thumb { background: #2A2E3E; border-radius: 4px; }
   ::-webkit-scrollbar-thumb:hover { background: #4A5070; }
+
+  /* Landing responsive: hero decorations stay off small-phone copy */
+  @media (max-width: 420px) {
+    .home-hero-float { display: none !important; }
+  }
 `;
 
 /* ─── Hero particle field ─────────────────────────────────────────── */
@@ -238,11 +243,17 @@ const statusStyle = (color) => ({
 });
 
 /* ─── Main Component ──────────────────────────────────────────────── */
+const MOBILE_NAV_BP = '(max-width: 768px)';
+
 const Home = () => {
   const navigate = useNavigate();
   const [count, setCount] = useState({ orders: 0, clients: 0, years: 0, uptime: 0 });
   const [navScrolled, setNavScrolled] = useState(false);
   const [launchModal, setLaunchModal] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isCompactNav, setIsCompactNav] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia(MOBILE_NAV_BP).matches,
+  );
 
   useScrollReveal();
 
@@ -296,27 +307,68 @@ const Home = () => {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  useEffect(() => {
+    const mq = window.matchMedia(MOBILE_NAV_BP);
+    const onChange = () => {
+      setIsCompactNav(mq.matches);
+      if (!mq.matches) setMobileMenuOpen(false);
+    };
+    onChange();
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
+  }, [mobileMenuOpen]);
+
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const onKey = (e) => { if (e.key === 'Escape') setMobileMenuOpen(false); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [mobileMenuOpen]);
+
   const scrollTo = (id) => {
     const el = document.getElementById(id);
     if (el) el.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const navPadX = isCompactNav ? 'clamp(12px, 4vw, 20px)' : 'clamp(1.25rem, 4vw, 2.5rem)';
+  const navH = isCompactNav ? 64 : 68;
+
+  const closeMobileAnd = (fn) => {
+    if (isCompactNav) setMobileMenuOpen(false);
+    fn();
   };
 
   return (
     <div style={{ fontFamily: "'Outfit', sans-serif", background: '#000000', color: '#ffffff', minHeight: '100vh', overflowX: 'hidden' }}>
       <style>{GLOBAL_CSS}</style>
 
-      {/* ── NAV ── */}
-      <nav style={{
-        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200,
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '0 2.5rem', height: '68px',
-        background: navScrolled ? 'rgba(0,0,0,0.92)' : 'transparent',
-        backdropFilter: navScrolled ? 'blur(20px)' : 'none',
-        borderBottom: navScrolled ? '1px solid rgba(255,255,255,0.07)' : '1px solid transparent',
-        transition: 'all 0.35s ease',
-      }}>
-        {/* Logo: PNG includes its own white panel — avoid a second outer white chip */}
-        <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', flexShrink: 0 }} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+      {/* ── NAV (desktop row / mobile hamburger + sheet) ── */}
+      <nav
+        role="navigation"
+        aria-label="Primary"
+        style={{
+          position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200,
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: `0 ${navPadX}`, height: `${navH}px`,
+          background: navScrolled || (isCompactNav && mobileMenuOpen) ? 'rgba(0,0,0,0.92)' : 'transparent',
+          backdropFilter: navScrolled || (isCompactNav && mobileMenuOpen) ? 'blur(20px)' : 'none',
+          borderBottom: navScrolled || (isCompactNav && mobileMenuOpen)
+            ? '1px solid rgba(255,255,255,0.07)'
+            : '1px solid transparent',
+          transition: 'all 0.35s ease',
+        }}
+      >
+        <div
+          style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', flexShrink: 0 }}
+          onClick={() => closeMobileAnd(() => window.scrollTo({ top: 0, behavior: 'smooth' }))}
+        >
           <img
             src="/logo.png?v=7"
             alt="Shan Art Advertising"
@@ -324,8 +376,8 @@ const Home = () => {
               display: 'block',
               width: 'auto',
               height: 'auto',
-              maxHeight: '48px',
-              maxWidth: 'min(236px, 56vw)',
+              maxHeight: isCompactNav ? '42px' : '48px',
+              maxWidth: isCompactNav ? 'min(200px, 52vw)' : 'min(236px, 56vw)',
               objectFit: 'contain',
               borderRadius: '10px',
               boxShadow: '0 4px 28px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.08)',
@@ -333,55 +385,188 @@ const Home = () => {
           />
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          {['Features', 'Services', 'About'].map(label => (
-            <button key={label} className="nav-btn-h" onClick={() => scrollTo(label.toLowerCase())}
-              style={{ background: 'transparent', border: 'none', color: '#999999', fontSize: '14px', fontWeight: 500, padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.2s' }}>
-              {label}
+        {!isCompactNav && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+            {['Features', 'Services', 'About'].map(label => (
+              <button key={label} className="nav-btn-h" onClick={() => scrollTo(label.toLowerCase())}
+                style={{ background: 'transparent', border: 'none', color: '#999999', fontSize: '14px', fontWeight: 500, padding: '8px 14px', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.2s' }}>
+                {label}
+              </button>
+            ))}
+            <button className="nav-btn-h" onClick={() => scrollTo('ai-copywriting')}
+              style={{ background: 'transparent', border: 'none', color: '#999999', fontSize: '14px', fontWeight: 500, padding: '8px 14px', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.2s' }}>
+              AI Tools
             </button>
-          ))}
-          <button className="nav-btn-h" onClick={() => scrollTo('ai-copywriting')}
-            style={{ background: 'transparent', border: 'none', color: '#999999', fontSize: '14px', fontWeight: 500, padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.2s' }}>
-            AI Tools
-          </button>
+            <button
+              type="button"
+              className="nav-btn-h"
+              onClick={openPrintChat}
+              style={{
+                background: 'transparent', border: 'none', color: '#999999', fontSize: '14px', fontWeight: 500, padding: '8px 14px',
+                borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.2s',
+                display: 'inline-flex', alignItems: 'center', gap: '6px',
+              }}
+            >
+              <MessageCircle size={15} style={{ opacity: 0.8 }} />
+              Chatbot
+            </button>
+            <div style={{ width: '1px', height: '24px', background: 'rgba(255,255,255,0.08)', margin: '0 8px', flexShrink: 0 }} />
+            <button className="nav-pri-h" onClick={() => navigate('/staff-login')}
+              style={{ background: 'rgba(255,51,51,0.18)', border: '1px solid rgba(255,51,51,0.38)', color: '#ff6666', fontSize: '13px', fontWeight: 600, padding: '8px 18px', borderRadius: '9px', cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: '7px', transition: 'all 0.2s', flexShrink: 0 }}>
+              <LogIn size={14} />Staff Login
+            </button>
+          </div>
+        )}
+
+        {isCompactNav && (
           <button
             type="button"
-            onClick={openPrintChat}
+            aria-expanded={mobileMenuOpen}
+            aria-controls="home-mobile-nav"
+            aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+            onClick={() => setMobileMenuOpen(o => !o)}
             style={{
-              background: 'transparent', border: 'none', color: '#999999', fontSize: '14px', fontWeight: 500, padding: '8px 16px',
-              borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.2s',
-              display: 'inline-flex', alignItems: 'center', gap: '6px',
+              width: '44px', height: '44px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.12)',
+              background: mobileMenuOpen ? 'rgba(255,51,51,0.15)' : 'rgba(255,255,255,0.06)', color: '#ffffff',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0,
             }}
           >
-            <MessageCircle size={15} style={{ opacity: 0.8 }} />
-            Chatbot
+            {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
-          <div style={{ width: '1px', height: '24px', background: 'rgba(255,255,255,0.08)', margin: '0 8px' }} />
-          <button className="nav-pri-h" onClick={() => navigate('/staff-login')}
-            style={{ background: 'rgba(255,51,51,0.18)', border: '1px solid rgba(255,51,51,0.38)', color: '#ff6666', fontSize: '13px', fontWeight: 600, padding: '8px 18px', borderRadius: '9px', cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: '7px', transition: 'all 0.2s' }}>
-            <LogIn size={14} />Staff Login
-          </button>
-        </div>
+        )}
       </nav>
 
+      {isCompactNav && mobileMenuOpen && (
+        <>
+          <button
+            type="button"
+            aria-label="Close menu"
+            onClick={() => setMobileMenuOpen(false)}
+            style={{
+              position: 'fixed', inset: 0, zIndex: 198, border: 'none', padding: 0, margin: 0,
+              background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)', cursor: 'pointer',
+            }}
+          />
+          <div
+            id="home-mobile-nav"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Site menu"
+            style={{
+              position: 'fixed', top: `${navH}px`, left: 0, right: 0, bottom: 0, zIndex: 199,
+              background: 'linear-gradient(180deg, rgba(8,8,10,0.98) 0%, #000000 40%)',
+              borderTop: '1px solid rgba(255,255,255,0.07)',
+              padding: `${16}px ${navPadX} 32px`,
+              overflowY: 'auto',
+              WebkitOverflowScrolling: 'touch',
+              animation: 'fadeIn 0.2s ease',
+            }}
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxWidth: '400px', margin: '0 auto' }}>
+              {['Features', 'Services', 'About'].map(label => (
+                <button
+                  key={label}
+                  type="button"
+                  className="nav-btn-h"
+                  onClick={() => closeMobileAnd(() => scrollTo(label.toLowerCase()))}
+                  style={{
+                    textAlign: 'left', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)',
+                    color: '#e8e8e8', fontSize: '16px', fontWeight: 600, padding: '14px 16px', borderRadius: '12px',
+                    cursor: 'pointer', fontFamily: 'inherit', width: '100%',
+                  }}
+                >
+                  {label}
+                </button>
+              ))}
+              <button
+                type="button"
+                className="nav-btn-h"
+                onClick={() => closeMobileAnd(() => scrollTo('ai-copywriting'))}
+                style={{
+                  textAlign: 'left', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)',
+                  color: '#e8e8e8', fontSize: '16px', fontWeight: 600, padding: '14px 16px', borderRadius: '12px',
+                  cursor: 'pointer', fontFamily: 'inherit', width: '100%',
+                }}
+              >
+                AI Tools
+              </button>
+              <button
+                type="button"
+                onClick={() => closeMobileAnd(openPrintChat)}
+                style={{
+                  textAlign: 'left', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)',
+                  color: '#e8e8e8', fontSize: '16px', fontWeight: 600, padding: '14px 16px', borderRadius: '12px',
+                  cursor: 'pointer', fontFamily: 'inherit', width: '100%',
+                  display: 'flex', alignItems: 'center', gap: '10px',
+                }}
+              >
+                <MessageCircle size={18} style={{ opacity: 0.85, color: '#ff6666' }} />
+                Print chatbot
+              </button>
+            </div>
+            <button
+              type="button"
+              className="nav-pri-h"
+              onClick={() => closeMobileAnd(() => navigate('/staff-login'))}
+              style={{
+                marginTop: '20px', maxWidth: '400px', marginLeft: 'auto', marginRight: 'auto',
+                width: '100%', background: 'rgba(255,51,51,0.18)', border: '1px solid rgba(255,51,51,0.38)', color: '#ff6666',
+                fontSize: '15px', fontWeight: 700, padding: '14px 18px', borderRadius: '12px', cursor: 'pointer',
+                fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+              }}
+            >
+              <LogIn size={18} />Staff login
+            </button>
+          </div>
+        </>
+      )}
+
       {/* ── HERO ── */}
-      <section style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '100px 2rem 60px', position: 'relative', textAlign: 'center', overflow: 'hidden' }}>
+      <section style={{
+        minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+        padding: `${navH + 28}px clamp(1rem, 4vw, 2rem) clamp(36px, 6vh, 60px)`, position: 'relative', textAlign: 'center', overflow: 'hidden',
+      }}>
         {/* Background effects */}
-        <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(255,51,51,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,51,51,0.04) 1px, transparent 1px)', backgroundSize: '60px 60px', WebkitMask: 'radial-gradient(ellipse 90% 70% at 50% 40%, black 30%, transparent 100%)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', top: '10%', left: '50%', transform: 'translateX(-50%)', width: '700px', height: '500px', background: 'radial-gradient(ellipse, rgba(255,51,51,0.14) 0%, transparent 70%)', pointerEvents: 'none' }} />
+        <div style={{
+          position: 'absolute', inset: 0,
+          backgroundImage: 'linear-gradient(rgba(255,51,51,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,51,51,0.04) 1px, transparent 1px)',
+          backgroundSize: isCompactNav ? '44px 44px' : '60px 60px',
+          WebkitMask: 'radial-gradient(ellipse 90% 70% at 50% 40%, black 30%, transparent 100%)',
+          pointerEvents: 'none',
+        }} />
+        <div style={{
+          position: 'absolute', top: '10%', left: '50%', transform: 'translateX(-50%)',
+          width: isCompactNav ? 'min(92vw, 520px)' : '700px', height: isCompactNav ? 'min(52vh, 420px)' : '500px',
+          background: 'radial-gradient(ellipse, rgba(255,51,51,0.14) 0%, transparent 70%)', pointerEvents: 'none',
+        }} />
         <div style={{ position: 'absolute', top: '30%', left: '15%', width: '200px', height: '200px', background: 'radial-gradient(ellipse, rgba(255,51,51,0.08) 0%, transparent 70%)', borderRadius: '50%', pointerEvents: 'none' }} />
         <div style={{ position: 'absolute', top: '40%', right: '10%', width: '180px', height: '180px', background: 'radial-gradient(ellipse, rgba(255,51,51,0.07) 0%, transparent 70%)', borderRadius: '50%', pointerEvents: 'none' }} />
         <ParticleCanvas />
 
-        {/* Floating decorative elements */}
-        <div className="float-slow" style={{ position: 'absolute', top: '18%', left: '8%', width: '56px', height: '56px', borderRadius: '14px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999999' }}>
-          <Printer size={22} />
+        {/* Floating decorative elements (hidden on very small viewports via .home-hero-float) */}
+        <div className="home-hero-float float-slow" style={{
+          position: 'absolute', top: isCompactNav ? '14%' : '18%', left: isCompactNav ? '5%' : '8%',
+          width: isCompactNav ? '46px' : '56px', height: isCompactNav ? '46px' : '56px',
+          borderRadius: '14px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999999',
+        }}>
+          <Printer size={isCompactNav ? 19 : 22} />
         </div>
-        <div className="float-mid" style={{ position: 'absolute', top: '25%', right: '9%', width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888888' }}>
-          <CheckCircle size={20} />
+        <div className="home-hero-float float-mid" style={{
+          position: 'absolute', top: isCompactNav ? '20%' : '25%', right: isCompactNav ? '5%' : '9%',
+          width: isCompactNav ? '42px' : '48px', height: isCompactNav ? '42px' : '48px',
+          borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888888',
+        }}>
+          <CheckCircle size={isCompactNav ? 18 : 20} />
         </div>
-        <div className="float-slow" style={{ position: 'absolute', bottom: '30%', left: '12%', width: '44px', height: '44px', borderRadius: '10px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#777777' }}>
-          <Zap size={18} />
+        <div className="home-hero-float float-slow" style={{
+          position: 'absolute', bottom: isCompactNav ? '34%' : '30%', left: isCompactNav ? '7%' : '12%',
+          width: isCompactNav ? '38px' : '44px', height: isCompactNav ? '38px' : '44px',
+          borderRadius: '10px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#777777',
+        }}>
+          <Zap size={isCompactNav ? 16 : 18} />
         </div>
 
 
@@ -410,30 +595,58 @@ const Home = () => {
           <span className="gradient-text">Smarter, Not Harder</span>
         </h1>
 
-        <p className="animate-3" style={{ fontSize: '18px', lineHeight: 1.75, color: '#999999', maxWidth: '540px', marginBottom: '44px', fontWeight: 400 }}>
+        <p className="animate-3" style={{
+          fontSize: isCompactNav ? 'clamp(15px, 3.9vw, 17px)' : '18px', lineHeight: 1.75, color: '#999999', maxWidth: '540px',
+          marginBottom: isCompactNav ? '32px' : '44px', fontWeight: 400, padding: '0 4px',
+        }}>
           Orders, inventory, clients, and analytics — all in one precision-built platform for modern printing businesses in Sri Lanka.
         </p>
 
-        <div className="animate-3" style={{ display: 'flex', gap: '14px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '80px' }}>
+        <div className="animate-3" style={{ display: 'flex', gap: '14px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: isCompactNav ? '48px' : '80px', width: '100%', maxWidth: '420px' }}>
           <button className="btn-primary-h glow-btn" onClick={() => navigate('/customer-dashboard')}
-            style={{ background: 'linear-gradient(135deg, #ff3333, #990000)', color: '#fff', border: 'none', padding: '15px 32px', borderRadius: '12px', fontSize: '15px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '9px', transition: 'all 0.25s', fontFamily: 'inherit', boxShadow: '0 0 40px rgba(255,51,51,0.4)', letterSpacing: '0.01em' }}>
+            style={{
+              background: 'linear-gradient(135deg, #ff3333, #990000)', color: '#fff', border: 'none',
+              padding: isCompactNav ? '14px 28px' : '15px 32px', borderRadius: '12px', fontSize: isCompactNav ? '14px' : '15px', fontWeight: 700,
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '9px', transition: 'all 0.25s', fontFamily: 'inherit',
+              boxShadow: '0 0 40px rgba(255,51,51,0.4)', letterSpacing: '0.01em', width: isCompactNav ? '100%' : 'auto', minHeight: '48px',
+            }}>
             Place an Order <ArrowRight size={16} />
           </button>
 
         </div>
 
-        {/* Stats strip */}
-        <div className="animate-5 card-border-anim" style={{ display: 'flex', border: '1px solid rgba(255,51,51,0.3)', borderRadius: '18px', overflow: 'hidden', maxWidth: '700px', width: '100%', background: 'rgba(255,255,255,0.02)', backdropFilter: 'blur(12px)' }}>
+        {/* Stats: single row on wide screens, 2×2 grid on phones */}
+        <div
+          className="animate-5 card-border-anim"
+          style={{
+            display: 'grid',
+            gridTemplateColumns: isCompactNav ? 'repeat(2, minmax(0, 1fr))' : 'repeat(4, minmax(0, 1fr))',
+            gap: isCompactNav ? '1px' : '0',
+            border: '1px solid rgba(255,51,51,0.3)', borderRadius: isCompactNav ? '16px' : '18px', overflow: 'hidden',
+            maxWidth: isCompactNav ? 'min(100%, 520px)' : '700px', width: '100%',
+            background: isCompactNav ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.02)', backdropFilter: 'blur(12px)',
+          }}
+        >
           {[
             { num: `${count.orders.toLocaleString()}+`, label: 'Jobs Processed', icon: <Printer size={20} /> },
             { num: `${count.clients}+`, label: 'Active Clients', icon: <Users size={20} /> },
             { num: `${count.years} Yrs`, label: 'In Business', icon: <Star size={20} /> },
             { num: `${count.uptime}%`, label: 'Uptime SLA', icon: <Zap size={20} /> },
           ].map((s, i) => (
-            <div key={i} style={{ flex: 1, padding: '22px 20px', textAlign: 'center', borderRight: i < 3 ? '1px solid rgba(255,255,255,0.06)' : 'none' }}>
-              <div style={{ fontSize: '18px', marginBottom: '8px', color: '#888888', display: 'flex', justifyContent: 'center' }}>{s.icon}</div>
-              <div style={{ fontSize: '26px', fontWeight: 800, color: '#ffffff', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '-0.02em', marginBottom: '4px' }}>{s.num}</div>
-              <div style={{ fontSize: '11px', color: '#666666', letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 500 }}>{s.label}</div>
+            <div
+              key={i}
+              style={{
+                padding: isCompactNav ? '16px 12px' : '22px 20px', textAlign: 'center',
+                background: '#0d0d0f',
+                borderRight: !isCompactNav && i < 3 ? '1px solid rgba(255,255,255,0.06)' : 'none',
+              }}
+            >
+              <div style={{ fontSize: isCompactNav ? '16px' : '18px', marginBottom: '8px', color: '#888888', display: 'flex', justifyContent: 'center' }}>{s.icon}</div>
+              <div style={{
+                fontSize: isCompactNav ? 'clamp(1.15rem, 4.2vw, 1.45rem)' : '26px', fontWeight: 800, color: '#ffffff',
+                fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '-0.02em', marginBottom: '4px',
+              }}>{s.num}</div>
+              <div style={{ fontSize: isCompactNav ? '10px' : '11px', color: '#666666', letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 500, lineHeight: 1.35 }}>{s.label}</div>
             </div>
           ))}
         </div>
@@ -454,7 +667,7 @@ const Home = () => {
       </div>
 
       {/* ── SERVICES / GALLERY ── */}
-      <section id="services" style={{ padding: '100px 2rem', maxWidth: '1150px', margin: '0 auto' }}>
+      <section id="services" style={{ padding: isCompactNav ? '72px clamp(1rem, 4vw, 1.5rem)' : '100px 2rem', maxWidth: '1150px', margin: '0 auto' }}>
         <div className="scroll-reveal" style={{ marginBottom: '56px' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255,51,51,0.1)', border: '1px solid rgba(255,51,51,0.2)', color: '#ff3333', fontSize: '12px', fontWeight: 600, padding: '5px 14px', borderRadius: '100px', marginBottom: '16px', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
             <Star size={11} /> Our Services
@@ -480,7 +693,7 @@ const Home = () => {
       </section>
 
       {/* ── FEATURES GRID ── */}
-      <section id="features" style={{ padding: '0 2rem 100px', maxWidth: '1150px', margin: '0 auto' }}>
+      <section id="features" style={{ padding: `0 ${isCompactNav ? 'clamp(1rem, 4vw, 1.5rem)' : '2rem'} ${isCompactNav ? '72px' : '100px'}`, maxWidth: '1150px', margin: '0 auto' }}>
         <div className="scroll-reveal" style={{ textAlign: 'center', marginBottom: '60px' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255,51,51,0.1)', border: '1px solid rgba(255,51,51,0.2)', color: '#ff3333', fontSize: '12px', fontWeight: 600, padding: '5px 14px', borderRadius: '100px', marginBottom: '16px', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
             <Layers size={11} /> Platform Features
@@ -489,7 +702,7 @@ const Home = () => {
           <p style={{ fontSize: '16px', color: '#666666', lineHeight: 1.7, maxWidth: '500px', margin: '0 auto' }}>Built specifically for advertising & print businesses — from job intake to delivery.</p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1px', background: 'rgba(255,255,255,0.06)', borderRadius: '24px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.06)' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '1px', background: 'rgba(255,255,255,0.06)', borderRadius: '24px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.06)' }}>
           {features.map((f, i) => (
             <div key={i} className="feature-card-h scroll-reveal"
               style={{ background: '#0C0E14', padding: '34px', cursor: 'pointer', position: 'relative', overflow: 'hidden' }}>
@@ -511,7 +724,7 @@ const Home = () => {
 
 
       {/* ── AI SECTION ── */}
-      <section id="ai-copywriting" style={{ padding: '0 2rem 100px', maxWidth: '1150px', margin: '0 auto' }}>
+      <section id="ai-copywriting" style={{ padding: `0 ${isCompactNav ? 'clamp(1rem, 4vw, 1.5rem)' : '2rem'} ${isCompactNav ? '72px' : '100px'}`, maxWidth: '1150px', margin: '0 auto' }}>
         <div className="scroll-reveal">
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255,51,51,0.12)', border: '1px solid rgba(255,51,51,0.25)', color: '#ff3333', fontSize: '12px', fontWeight: 600, padding: '5px 14px', borderRadius: '100px', marginBottom: '16px', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
             <Zap size={11} /> AI-Powered
@@ -525,7 +738,13 @@ const Home = () => {
       </section>
 
       {/* ── CTA BANNER ── */}
-      <div style={{ margin: '0 2rem 100px', background: 'linear-gradient(135deg, rgba(255,51,51,0.16) 0%, rgba(204,0,0,0.1) 100%)', border: '1px solid rgba(255,51,51,0.28)', borderRadius: '28px', padding: '72px 48px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+      <div style={{
+        margin: isCompactNav ? '0 clamp(1rem, 4vw, 1.5rem) 72px' : '0 2rem 100px',
+        background: 'linear-gradient(135deg, rgba(255,51,51,0.16) 0%, rgba(204,0,0,0.1) 100%)', border: '1px solid rgba(255,51,51,0.28)',
+        borderRadius: isCompactNav ? '20px' : '28px',
+        padding: isCompactNav ? 'clamp(40px, 9vw, 56px) clamp(18px, 5vw, 28px)' : '72px 48px',
+        textAlign: 'center', position: 'relative', overflow: 'hidden',
+      }}>
         <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 55% 90% at 50% 50%, rgba(153,0,0,0.07) 0%, transparent 100%)', pointerEvents: 'none' }} />
         <div style={{ position: 'absolute', top: 0, left: 0, width: '60px', height: '60px', borderTop: '2px solid rgba(255,51,51,0.3)', borderLeft: '2px solid rgba(255,51,51,0.3)', borderRadius: '28px 0 0 0' }} />
         <div style={{ position: 'absolute', bottom: 0, right: 0, width: '60px', height: '60px', borderBottom: '2px solid rgba(255,51,51,0.3)', borderRight: '2px solid rgba(255,51,51,0.3)', borderRadius: '0 0 28px 0' }} />
@@ -559,7 +778,7 @@ const Home = () => {
       </div>
 
       {/* ── ABOUT ── */}
-      <section id="about" style={{ padding: '0 2rem 100px', maxWidth: '1150px', margin: '0 auto' }}>
+      <section id="about" style={{ padding: `0 ${isCompactNav ? 'clamp(1rem, 4vw, 1.5rem)' : '2rem'} ${isCompactNav ? '72px' : '100px'}`, maxWidth: '1150px', margin: '0 auto' }}>
         <div className="scroll-reveal">
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255,51,51,0.1)', border: '1px solid rgba(255,51,51,0.2)', color: '#ff3333', fontSize: '12px', fontWeight: 600, padding: '5px 14px', borderRadius: '100px', marginBottom: '16px', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
             <Star size={11} /> About Us
@@ -569,13 +788,13 @@ const Home = () => {
         </div>
 
         {/* About visual banner */}
-        <div className="scroll-reveal" style={{ marginTop: '40px', marginBottom: '28px', borderRadius: '20px', overflow: 'hidden', position: 'relative', height: '220px' }}>
+        <div className="scroll-reveal" style={{ marginTop: '40px', marginBottom: '28px', borderRadius: isCompactNav ? '16px' : '20px', overflow: 'hidden', position: 'relative', height: isCompactNav ? '200px' : '220px' }}>
           <img src="https://images.unsplash.com/photo-1524234107056-1c1f48f64ab8?w=1200&q=80" alt="Print shop" style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'grayscale(1) brightness(0.6) contrast(1.1)' }} />
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 40%, transparent 100%)' }} />
-          <div style={{ position: 'absolute', left: '40px', top: '50%', transform: 'translateY(-50%)' }}>
-            <div style={{ fontSize: '13px', color: '#ff3333', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '8px' }}>Est. 2012</div>
-            <div style={{ fontSize: '28px', fontWeight: 800, color: '#ffffff', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '-0.02em', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>Anuradhapura's</div>
-            <div style={{ fontSize: '28px', fontWeight: 800, fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '-0.02em', textShadow: '0 2px 10px rgba(0,0,0,0.3)' }} className="gradient-text">Print Experts</div>
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.45) 50%, transparent 100%)' }} />
+          <div style={{ position: 'absolute', left: isCompactNav ? 'clamp(14px, 4vw, 24px)' : '40px', top: '50%', transform: 'translateY(-50%)', right: isCompactNav ? '12px' : 'auto' }}>
+            <div style={{ fontSize: isCompactNav ? '11px' : '13px', color: '#ff3333', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '8px' }}>Est. 2012</div>
+            <div style={{ fontSize: isCompactNav ? 'clamp(1.25rem, 4.5vw, 1.5rem)' : '28px', fontWeight: 800, color: '#ffffff', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '-0.02em', textShadow: '0 2px 10px rgba(0,0,0,0.5)', lineHeight: 1.15 }}>Anuradhapura&apos;s</div>
+            <div style={{ fontSize: isCompactNav ? 'clamp(1.25rem, 4.5vw, 1.5rem)' : '28px', fontWeight: 800, fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '-0.02em', textShadow: '0 2px 10px rgba(0,0,0,0.3)', lineHeight: 1.15 }} className="gradient-text">Print Experts</div>
           </div>
         </div>
 
@@ -596,7 +815,7 @@ const Home = () => {
       </section>
 
       {/* ── CHATBOT (anchor for nav; floating UI is portaled to body) ── */}
-      <section id="print-knowledge" style={{ padding: '0 2rem 100px', maxWidth: '1150px', margin: '0 auto' }}>
+      <section id="print-knowledge" style={{ padding: `0 ${isCompactNav ? 'clamp(1rem, 4vw, 1.5rem)' : '2rem'} ${isCompactNav ? '72px' : '100px'}`, maxWidth: '1150px', margin: '0 auto' }}>
         <div className="scroll-reveal">
           <button
             type="button"
@@ -618,8 +837,8 @@ const Home = () => {
       </section>
 
       {/* ── FOOTER ── */}
-      <footer style={{ borderTop: '1px solid rgba(255,255,255,0.06)', padding: '56px 2.5rem 36px', background: 'rgba(0,0,0,0.3)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '40px', maxWidth: '1150px', margin: '0 auto' }}>
+      <footer style={{ borderTop: '1px solid rgba(255,255,255,0.06)', padding: isCompactNav ? '44px clamp(1rem, 4vw, 1.5rem) 28px' : '56px 2.5rem 36px', background: 'rgba(0,0,0,0.3)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: isCompactNav ? '32px' : '40px', maxWidth: '1150px', margin: '0 auto', flexDirection: isCompactNav ? 'column' : 'row' }}>
           <div style={{ maxWidth: '280px' }}>
             <div style={{ marginBottom: '16px' }}>
               <img
