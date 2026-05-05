@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { useMatchMedia } from '../../hooks/useMatchMedia';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -16,7 +17,24 @@ const RISK_BORDER = {
     Low: '#10b981',
 };
 
+const TRACK_MIN_WIDTH = 434; /* ~62px per day — keeps Mon–Sun readable on small screens */
+
 const WeeklyTimeline = ({ machines, orders }) => {
+    const isCompact = useMatchMedia('(max-width: 768px)');
+    /** Narrow screens: shorter label column + horizontal scroll so all 7 days stay usable */
+    const labelW = isCompact ? 108 : 160;
+    const stickyLabel = {
+        ...(isCompact
+            ? {
+                position: 'sticky',
+                left: 0,
+                zIndex: 4,
+                background: '#ffffff',
+                boxShadow: '4px 0 14px rgba(15, 23, 42, 0.08)',
+            }
+            : {}),
+    };
+
     const { weekDays, today } = useMemo(() => {
         const today = new Date();
         const days = [];
@@ -56,27 +74,51 @@ const WeeklyTimeline = ({ machines, orders }) => {
         <div style={{
             background: '#ffffff',
             borderRadius: '24px',
-            padding: '32px',
+            padding: isCompact ? '18px 14px' : '32px',
             border: '1px solid #e2e8f0',
             boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
             fontFamily: "'Inter', sans-serif",
-            overflow: 'hidden'
+            overflow: 'visible',
+            maxWidth: '100%',
+            boxSizing: 'border-box',
         }}>
             {/* Header */}
-            <div style={{ marginBottom: '28px' }}>
-                <h2 style={{ margin: 0, fontSize: '22px', fontWeight: '900', color: '#0f172a', letterSpacing: '-0.5px' }}>Weekly Timeline</h2>
+            <div style={{ marginBottom: isCompact ? '18px' : '28px' }}>
+                <h2 style={{ margin: 0, fontSize: isCompact ? 'clamp(1rem, 4vw, 1.25rem)' : '22px', fontWeight: '900', color: '#0f172a', letterSpacing: '-0.5px' }}>Weekly Timeline</h2>
                 <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#94a3b8', fontWeight: '600' }}>{dateRangeStr}</p>
             </div>
 
+            <div
+                className="weekly-timeline-scroll"
+                style={{
+                    overflowX: isCompact ? 'auto' : 'visible',
+                    WebkitOverflowScrolling: 'touch',
+                    marginLeft: isCompact ? -4 : 0,
+                    marginRight: isCompact ? -4 : 0,
+                    paddingBottom: isCompact ? 6 : 0,
+                }}
+            >
+                <div style={{ minWidth: isCompact ? labelW + TRACK_MIN_WIDTH : undefined, width: isCompact ? undefined : '100%' }}>
             {/* Day Column Headers */}
-            <div style={{ display: 'flex', marginBottom: '16px', paddingLeft: '160px' }}>
+            <div style={{ display: 'flex', marginBottom: '16px', alignItems: 'center' }}>
+                <div
+                    style={{
+                        width: labelW,
+                        flexShrink: 0,
+                        paddingRight: isCompact ? 10 : 16,
+                        ...stickyLabel,
+                    }}
+                    aria-hidden
+                />
+                <div style={{ display: 'flex', flex: 1, minWidth: isCompact ? TRACK_MIN_WIDTH : 0 }}>
                 {weekDays.map((d, i) => (
                     <div key={i} style={{
                         flex: 1,
+                        minWidth: 0,
                         textAlign: 'center',
-                        fontSize: '12px',
+                        fontSize: isCompact ? '10px' : '12px',
                         fontWeight: '800',
-                        padding: '6px 4px',
+                        padding: isCompact ? '6px 2px' : '6px 4px',
                         borderRadius: '99px',
                         background: isToday(d) ? '#3b82f6' : 'transparent',
                         color: isToday(d) ? '#fff' : '#64748b',
@@ -84,6 +126,7 @@ const WeeklyTimeline = ({ machines, orders }) => {
                         {DAYS[i]} {d.getDate()}
                     </div>
                 ))}
+                </div>
             </div>
 
             {/* Machine Rows */}
@@ -103,14 +146,15 @@ const WeeklyTimeline = ({ machines, orders }) => {
                     return (
                         <div key={machine._id} style={{ display: 'flex', alignItems: 'center' }}>
                             {/* Machine Label */}
-                            <div style={{ width: '160px', flexShrink: 0, paddingRight: '16px' }}>
-                                <div style={{ fontWeight: '800', fontSize: '14px', color: '#1e293b', lineHeight: 1.2 }}>{machine.name}</div>
-                                <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '600', marginTop: '2px' }}>{machine.type || 'Machine'}</div>
+                            <div style={{ width: labelW, flexShrink: 0, paddingRight: isCompact ? 10 : 16, ...stickyLabel }}>
+                                <div style={{ fontWeight: '800', fontSize: isCompact ? '12px' : '14px', color: '#1e293b', lineHeight: 1.2, wordBreak: 'break-word' }}>{machine.name}</div>
+                                <div style={{ fontSize: isCompact ? '10px' : '11px', color: '#94a3b8', fontWeight: '600', marginTop: '2px' }}>{machine.type || 'Machine'}</div>
                             </div>
 
                             {/* Timeline Track */}
                             <div style={{
                                 flex: 1,
+                                minWidth: isCompact ? TRACK_MIN_WIDTH : 0,
                                 height: '48px',
                                 background: '#f1f5f9',
                                 borderRadius: '12px',
@@ -247,6 +291,8 @@ const WeeklyTimeline = ({ machines, orders }) => {
                         </div>
                     );
                 })}
+            </div>
+                </div>
             </div>
 
             {/* Legend */}
