@@ -84,6 +84,68 @@ py -m uvicorn ml.model_server:app --host 127.0.0.1 --port 8000
 | API health | http://127.0.0.1:5001/api/health |
 | ML health | http://127.0.0.1:8000/health |
 
+## Deployment (Vercel + Railway)
+
+This repo is structured as:
+
+- `client/`: React (CRA) frontend — deploy to **Vercel**
+- `server/`: Express API — deploy to **Railway** (or any Node host)
+
+### Backend (Railway)
+
+- Deploy the `server/` service.
+- Ensure the API listens on `process.env.PORT` (this repo already does).
+- Verify it’s live by opening:
+  - `/api/health` → should return JSON like `{"status":"ok", ...}`
+
+Required environment variables on Railway (server):
+
+```env
+MONGO_URI=...
+JWT_SECRET=...
+JWT_EXPIRES_IN=7d
+GOOGLE_CLIENT_ID=...   # Google OAuth Web client id (same value used by frontend)
+```
+
+### Frontend (Vercel)
+
+Set these environment variables in Vercel **Production** (and **Preview** if you want preview links to work too):
+
+```env
+REACT_APP_API_BASE_URL=https://<your-railway-domain>
+REACT_APP_GOOGLE_CLIENT_ID=<your-google-web-client-id>
+```
+
+Important:
+
+- `REACT_APP_API_BASE_URL` **must** be the backend base URL (example: `https://shanarts-production.up.railway.app`)
+- The variable name must be **exactly** `REACT_APP_API_BASE_URL`
+  - A common mistake is creating `REACT_APP_APP1_BASE_URL` (the frontend will ignore it and you’ll get 404/405 on login)
+- Prefer **no trailing slash** in the URL value.
+
+After changing env vars, **Redeploy** the Vercel deployment.
+
+## Google Sign-In (GSI) troubleshooting
+
+The frontend uses Google Identity Services via `@react-oauth/google`. These are the common production errors and fixes:
+
+- **Error 400: `origin_mismatch`**
+  - **Cause**: Deployed domain is not allowed in Google OAuth client.
+  - **Fix**: In Google Cloud Console → Credentials → your **OAuth 2.0 Web client** → add
+    - Authorized JavaScript origins:
+      - `https://<your-vercel-domain>` (example: `https://shan-arts.vercel.app`)
+      - `http://localhost:3000` (local dev)
+
+- **“Wrong recipient, payload audience != requiredAudience”**
+  - **Cause**: Frontend created the Google token with one Client ID, but backend verifies against a different Client ID.
+  - **Fix**: Use the **same** Google OAuth Web Client ID for:
+    - Vercel `REACT_APP_GOOGLE_CLIENT_ID`
+    - Railway `GOOGLE_CLIENT_ID`
+
+- **Login returns 404/405 from deployed site**
+  - **Cause**: Frontend is calling the wrong API base URL (often because `REACT_APP_API_BASE_URL` is missing or misspelled).
+  - **Fix**: Set `REACT_APP_API_BASE_URL` to your backend domain and redeploy.
+
 ## Delay risk (summary)
 
 Schedule Manager calls the ML service; results are stored on `ShopOrder` (`delayRiskLevel`, confidence, probabilities, timestamp). **High** risk notifies admins and can trigger deadline updates and customer messaging; **Medium** notifies customers. Message copy can use Ollama when configured.
