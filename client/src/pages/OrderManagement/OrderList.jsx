@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useMatchMedia } from '../../hooks/useMatchMedia';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -96,6 +97,7 @@ const PriorityBadge = ({ priority }) => {
 
 const OrderList = () => {
     const navigate = useNavigate();
+    const isCompact = useMatchMedia('(max-width: 900px)');
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filterTab, setFilterTab] = useState('all');
@@ -134,6 +136,8 @@ const OrderList = () => {
         return acc;
     }, {});
 
+    const orderGridCols = '2fr 1.2fr 1.2fr 1.2fr 1fr 80px';
+
     if (loading) return (
         <div className="shan-fade-in" style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-color)', color: 'var(--text-secondary)', fontWeight: '600', gap: '14px' }}>
             <div className="shan-spin" />
@@ -142,15 +146,15 @@ const OrderList = () => {
     );
 
     return (
-        <div className="shan-page" style={{ backgroundColor: 'var(--bg-color)', minHeight: '100vh', fontFamily: 'var(--font-sans, sans-serif)', padding: '28px 36px', color: 'var(--text-primary)' }}>
+        <div className="shan-page order-list-page" style={{ backgroundColor: 'var(--bg-color)', minHeight: '100vh', fontFamily: 'var(--font-sans, sans-serif)', padding: isCompact ? 'clamp(14px, 4vw, 24px)' : '28px 36px', color: 'var(--text-primary)', boxSizing: 'border-box', maxWidth: '100%', overflowX: 'hidden' }}>
 
             {/* Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
-                <h1 style={{ fontSize: '26px', fontWeight: '800', color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.5px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <Layout size={28} color="var(--accent-color)" /> Order Management
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: isCompact ? 'flex-start' : 'center', flexWrap: 'wrap', gap: '16px', marginBottom: isCompact ? '28px' : '40px' }}>
+                <h1 style={{ fontSize: isCompact ? 'clamp(1.15rem, 4vw, 1.5rem)' : '26px', fontWeight: '800', color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.5px', display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+                    <Layout size={isCompact ? 24 : 28} color="var(--accent-color)" /> Order Management
                 </h1>
 
-                <div style={{ position: 'relative' }}>
+                <div style={{ position: 'relative', flex: isCompact ? '1 1 100%' : '0 1 auto', minWidth: 0, maxWidth: isCompact ? '100%' : 320 }}>
                     <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)', display: 'flex' }}>
                         <Search size={18} />
                     </span>
@@ -159,7 +163,7 @@ const OrderList = () => {
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
                         className="shan-input"
-                        style={{ padding: '10px 16px 10px 40px', width: '300px', fontSize: '14px', fontWeight: '500' }}
+                        style={{ padding: '10px 16px 10px 40px', width: '100%', maxWidth: '100%', fontSize: '14px', fontWeight: '500', boxSizing: 'border-box' }}
                     />
                 </div>
             </div>
@@ -204,10 +208,12 @@ const OrderList = () => {
                 ))}
             </div>
 
-            {/* Orders Table */}
-            <div className="shan-fade-in" style={{ background: 'var(--card-bg)', borderRadius: '18px', border: '1px solid var(--border-color)', overflow: 'hidden', boxShadow: 'var(--shadow-md)' }}>
+            {/* Orders table: horizontal scroll on narrow viewports (grid min-width preserved) */}
+            <div className="shan-fade-in" style={{ background: 'var(--card-bg)', borderRadius: '18px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)', overflow: 'hidden' }}>
+                <div className="shan-table-scroll" style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                <div style={{ minWidth: isCompact ? 720 : undefined }}>
                 {/* Table Header */}
-                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1.2fr 1.2fr 1.2fr 1fr 80px', padding: '12px 24px', borderBottom: '1px solid var(--border-color)', background: 'var(--surface-muted)' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: orderGridCols, padding: isCompact ? '12px 16px' : '12px 24px', borderBottom: '1px solid var(--border-color)', background: 'var(--surface-muted)' }}>
                     {['Customer', 'Product', 'Status', 'Needed By', 'Priority', ''].map((h, i) => (
                         <div key={i} style={{ fontSize: '11px', fontWeight: '900', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.8px' }}>{h}</div>
                     ))}
@@ -289,6 +295,8 @@ const OrderList = () => {
                         );
                     })
                 )}
+                </div>
+                </div>
             </div>
 
             {filteredOrders.length > 0 && (

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useMatchMedia } from '../../hooks/useMatchMedia';
 import axios from 'axios';
 import { 
     Package, 
@@ -22,6 +23,7 @@ import AddMaterialModal from './AddMaterialModal';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Cell } from 'recharts';
 
 const Inventory = () => {
+    const isCompact = useMatchMedia('(max-width: 900px)');
     const [materials, setMaterials] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showAddModal, setShowAddModal] = useState(false);
@@ -147,7 +149,7 @@ const Inventory = () => {
     if (loading) return <div style={{ padding: '60px', textAlign: 'center', background: 'var(--bg-color)', height: '100vh', color: 'var(--text-secondary)', fontWeight: '600' }}>Loading Inventory Data...</div>;
 
     return (
-        <div style={{ padding: '28px 36px', maxWidth: '1400px', margin: '0 auto', fontFamily: "var(--font-sans, sans-serif)", backgroundColor: 'var(--bg-color)', minHeight: '100vh' }}>
+        <div className="shan-page" style={{ padding: isCompact ? 'clamp(14px, 4vw, 24px)' : '28px 36px', maxWidth: '1400px', margin: '0 auto', fontFamily: "var(--font-sans, sans-serif)", backgroundColor: 'var(--bg-color)', minHeight: '100vh', boxSizing: 'border-box', width: '100%', overflowX: 'hidden' }}>
             <style>
                 {`
                     @keyframes fadeInUp {
@@ -161,17 +163,17 @@ const Inventory = () => {
                 `}
             </style>
             
-            <div className="animate-fade-in" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
-                <div>
-                  <h1 style={{ fontSize: '26px', fontWeight: '800', color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.5px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <Package size={28} color="var(--accent-color)" /> Inventory Control
+            <div className="animate-fade-in" style={{ display: 'flex', justifyContent: 'space-between', alignItems: isCompact ? 'flex-start' : 'center', flexWrap: 'wrap', gap: '16px', marginBottom: isCompact ? '28px' : '40px' }}>
+                <div style={{ minWidth: 0, flex: isCompact ? '1 1 100%' : '1 1 auto' }}>
+                  <h1 style={{ fontSize: isCompact ? 'clamp(1.1rem, 4vw, 1.45rem)' : '26px', fontWeight: '800', color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.5px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <Package size={isCompact ? 24 : 28} color="var(--accent-color)" /> Inventory Control
                   </h1>
                   <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginTop: '6px', fontWeight: '500' }}>
                       Track and manage production materials and stock levels
                   </p>
                 </div>
                 {isInventoryManager && (
-                    <div style={{ display: 'flex', gap: '12px' }}>
+                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', width: isCompact ? '100%' : 'auto', justifyContent: isCompact ? 'flex-start' : 'flex-end' }}>
                         <button
                             onClick={() => setShowQRScanner(true)}
                             style={{ background: 'var(--text-primary)', color: 'var(--bg-color)', border: 'none', padding: '12px 24px', borderRadius: '12px', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: 'var(--shadow-sm)', fontSize: '14px' }}
@@ -268,7 +270,7 @@ const Inventory = () => {
             </div>
 
             {/* Material Cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '24px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 260px), 1fr))', gap: '24px' }}>
                 {materials.map((item, index) => {
                     const isLowStock = item.currentStock <= item.reorderThreshold;
                     return (

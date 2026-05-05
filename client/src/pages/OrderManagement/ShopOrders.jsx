@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { API_BASE_URL } from '../../apiBase';
+import { useMatchMedia } from '../../hooks/useMatchMedia';
 
 const ShopOrders = () => {
+    const isCompact = useMatchMedia('(max-width: 900px)');
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -29,7 +31,7 @@ const ShopOrders = () => {
     };
 
     return (
-        <div style={{ padding: '40px', maxWidth: '1400px', margin: '0 auto', animation: 'fadeIn 0.5s ease-out' }}>
+        <div className="shan-page" style={{ padding: isCompact ? 'clamp(14px, 4vw, 24px)' : '40px', maxWidth: '1400px', margin: '0 auto', animation: 'fadeIn 0.5s ease-out', boxSizing: 'border-box', width: '100%', overflowX: 'hidden' }}>
             <header style={{ marginBottom: '40px' }}>
                 <h1 style={{ fontSize: '32px', fontWeight: '900', color: '#111827', letterSpacing: '-1px' }}>PRODUCTION ORDERS</h1>
                 <p style={{ color: '#6b7280', fontSize: '16px' }}>Real-time production tracking and order management.</p>
@@ -45,7 +47,8 @@ const ShopOrders = () => {
                 {loading ? (
                     <div style={{ padding: '100px', textAlign: 'center', color: '#6b7280' }}>Loading production data...</div>
                 ) : (
-                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                    <div className="shan-table-scroll" style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: isCompact ? 720 : undefined }}>
                         <thead>
                         <tr style={{ backgroundColor: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
                             <th style={{ padding: '20px 24px', fontSize: '12px', fontWeight: '800', color: '#4b5563', textTransform: 'uppercase' }}>Customer</th>
@@ -99,6 +102,7 @@ const ShopOrders = () => {
                         )}
                         </tbody>
                     </table>
+                    </div>
                 )}
             </div>
             <style>{`

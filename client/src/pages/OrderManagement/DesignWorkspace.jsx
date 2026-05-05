@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { API_BASE_URL } from '../../apiBase';
 import DesignWorkspaceTools from '../../components/DesignWorkspaceTools';
+import { useMatchMedia } from '../../hooks/useMatchMedia';
 
 const STATUS_MAP = {
     'draft':              { label: 'Draft',               color: '#64748b', bg: '#f1f5f9', border: '#e2e8f0' },
@@ -55,6 +56,7 @@ const PriorityBadge = ({ priority }) => {
 
 const DesignWorkspaceCardView = () => {
     const navigate = useNavigate();
+    const isCompact = useMatchMedia('(max-width: 900px)');
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filterStatus, setFilterStatus] = useState('All Projects');
@@ -119,10 +121,10 @@ const DesignWorkspaceCardView = () => {
     );
 
     return (
-        <div className="shan-page" style={{ backgroundColor: 'var(--bg-color)', minHeight: '100vh', fontFamily: 'var(--font-sans, sans-serif)', padding: '28px 36px', color: 'var(--text-primary)' }}>
+        <div className="shan-page" style={{ backgroundColor: 'var(--bg-color)', minHeight: '100vh', fontFamily: 'var(--font-sans, sans-serif)', padding: isCompact ? 'clamp(14px, 4vw, 24px)' : '28px 36px', color: 'var(--text-primary)', boxSizing: 'border-box', maxWidth: '100%', overflowX: 'hidden' }}>
             {/* Banner */}
             {newOrdersCount > 0 && (
-                <div style={{ background: 'rgba(255, 51, 51, 0.12)', borderRadius: '14px', border: '1px solid rgba(255, 51, 51, 0.35)', padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                <div style={{ background: 'rgba(255, 51, 51, 0.12)', borderRadius: '14px', border: '1px solid rgba(255, 51, 51, 0.35)', padding: '16px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginBottom: '24px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--accent-color)' }}>
                         <Bell size={20} />
                         <span style={{ fontWeight: '800', fontSize: '15px' }}>{newOrdersCount} New Orders to Design</span>
@@ -138,12 +140,12 @@ const DesignWorkspaceCardView = () => {
             <DesignWorkspaceTools />
 
             {/* Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
-                <h1 style={{ fontSize: '26px', fontWeight: '800', color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.5px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <Layout size={28} color="var(--accent-color)" /> Design Workspace
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: isCompact ? 'flex-start' : 'center', flexWrap: 'wrap', gap: '16px', marginBottom: isCompact ? '28px' : '40px' }}>
+                <h1 style={{ fontSize: isCompact ? 'clamp(1.1rem, 4vw, 1.45rem)' : '26px', fontWeight: '800', color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.5px', display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+                    <Layout size={isCompact ? 24 : 28} color="var(--accent-color)" /> Design Workspace
                 </h1>
 
-                <div style={{ position: 'relative' }}>
+                <div style={{ position: 'relative', flex: isCompact ? '1 1 100%' : '0 1 auto', minWidth: 0, maxWidth: isCompact ? '100%' : 300 }}>
                     <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)', display: 'flex' }}>
                         <Search size={18} />
                     </span>
@@ -151,13 +153,13 @@ const DesignWorkspaceCardView = () => {
                         placeholder="Search orders..."
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
-                        style={{ padding: '10px 16px 10px 40px', borderRadius: '10px', border: '1px solid var(--border-color)', width: '280px', outline: 'none', background: 'var(--input-bg)', color: 'var(--text-primary)', fontSize: '14px', fontWeight: '500' }}
+                        style={{ padding: '10px 16px 10px 40px', borderRadius: '10px', border: '1px solid var(--border-color)', width: '100%', outline: 'none', background: 'var(--input-bg)', color: 'var(--text-primary)', fontSize: '14px', fontWeight: '500', boxSizing: 'border-box' }}
                     />
                 </div>
             </div>
 
             {/* Tabs */}
-            <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
+            <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', flexWrap: 'wrap' }}>
                 {['All Projects', 'Draft', 'Sent to Customer', 'Approved', 'Rejected'].map(tab => (
                     <button
                         key={tab}
@@ -177,7 +179,7 @@ const DesignWorkspaceCardView = () => {
             </div>
 
             {/* Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))', gap: '24px' }}>
                 {filteredOrders.length === 0 ? (
                     <div style={{ color: 'var(--text-secondary)', padding: '40px 0', fontWeight: '600' }}>No projects match your criteria.</div>
                 ) : (

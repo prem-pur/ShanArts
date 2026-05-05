@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useMatchMedia } from '../../hooks/useMatchMedia';
+import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
 import * as Router from 'react-router-dom';
 import axios from 'axios';
 import { jsPDF } from 'jspdf';
@@ -28,7 +30,8 @@ import {
     Phone,
     Clock,
     Zap,
-    Printer
+    Printer,
+    Menu
 } from 'lucide-react';
 import { API_BASE_URL } from '../../apiBase';
 import AddOrder from '../OrderManagement/AddOrder';
@@ -91,6 +94,8 @@ const CustomerHome = () => {
     const [delayRiskPopupAckLoading, setDelayRiskPopupAckLoading] = useState(false);
 
     const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const isNarrow = useMatchMedia('(max-width: 900px)');
+    const [custDrawerOpen, setCustDrawerOpen] = useState(false);
 
     // Guard: customer portal must only be used by customer accounts.
     useEffect(() => {
@@ -186,6 +191,21 @@ const CustomerHome = () => {
             setActiveTab(requestedTab);
         }
     }, [location.search]);
+
+    useEffect(() => {
+        if (!isNarrow) setCustDrawerOpen(false);
+    }, [isNarrow]);
+
+    useBodyScrollLock(isNarrow && custDrawerOpen);
+
+    useEffect(() => {
+        if (!custDrawerOpen || !isNarrow) return;
+        const onKey = (e) => {
+            if (e.key === 'Escape') setCustDrawerOpen(false);
+        };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, [custDrawerOpen, isNarrow]);
 
     const fetchData = async () => {
         try {
@@ -678,12 +698,17 @@ const CustomerHome = () => {
         { id: 'notifications', label: 'Notifications', icon: <Bell size={20} /> }
     ];
 
+    const goTab = (tabId) => {
+        setActiveTab(tabId);
+        if (isNarrow) setCustDrawerOpen(false);
+    };
+
     const renderContent = () => {
         switch (activeTab) {
             case 'dashboard':
                 return (
                     <div style={{ animation: 'fadeIn 0.5s ease-out' }}>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px', marginBottom: '32px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: isNarrow ? 'repeat(2, minmax(0, 1fr))' : 'repeat(4, minmax(0, 1fr))', gap: isNarrow ? '14px' : '24px', marginBottom: '32px' }}>
                             <SummaryCard title="Total Projects" value={stats.total} icon={<Briefcase size={22} />} color="var(--accent-color)" />
                             <SummaryCard title="Active Projects" value={stats.active} icon={<RotateCw size={22} />} color="var(--accent-color)" />
                             <SummaryCard title="Completed" value={stats.completed} icon={<CheckCircle size={22} />} color="var(--accent-color)" />
@@ -699,20 +724,28 @@ const CustomerHome = () => {
 
 
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px' }}>
-                            <div style={{ background: 'var(--card-bg)', padding: '32px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: isNarrow ? '1fr' : 'minmax(0, 2fr) minmax(0, 1fr)', gap: isNarrow ? '18px' : '24px' }}>
+                            <div style={{ background: 'var(--card-bg)', padding: isNarrow ? '20px 18px' : '32px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', minWidth: 0 }}>
                                 <h3 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '24px', color: 'var(--text-primary)' }}>Recent Projects</h3>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                                     {orders.slice(0, 5).map(order => (
-                                        <div key={order._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '16px', borderBottom: '1px solid var(--border-color)' }}>
-                                            <div>
+                                        <div key={order._id} style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: isNarrow ? 'flex-start' : 'center',
+                                            flexWrap: 'wrap',
+                                            gap: isNarrow ? '12px' : '8px',
+                                            paddingBottom: '16px',
+                                            borderBottom: '1px solid var(--border-color)',
+                                        }}>
+                                            <div style={{ minWidth: 0, flex: isNarrow ? '1 1 100%' : '1 1 auto' }}>
                                                 <div style={{ fontWeight: '700' }}>
                                                     {order.jobType.toUpperCase()}
                                                 </div>
                                                 <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{order.orderNumber} • {new Date(order.createdAt).toLocaleDateString()}</div>
                                                 {order.deadline && <div style={{ fontSize: '11px', color: 'var(--accent-color)', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '4px' }}><Calendar size={12} /> Needed: {new Date(order.deadline).toLocaleDateString()}</div>}
                                             </div>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', marginLeft: isNarrow ? 0 : 'auto' }}>
                                                 {order.delayRiskLevel && (
                                                   <span style={{
                                                     padding: '4px 10px',
@@ -802,8 +835,8 @@ const CustomerHome = () => {
                                     )}
                                 </div>
 
-                                {feedbackList.length > 0 && (
-                                    <div style={{ background: 'var(--card-bg)', padding: '32px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
+                                    {feedbackList.length > 0 && (
+                                    <div style={{ background: 'var(--card-bg)', padding: isNarrow ? '20px 18px' : '32px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', minWidth: 0 }}>
                                         <h3 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '24px', color: 'var(--text-primary)' }}>Your Recent Feedback</h3>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                                             {feedbackList.slice(0, 3).map(f => (
@@ -826,9 +859,10 @@ const CustomerHome = () => {
                 return <AddOrder onOrderCreated={() => { fetchData(); setActiveTab('dashboard'); }} onCancel={() => setActiveTab('dashboard')} />;
             case 'my_orders':
                 return (
-                    <div style={{ background: 'var(--card-bg)', padding: '32px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
-                        <h3 style={{ fontSize: '24px', fontWeight: '900', marginBottom: '24px', color: 'var(--text-primary)' }}>Project History</h3>
-                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <div style={{ background: 'var(--card-bg)', padding: isNarrow ? '18px 14px' : '32px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)', minWidth: 0 }}>
+                        <h3 style={{ fontSize: isNarrow ? '20px' : '24px', fontWeight: '900', marginBottom: '24px', color: 'var(--text-primary)' }}>Project History</h3>
+                        <div className="shan-table-scroll" style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: isNarrow ? 640 : undefined }}>
                             <thead>
                             <tr style={{ textAlign: 'left', borderBottom: '2px solid var(--border-color)' }}>
                                 <th style={{ padding: '16px', color: 'var(--text-secondary)', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase' }}>Order Details</th>
@@ -873,23 +907,24 @@ const CustomerHome = () => {
                             ))}
                             </tbody>
                         </table>
+                        </div>
                     </div>
                 );
             case 'invoices':
                 return (
-                    <div style={{ background: 'var(--card-bg)', padding: '32px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
-                        <h3 style={{ fontSize: '24px', fontWeight: '900', marginBottom: '24px', color: 'var(--text-primary)' }}>Invoices & Payments</h3>
+                    <div style={{ background: 'var(--card-bg)', padding: isNarrow ? '18px 14px' : '32px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)', minWidth: 0 }}>
+                        <h3 style={{ fontSize: isNarrow ? '20px' : '24px', fontWeight: '900', marginBottom: '24px', color: 'var(--text-primary)' }}>Invoices & Payments</h3>
                         <div style={{ display: 'grid', gap: '20px' }}>
                             {invoices.map(invoice => (
-                                <div key={invoice._id} style={{ border: '1px solid var(--border-color)', borderRadius: '16px', padding: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div key={invoice._id} style={{ border: '1px solid var(--border-color)', borderRadius: '16px', padding: isNarrow ? '18px' : '24px', display: 'flex', flexDirection: isNarrow ? 'column' : 'row', justifyContent: 'space-between', alignItems: isNarrow ? 'stretch' : 'center', gap: isNarrow ? '16px' : '12px' }}>
                                     <div>
                                         <div style={{ fontSize: '18px', fontWeight: '900' }}>#{invoice.invoiceNumber}</div>
                                         <div style={{ fontSize: '14px', color: 'var(--text-secondary)', marginTop: '4px' }}>Order: {invoice.orderId?.orderNumber} • Due: {new Date(invoice.dueDate).toLocaleDateString()}</div>
                                     </div>
-                                    <div style={{ textAlign: 'right' }}>
+                                    <div style={{ textAlign: isNarrow ? 'left' : 'right', minWidth: 0 }}>
                                         <div style={{ fontSize: '20px', fontWeight: '900', color: 'var(--accent-color)' }}>LKR {invoice.totalAmount?.toLocaleString()}</div>
                                         <div style={{ fontSize: '12px', color: paymentStatusColors[invoice.paymentStatus] || '#f59e0b', fontWeight: '700', marginTop: '4px', marginBottom: '12px' }}>{invoice.paymentStatus?.replace(/_/g, ' ').toUpperCase()}</div>
-                                        <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+                                        <div style={{ display: 'flex', gap: '8px', justifyContent: isNarrow ? 'flex-start' : 'flex-end', flexWrap: 'wrap' }}>
                                             <button
                                                 onClick={() => handleDownloadInvoicePdf(invoice)}
                                                 style={{ padding: '6px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--card-bg)', color: 'var(--text-primary)', fontSize: '11px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
@@ -1022,8 +1057,8 @@ const CustomerHome = () => {
             case 'profile':
                 return (
                     <div style={{ animation: 'fadeIn 0.5s ease-out' }}>
-                        <div style={{ background: 'var(--card-bg)', padding: '40px', borderRadius: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)', maxWidth: '800px', margin: '0 auto' }}>
-                            <h3 style={{ fontSize: '28px', fontWeight: '900', marginBottom: '32px', color: 'var(--text-primary)' }}>Profile Settings</h3>
+                        <div style={{ background: 'var(--card-bg)', padding: isNarrow ? '22px 16px' : '40px', borderRadius: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)', maxWidth: '800px', margin: '0 auto', minWidth: 0 }}>
+                            <h3 style={{ fontSize: isNarrow ? '22px' : '28px', fontWeight: '900', marginBottom: '32px', color: 'var(--text-primary)' }}>Profile Settings</h3>
 
                             <form onSubmit={handleUpdateProfile}>
                                 {profileError && (
@@ -1031,7 +1066,7 @@ const CustomerHome = () => {
                                         {profileError}
                                     </div>
                                 )}
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', marginBottom: '32px' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: isNarrow ? '1fr' : '1fr 1fr', gap: isNarrow ? '24px' : '32px', marginBottom: '32px' }}>
                                     <div>
                                         <h4 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '16px', color: 'var(--text-primary)' }}>Personal Information</h4>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -1145,58 +1180,154 @@ const CustomerHome = () => {
 
     if (loading) return <div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-color)', color: 'var(--text-primary)', fontFamily: 'var(--font-sans, sans-serif)' }}>Loading Workspace...</div>;
 
+    const mainPad = isNarrow ? 'clamp(14px, 4vw, 22px)' : '48px';
+
     return (
-        <div className="shan-page" style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--bg-color)', fontFamily: 'var(--font-sans, sans-serif)' }}>
-            <aside style={{ width: '260px', backgroundColor: 'var(--sidebar-bg)', display: 'flex', flexDirection: 'column', borderRight: '1px solid var(--sidebar-border)' }}>
-                <div style={{ padding: '32px 24px', borderBottom: '1px solid var(--sidebar-border)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <img
-                            src="/logo.png?v=7"
-                            alt="Shan Art Advertising"
-                            style={{
-                                display: 'block',
-                                width: 'auto',
-                                height: 'auto',
-                                maxWidth: '100%',
-                                maxHeight: '52px',
-                                objectFit: 'contain',
-                                borderRadius: '10px',
-                                boxShadow: '0 6px 28px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.06)',
-                            }}
-                        />
-                    </div>
-                </div>
+        <div className="shan-page" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: 'var(--bg-color)', fontFamily: 'var(--font-sans, sans-serif)', overflowX: 'hidden' }}>
+            {isNarrow && (
+                <header
+                    style={{
+                        flexShrink: 0,
+                        height: 56,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 12,
+                        padding: '0 14px',
+                        borderBottom: '1px solid var(--sidebar-border)',
+                        background: 'var(--sidebar-bg)',
+                        zIndex: 200,
+                    }}
+                >
+                    <button
+                        type="button"
+                        aria-expanded={custDrawerOpen}
+                        aria-controls="customer-portal-nav"
+                        aria-label={custDrawerOpen ? 'Close navigation menu' : 'Open navigation menu'}
+                        onClick={() => setCustDrawerOpen(o => !o)}
+                        style={{
+                            width: 44,
+                            height: 44,
+                            borderRadius: 12,
+                            border: '1px solid rgba(255,255,255,0.14)',
+                            background: 'rgba(255,255,255,0.07)',
+                            color: '#ffffff',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            cursor: 'pointer',
+                            flexShrink: 0,
+                        }}
+                    >
+                        {custDrawerOpen ? <X size={22} /> : <Menu size={22} />}
+                    </button>
+                    <span style={{ fontWeight: 800, fontSize: 15, color: 'rgba(255,255,255,0.92)', letterSpacing: '-0.02em' }}>Client portal</span>
+                </header>
+            )}
 
-                <nav style={{ flex: 1, paddingTop: '24px' }}>
-                    {navItems.map(item => (
-                        <button
-                            key={item.id}
-                            onClick={() => setActiveTab(item.id)}
-                            style={{
-                                width: '100%',
+            <div style={{ display: 'flex', flex: 1, flexDirection: 'row', minHeight: 0, position: 'relative', overflow: 'hidden' }}>
+                <aside
+                    id="customer-portal-nav"
+                    style={
+                        isNarrow
+                            ? {
+                                position: 'absolute',
+                                left: 0,
+                                top: 0,
+                                bottom: 0,
+                                width: 'min(300px, 88vw)',
+                                zIndex: 220,
+                                transform: custDrawerOpen ? 'translateX(0)' : 'translateX(-108%)',
+                                transition: 'transform 0.28s cubic-bezier(0.22, 1, 0.36, 1)',
+                                boxShadow: custDrawerOpen ? '12px 0 48px rgba(0,0,0,0.45)' : 'none',
+                                pointerEvents: custDrawerOpen ? 'auto' : 'none',
+                                backgroundColor: 'var(--sidebar-bg)',
                                 display: 'flex',
-                                alignItems: 'center',
-                                gap: '16px',
-                                padding: '16px 32px',
-                                border: 'none',
-                                background: activeTab === item.id ? 'var(--accent-color)' : 'transparent',
-                                color: activeTab === item.id ? '#fff' : 'rgba(255,255,255,0.6)',
-                                cursor: 'pointer',
-                                fontWeight: '600',
-                                textAlign: 'left',
-                                borderLeft: activeTab === item.id ? '4px solid #fff' : '4px solid transparent'
-                            }}
-                        >
-                            <span style={{ fontSize: '18px' }}>{item.icon}</span>
-                            {item.label}
-                        </button>
-                    ))}
-                </nav>
-            </aside>
+                                flexDirection: 'column',
+                                borderRight: '1px solid var(--sidebar-border)',
+                                overflowY: 'auto',
+                                WebkitOverflowScrolling: 'touch',
+                            }
+                            : {
+                                width: '260px',
+                                flexShrink: 0,
+                                alignSelf: 'stretch',
+                                backgroundColor: 'var(--sidebar-bg)',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                borderRight: '1px solid var(--sidebar-border)',
+                                overflowY: 'auto',
+                            }
+                    }
+                    aria-hidden={isNarrow && !custDrawerOpen}
+                >
+                    <div style={{ padding: '32px 24px', borderBottom: '1px solid var(--sidebar-border)', flexShrink: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <img
+                                src="/logo.png?v=7"
+                                alt="Shan Art Advertising"
+                                style={{
+                                    display: 'block',
+                                    width: 'auto',
+                                    height: 'auto',
+                                    maxWidth: '100%',
+                                    maxHeight: '52px',
+                                    objectFit: 'contain',
+                                    borderRadius: '10px',
+                                    boxShadow: '0 6px 28px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.06)',
+                                }}
+                            />
+                        </div>
+                    </div>
 
-            <main style={{ flex: 1, padding: '48px', overflowY: 'auto', color: 'var(--text-primary)' }}>
-                <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
-                    <h2 style={{ fontSize: '32px', fontWeight: '900', color: 'var(--text-primary)' }}>Hello, {user.name}!</h2>
+                    <nav style={{ flex: 1, paddingTop: '24px' }}>
+                        {navItems.map(item => (
+                            <button
+                                key={item.id}
+                                type="button"
+                                onClick={() => goTab(item.id)}
+                                style={{
+                                    width: '100%',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '16px',
+                                    padding: '16px 28px',
+                                    border: 'none',
+                                    background: activeTab === item.id ? 'var(--accent-color)' : 'transparent',
+                                    color: activeTab === item.id ? '#fff' : 'rgba(255,255,255,0.6)',
+                                    cursor: 'pointer',
+                                    fontWeight: '600',
+                                    textAlign: 'left',
+                                    borderLeft: activeTab === item.id ? '4px solid #fff' : '4px solid transparent'
+                                }}
+                            >
+                                <span style={{ fontSize: '18px' }}>{item.icon}</span>
+                                {item.label}
+                            </button>
+                        ))}
+                    </nav>
+                </aside>
+
+                {isNarrow && custDrawerOpen && (
+                    <button
+                        type="button"
+                        aria-label="Close menu"
+                        onClick={() => setCustDrawerOpen(false)}
+                        style={{
+                            position: 'absolute',
+                            inset: 0,
+                            zIndex: 180,
+                            border: 'none',
+                            padding: 0,
+                            margin: 0,
+                            background: 'rgba(0,0,0,0.5)',
+                            cursor: 'pointer',
+                        }}
+                    />
+                )}
+
+            <main style={{ flex: 1, minWidth: 0, padding: mainPad, overflowY: 'auto', color: 'var(--text-primary)', WebkitOverflowScrolling: 'touch' }}>
+                <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', flexWrap: 'wrap', marginBottom: isNarrow ? '28px' : '40px' }}>
+                    <h2 style={{ fontSize: isNarrow ? 'clamp(1.25rem, 4vw, 1.75rem)' : '32px', fontWeight: '900', color: 'var(--text-primary)', margin: 0, lineHeight: 1.2 }}>Hello, {user.name}!</h2>
                     <div style={{ position: 'relative' }}>
                         <button
                             onClick={() => setShowProfileDropdown(!showProfileDropdown)}
@@ -1231,7 +1362,8 @@ const CustomerHome = () => {
                                 padding: '8px 0'
                             }}>
                                 <button
-                                    onClick={() => { setActiveTab('profile'); setShowProfileDropdown(false); }}
+                                    type="button"
+                                    onClick={() => { goTab('profile'); setShowProfileDropdown(false); }}
                                     style={{
                                         width: '100%',
                                         padding: '12px 16px',
@@ -1690,7 +1822,7 @@ const CustomerHome = () => {
                 />
 
                 {activeTab === 'dashboard' && (
-                  <div style={{ marginTop: '80px', borderTop: '1px solid var(--border-color)', paddingTop: '60px' }}>
+                  <div style={{ marginTop: isNarrow ? '44px' : '80px', borderTop: '1px solid var(--border-color)', paddingTop: isNarrow ? '36px' : '60px' }}>
                     {/* ── CHATBOT SECTION ── */}
                     <section style={{ marginBottom: '100px' }}>
                       <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255,51,51,0.1)', border: '1px solid rgba(255,51,51,0.2)', color: '#ff3333', fontSize: '11px', fontWeight: 800, padding: '5px 14px', borderRadius: '100px', marginBottom: '16px', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
@@ -1729,6 +1861,7 @@ const CustomerHome = () => {
                   </div>
                 )}
             </main>
+            </div>
         </div>
     );
 };
@@ -1738,12 +1871,13 @@ const SummaryCard = ({ title, value, icon, color, onClick, style }) => (
         onClick={onClick}
         style={{
             background: 'var(--card-bg)',
-            padding: '24px',
+            padding: 'clamp(14px, 3.5vw, 24px)',
             borderRadius: '16px',
             boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
             display: 'flex',
             alignItems: 'center',
-            gap: '20px',
+            gap: 'clamp(12px, 3vw, 20px)',
+            minWidth: 0,
             cursor: onClick ? 'pointer' : 'default',
             ...style
         }}
@@ -1752,8 +1886,8 @@ const SummaryCard = ({ title, value, icon, color, onClick, style }) => (
             {icon}
         </div>
         <div>
-            <div style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>{title}</div>
-            <div style={{ fontSize: '24px', fontWeight: '900' }}>{value}</div>
+            <div style={{ fontSize: 'clamp(12px, 3vw, 13px)', color: 'var(--text-secondary)', fontWeight: '600' }}>{title}</div>
+            <div style={{ fontSize: 'clamp(1.1rem, 4vw, 24px)', fontWeight: '900', wordBreak: 'break-word' }}>{value}</div>
         </div>
     </div>
 );

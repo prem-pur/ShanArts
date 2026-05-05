@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useMatchMedia } from '../../hooks/useMatchMedia';
 import axios from 'axios';
 import { 
     Receipt, 
@@ -59,6 +60,7 @@ const OutstandingStrip = ({ data }) => {
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 const BillingManagement = () => {
+    const isCompact = useMatchMedia('(max-width: 900px)');
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     const isFinance = ['admin', 'staff_finance', 'staff_system'].includes(user.role);
 
@@ -136,7 +138,7 @@ const BillingManagement = () => {
     const statusBg = { paid: '#d1fae5', partial: '#fef3c7', pending_approval: '#fee2e2', unpaid: '#fee2e2' };
 
     return (
-        <div className="shan-page" style={{ padding: '28px 36px', maxWidth: '1400px', margin: '0 auto', fontFamily: 'var(--font-sans, sans-serif)', backgroundColor: 'var(--bg-color)', minHeight: '100vh', color: 'var(--text-primary)' }}>
+        <div className="shan-page" style={{ padding: isCompact ? 'clamp(14px, 4vw, 24px)' : '28px 36px', maxWidth: '1400px', margin: '0 auto', fontFamily: 'var(--font-sans, sans-serif)', backgroundColor: 'var(--bg-color)', minHeight: '100vh', color: 'var(--text-primary)', boxSizing: 'border-box', width: '100%', overflowX: 'hidden' }}>
             <style>{`
                 @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
             `}</style>
